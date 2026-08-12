@@ -424,7 +424,7 @@
           alert(res.message);
           form.reset();
           closeModal(form.closest('.fixed').id);
-          fetchDashboardData(); // Recarrega os dados do Dashboard na hora!
+          fetchDashboardData();
         } else {
           alert('Erro ao salvar: ' + res.message);
         }

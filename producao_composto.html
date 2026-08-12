@@ -303,7 +303,6 @@
       painel.classList.remove('hidden');
       painel.classList.add('grid');
 
-      // 1. Cálculos de Massa Geral
       const pesoFinalTotal = pesoSaco * qtdSacos;
       const pctMateriaSeca = (100 - umidadePct) / 100;
       const materiaSecaTotal = pesoFinalTotal * pctMateriaSeca;
@@ -315,7 +314,6 @@
       tbody.innerHTML = '';
       let estoqueSuficiente = true;
 
-      // 2. Calcula cada ingrediente seco proporcionalmente à Matéria Seca Total
       receita.ingredientes.forEach(ing => {
         const proporcao = ing.quantidade / 100;
         const qtdNecessaria = materiaSecaTotal * proporcao;
@@ -334,7 +332,6 @@
         `;
       });
 
-      // 3. Adiciona a linha da Água Calculada
       tbody.innerHTML += `
         <tr class="bg-blue-50/60 font-bold">
           <td class="p-2 text-blue-900">💧 Água Destilada / Purificada</td>

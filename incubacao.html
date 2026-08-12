@@ -216,6 +216,7 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
+	
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
@@ -436,10 +437,8 @@
     }
 
     async function enviarSelecionadosFrutificacao() {
-      // Pega estritamente apenas os blocos que foram marcados manualmente pelo usuário
       const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
       
-      // TRAVA DE SEGURANÇA: Se nenhum estiver selecionado, interrompe e avisa
       if (selecionados.length === 0) {
         alert("Atenção: Nenhum bloco foi selecionado. Por favor, selecione ao menos um bloco antes de enviar para frutificação.");
         return;

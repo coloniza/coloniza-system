@@ -12,8 +12,6 @@
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
     .sidebar { background-color: #11261d; }
     .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
-    
-    /* Custom Toggle Switch */
     .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
@@ -23,7 +21,6 @@
   </style>
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
-  <!-- BANNER TOAST DE NOTIFICAÇÃO -->
   <div id="toastNotification" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 ease-in-out opacity-0">
     <div class="bg-emerald-800 text-white px-4 py-3 rounded-xl shadow-lg border border-emerald-600 flex items-center space-x-3 text-xs font-semibold">
       <span class="text-base">✅</span>
@@ -32,7 +29,6 @@
     </div>
   </div>
 
-  <!-- SIDEBAR -->
   <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
     <div>
       <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
@@ -48,9 +44,7 @@
         </div>
       </div>
       <nav class="p-2 space-y-1 text-xs">
-        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-          <span>Dashboard</span></a>
+        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Dashboard</span></a>
 		<a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Compras &amp; Investimentos</span></a>
 		<a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Estoque &amp; Insumos</span></a>
         <a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Banco de Culturas &amp; CL</span></a>
@@ -67,15 +61,12 @@
     </div>
   </aside>
 
-  <!-- ÁREA PRINCIPAL -->
   <main class="flex-1 flex flex-col overflow-y-auto">
-    <!-- HEADER -->
     <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
       <div>
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">CONTROLE DE BLOCOS / PACOTES VIRGENS</h2>
         <p class="text-xs text-gray-500 font-medium">GESTÃO INDIVIDUAL, RASTREABILIDADE E FILA DE INOCULAÇÃO</p>
       </div>
-      <!-- BARRA DE PESQUISA RÁPIDA -->
       <div class="flex items-center space-x-3">
         <div class="relative">
           <input type="text" id="inputPesquisa" oninput="filtrarBlocos()" placeholder="🔍 Buscar por código de rastreio..." class="w-64 border rounded-lg pl-3 pr-8 py-1.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500">
@@ -84,7 +75,6 @@
     </header>
 
     <div class="p-6 space-y-4">
-      <!-- CONTROLES SUPERIORES (FILTRO DE LOTE E MODOS DE EXIBIÇÃO) -->
       <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center space-x-3">
           <div>
@@ -98,77 +88,45 @@
           </div>
         </div>
 
-        <!-- ALTERNADOR DE LAYOUT (LISTA vs CAIXAS) -->
         <div class="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg border border-gray-200">
           <span class="text-xs font-semibold text-gray-600">📋 Tabela</span>
-          <label class="switch">
-            <input type="checkbox" id="toggleLayout" onchange="alternarLayout()">
-            <span class="slider"></span>
-          </label>
+          <label class="switch"><input type="checkbox" id="toggleLayout" onchange="alternarLayout()"><span class="slider"></span></label>
           <span class="text-xs font-semibold text-gray-600">🧊 Caixas</span>
         </div>
       </div>
 
-      <!-- BARRA DE AÇÃO EM MASSA -->
       <div id="barraAcaoMassa" class="hidden bg-emerald-900 text-white p-3 rounded-xl shadow-md items-center justify-between transition">
-        <div class="text-xs font-semibold flex items-center space-x-2">
-          <span>☑️ <span id="qtdSelecionados">0</span> bloco(s) selecionado(s)</span>
-        </div>
+        <div class="text-xs font-semibold flex items-center space-x-2"><span>☑️ <span id="qtdSelecionados">0</span> bloco(s) selecionado(s)</span></div>
         <div class="flex space-x-2">
-          <button onclick="openModalInocularMassa()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
-            <span>💉</span> Inocular Selecionados
-          </button>
+          <button onclick="openModalInocularMassa()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1"><span>💉</span> Inocular Selecionados</button>
         </div>
       </div>
 
-      <!-- VISUALIZAÇÃO 1: TABELA / LISTA -->
       <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
               <tr>
                 <th class="p-3 w-10 text-center"><input type="checkbox" id="chkTodos" onchange="selecionarTodos(this)"></th>
-                <th class="p-3 font-semibold">CÓDIGO RASTREIO</th>
-                <th class="p-3 font-semibold">LOTE ORIGEM</th>
-                <th class="p-3 font-semibold">ESPÉCIE</th>
-                <th class="p-3 font-semibold">PESO</th>
-                <th class="p-3 font-semibold">FABRICAÇÃO</th>
-                <th class="p-3 font-semibold">STATUS</th>
-                <th class="p-3 font-semibold text-center">AÇÕES</th>
+                <th class="p-3 font-semibold">CÓDIGO RASTREIO</th><th class="p-3 font-semibold">LOTE ORIGEM</th><th class="p-3 font-semibold">ESPÉCIE</th><th class="p-3 font-semibold">PESO</th><th class="p-3 font-semibold">FABRICAÇÃO</th><th class="p-3 font-semibold">STATUS</th><th class="p-3 font-semibold text-center">AÇÕES</th>
               </tr>
             </thead>
-            <tbody id="tbodyBlocos" class="divide-y divide-gray-100">
-              <!-- Renderizado via JS -->
-            </tbody>
+            <tbody id="tbodyBlocos" class="divide-y divide-gray-100"><tr><td colspan="8" class="p-4 text-center text-gray-400">Carregando blocos...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- VISUALIZAÇÃO 2: GRID / CAIXAS (CARDS) -->
-      <div id="visaoCaixas" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <!-- Renderizado via JS -->
-      </div>
+      <div id="visaoCaixas" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
     </div>
   </main>
 
-  <!-- MODAL INOCULAR BLOCOS -->
   <div id="modalInocular" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
       <h3 class="text-base font-bold text-gray-800 mb-2">Inocular Bloco(s) Selecionado(s)</h3>
-      <p class="text-xs text-gray-500 mb-4">Ao inocular, os blocos sairão desta lista e avançarão automaticamente para a página de <strong>Inoculação / Incubação</strong>.</p>
-      
+      <p class="text-xs text-gray-500 mb-4">Ao inocular, os blocos avançarão automaticamente para a página de <strong>Inoculação / Incubação</strong>.</p>
       <form onsubmit="executarInoculacao(event)" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold mb-1">Selecione o Spawn Utilizado</label>
-          <select id="modalSelectSpawn" required class="w-full border rounded-lg p-2.5 outline-none bg-white font-medium">
-            <option value="">-- Selecione o Lote de Spawn --</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Posição Inicial para Impressão da Etiqueta na Folha A4 Colacril (1 a 14)</label>
-          <input type="number" id="modalPosicaoInicio" value="1" min="1" max="14" required class="w-full border rounded-lg p-2.5 outline-none">
-          <span class="text-[10px] text-gray-400">Gabarito CA4363: 14 etiquetas por folha (2 colunas x 7 linhas).</span>
-        </div>
+        <div><label class="block font-semibold mb-1">Selecione o Spawn Utilizado</label><select id="modalSelectSpawn" required class="w-full border rounded-lg p-2.5 outline-none bg-white font-medium"><option value="">-- Selecione o Lote de Spawn --</option></select></div>
+        <div><label class="block font-semibold mb-1">Posição Inicial para Impressão da Etiqueta na Folha A4 Colacril (1 a 14)</label><input type="number" id="modalPosicaoInicio" value="1" min="1" max="14" required class="w-full border rounded-lg p-2.5 outline-none"></div>
         <div class="flex justify-end space-x-2 pt-4 border-t">
           <button type="button" onclick="closeModal('modalInocular')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
           <button type="submit" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold shadow">Confirmar &amp; Gerar PDF</button>
@@ -177,13 +135,10 @@
     </div>
   </div>
 
-  <!-- MODAL EXCLUIR BLOCO (DESCARTE) -->
   <div id="modalExcluirBloco" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
       <h3 class="text-base font-bold text-red-700 mb-2">Excluir / Descartar Bloco</h3>
       <p class="text-xs text-gray-600 mb-1">Código: <span id="txtCodigoExcluir" class="font-bold text-gray-800">---</span></p>
-      <p class="text-[11px] text-gray-500 mb-4">Selecione o motivo da exclusão para registro no histórico de descarte:</p>
-      
       <form onsubmit="confirmarExclusaoBloco(event)" class="space-y-4 text-xs">
         <input type="hidden" id="idBlocoExcluir">
         <div>
@@ -199,12 +154,7 @@
             <option value="Outro motivo">Outro motivo...</option>
           </select>
         </div>
-        
-        <div id="containerOutroMotivo" class="hidden">
-          <label class="block font-semibold mb-1">Especifique o Motivo</label>
-          <input type="text" id="inputOutroMotivo" placeholder="Descreva o motivo da exclusão..." class="w-full border rounded-lg p-2.5 outline-none">
-        </div>
-
+        <div id="containerOutroMotivo" class="hidden"><label class="block font-semibold mb-1">Especifique o Motivo</label><input type="text" id="inputOutroMotivo" placeholder="Descreva..." class="w-full border rounded-lg p-2.5 outline-none"></div>
         <div class="flex justify-end space-x-2 pt-4 border-t">
           <button type="button" onclick="closeModal('modalExcluirBloco')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
           <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold shadow">Confirmar Exclusão</button>
@@ -213,7 +163,6 @@
     </div>
   </div>
 
-  <!-- CANVAS OCULTO PARA GERAR CÓDIGO DE BARRAS -->
   <canvas id="barcodeCanvas" class="hidden"></canvas>
 
   <script>
@@ -228,31 +177,12 @@
     let lotesCompostoCache = [];
     let spawnsCache = [];
     let selecionados = new Set();
+    let isCarregandoBlocos = false; // [FIX DUPLO DISPARO]
 
-async function carregarMeusDados() {
-  try {
-    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
-    });
-    
-    const res = await response.json(); // Converte a resposta para JSON
-
-    // 2. Trata os dados recebidos
-    if (res.success) {
-      console.log("Dados recebidos com sucesso:", res);
-    } else {
-      console.error("Erro do servidor:", res.message);
-    }
-
-  } catch (err) {
-    console.error("Erro de conexão:", err);
-  }
-}
-	  
     async function loadData() {
+      if (isCarregandoBlocos) return;
+      isCarregandoBlocos = true;
+
       try {
         const [resBlocos, resSpawns] = await Promise.all([
           fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBlocosNaoInoculados' }) }).then(r => r.json()),
@@ -271,23 +201,21 @@ async function carregarMeusDados() {
         }
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
+      } finally {
+        isCarregandoBlocos = false;
       }
     }
 
     function populateLotesSelect() {
       const select = document.getElementById('selectLoteFiltro');
       select.innerHTML = '<option value="">-- Todos os Lotes Não Inoculados --</option>';
-      lotesCompostoCache.forEach(l => {
-        select.innerHTML += `<option value="${l}">${l}</option>`;
-      });
+      lotesCompostoCache.forEach(l => { select.innerHTML += `<option value="${l}">${l}</option>`; });
     }
 
     function populateSpawnsModalSelect() {
       const select = document.getElementById('modalSelectSpawn');
       select.innerHTML = '<option value="">-- Selecione o Lote de Spawn --</option>';
-      spawnsCache.forEach(s => {
-        select.innerHTML += `<option value="${s.codigo}">${s.codigo} - ${s.especie} (${s.peso})</option>`;
-      });
+      spawnsCache.forEach(s => { select.innerHTML += `<option value="${s.codigo}">${s.codigo} - ${s.especie} (${s.peso})</option>`; });
     }
 
     function filtrarBlocos() {
@@ -308,12 +236,10 @@ async function carregarMeusDados() {
     function renderizarTabela(lista) {
       const tbody = document.getElementById('tbodyBlocos');
       tbody.innerHTML = '';
-
       if (lista.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-400">Nenhum bloco não inoculado encontrado.</td></tr>`;
         return;
       }
-
       lista.forEach(b => {
         const isChecked = selecionados.has(b.id) ? 'checked' : '';
         tbody.innerHTML += `
@@ -326,45 +252,27 @@ async function carregarMeusDados() {
             <td class="p-3 text-gray-500">${b.dataProducao}</td>
             <td class="p-3"><span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Aguardando Inoculação</span></td>
             <td class="p-3 text-center flex items-center justify-center space-x-1">
-              <button onclick="inocularUnico('${b.id}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1 rounded text-[11px] transition" title="Inocular e Gerar Etiqueta">
-                💉 Inocular
-              </button>
-              <button onclick="abrirModalExcluir('${b.id}', '${b.codigoRastreio}')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-1 rounded text-[11px] transition" title="Excluir/Descartar Bloco">
-                🗑️
-              </button>
+              <button onclick="inocularUnico('${b.id}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1 rounded text-[11px] transition">💉 Inocular</button>
+              <button onclick="abrirModalExcluir('${b.id}', '${b.codigoRastreio}')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-1 rounded text-[11px] transition">🗑️</button>
             </td>
-          </tr>
-        `;
+          </tr>`;
       });
     }
 
     function renderizarCaixas(lista) {
       const container = document.getElementById('visaoCaixas');
       container.innerHTML = '';
-
       lista.forEach(b => {
         const isChecked = selecionados.has(b.id) ? 'checked' : '';
         container.innerHTML += `
           <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative flex flex-col justify-between hover:border-emerald-500 transition">
-            <div class="flex justify-between items-start mb-2">
-              <input type="checkbox" value="${b.id}" ${isChecked} onchange="toggleSelecao('${b.id}', this.checked)" class="w-4 h-4">
-              <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Cru / Não Inoculado</span>
-            </div>
-            <div class="space-y-1">
-              <h4 class="font-extrabold text-xs text-gray-800 tracking-tight">${b.codigoRastreio}</h4>
-              <p class="text-[11px] text-emerald-800 font-semibold">${b.especie}</p>
-              <p class="text-[10px] text-gray-500">Lote: ${b.loteComposto} | Peso: ${b.peso} kg</p>
-            </div>
+            <div class="flex justify-between items-start mb-2"><input type="checkbox" value="${b.id}" ${isChecked} onchange="toggleSelecao('${b.id}', this.checked)" class="w-4 h-4"><span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Cru</span></div>
+            <div class="space-y-1"><h4 class="font-extrabold text-xs text-gray-800">${b.codigoRastreio}</h4><p class="text-[11px] text-emerald-800 font-semibold">${b.especie}</p><p class="text-[10px] text-gray-500">Lote: ${b.loteComposto} | Peso: ${b.peso} kg</p></div>
             <div class="mt-3 pt-2 border-t flex justify-between items-center space-x-2">
-              <button onclick="inocularUnico('${b.id}')" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 rounded text-xs transition">
-                💉 Inocular Bloco
-              </button>
-              <button onclick="abrirModalExcluir('${b.id}', '${b.codigoRastreio}')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1.5 rounded text-xs transition" title="Excluir">
-                🗑️
-              </button>
+              <button onclick="inocularUnico('${b.id}')" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 rounded text-xs">💉 Inocular</button>
+              <button onclick="abrirModalExcluir('${b.id}', '${b.codigoRastreio}')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1.5 rounded text-xs">🗑️</button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
     }
 
@@ -375,17 +283,14 @@ async function carregarMeusDados() {
     }
 
     function toggleSelecao(id, checked) {
-      if (checked) selecionados.add(id);
-      else selecionados.delete(id);
+      if (checked) selecionados.add(id); else selecionados.delete(id);
       atualizarBarraAcao();
     }
 
     function selecionarTodos(chk) {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"][value]');
-      checkboxes.forEach(c => {
+      document.querySelectorAll('input[type="checkbox"][value]').forEach(c => {
         c.checked = chk.checked;
-        if (chk.checked) selecionados.add(c.value);
-        else selecionados.delete(c.value);
+        if (chk.checked) selecionados.add(c.value); else selecionados.delete(c.value);
       });
       atualizarBarraAcao();
     }
@@ -393,26 +298,12 @@ async function carregarMeusDados() {
     function atualizarBarraAcao() {
       const barra = document.getElementById('barraAcaoMassa');
       document.getElementById('qtdSelecionados').textContent = selecionados.size;
-      if (selecionados.size > 0) {
-        barra.classList.remove('hidden');
-        barra.classList.add('flex');
-      } else {
-        barra.classList.add('hidden');
-        barra.classList.remove('flex');
-      }
+      barra.classList.toggle('hidden', selecionados.size === 0);
+      barra.classList.toggle('flex', selecionados.size > 0);
     }
 
-    function inocularUnico(id) {
-      selecionados.clear();
-      selecionados.add(id);
-      atualizarBarraAcao();
-      openModalInocularMassa();
-    }
-
-    function openModalInocularMassa() {
-      if (selecionados.size === 0) { alert("Selecione pelo menos um bloco."); return; }
-      openModal('modalInocular');
-    }
+    function inocularUnico(id) { selecionados.clear(); selecionados.add(id); atualizarBarraAcao(); openModalInocularMassa(); }
+    function openModalInocularMassa() { if (selecionados.size === 0) { alert("Selecione pelo menos um bloco."); return; } openModal('modalInocular'); }
 
     async function executarInoculacao(e) {
       e.preventDefault();
@@ -423,17 +314,10 @@ async function carregarMeusDados() {
       const idsArray = Array.from(selecionados);
       const blocosParaProcessar = blocosCache.filter(b => idsArray.includes(b.id));
 
-      const payload = {
-        action: 'inocularBlocosEmMassa',
-        idsBlocos: idsArray,
-        spawnOrigem: spawnCodigo,
-        responsavel: userData.nome
-      };
-
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ action: 'inocularBlocosEmMassa', idsBlocos: idsArray, spawnOrigem: spawnCodigo, responsavel: userData.nome })
         });
         const res = await response.json();
         if (res.success) {
@@ -443,17 +327,10 @@ async function carregarMeusDados() {
           selecionados.clear();
           atualizarBarraAcao();
           loadData();
-        } else {
-          alert("Erro: " + res.message);
-        }
-      } catch (err) {
-        alert("Erro ao comunicar com o servidor.");
-      }
+        } else { alert("Erro: " + res.message); }
+      } catch (err) { alert("Erro de comunicação."); }
     }
 
-    // ==========================================
-    // EXCLUSÃO / DESCARTE DE BLOCO
-    // ==========================================
     function abrirModalExcluir(id, codigo) {
       document.getElementById('idBlocoExcluir').value = id;
       document.getElementById('txtCodigoExcluir').textContent = codigo;
@@ -466,138 +343,67 @@ async function carregarMeusDados() {
     function verificarOutroMotivo() {
       const val = document.getElementById('selectMotivoExclusao').value;
       const container = document.getElementById('containerOutroMotivo');
-      if (val === 'Outro motivo') {
-        container.classList.remove('hidden');
-        document.getElementById('inputOutroMotivo').required = true;
-      } else {
-        container.classList.add('hidden');
-        document.getElementById('inputOutroMotivo').required = false;
-      }
+      container.classList.toggle('hidden', val !== 'Outro motivo');
+      document.getElementById('inputOutroMotivo').required = (val === 'Outro motivo');
     }
 
     async function confirmarExclusaoBloco(e) {
       e.preventDefault();
       const id = document.getElementById('idBlocoExcluir').value;
       let motivo = document.getElementById('selectMotivoExclusao').value;
-      if (motivo === 'Outro motivo') {
-        motivo = document.getElementById('inputOutroMotivo').value.trim();
-      }
-
-      if (!motivo) { alert("Por favor, selecione ou informe o motivo do descarte."); return; }
-
-      const payload = {
-        action: 'atualizarStatusBloco',
-        id: id,
-        status: 'Descartado',
-        obs: `Descarte: ${motivo}`
-      };
+      if (motivo === 'Outro motivo') motivo = document.getElementById('inputOutroMotivo').value.trim();
+      if (!motivo) { alert("Informe o motivo."); return; }
 
       try {
-        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'atualizarStatusBloco', id: id, status: 'Descartado', obs: `Descarte: ${motivo}` }) });
         const res = await response.json();
         if (res.success) {
-          exibirToast("Bloco descartado e removido da lista!");
+          exibirToast("Bloco descartado!");
           closeModal('modalExcluirBloco');
           loadData();
-        } else {
-          alert("Erro ao excluir: " + res.message);
-        }
-      } catch (err) {
-        alert("Erro ao comunicar com o servidor.");
-      }
+        } else { alert("Erro: " + res.message); }
+      } catch (err) { alert("Erro de comunicação."); }
     }
 
-    // ==========================================
-    // GERADOR DE ETIQUETA PDF - GABARITO COLACRIL CA4363
-    // Folha A4: 14 Etiquetas (2 Colunas x 7 Linhas) | Medida: 99.1 mm x 38.1 mm
-    // ==========================================
     function gerarPDFEtiquetasColacril(blocos, spawnCodigo, posicaoInicio = 1) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-      const etqLargura = 99.1;
-      const etqAltura = 38.1;
-      const margemEsquerda = 4.5;
-      const margemSuperior = 15.0;
-      const espacamentoHoriz = 3.0;
-
+      const etqLargura = 99.1, etqAltura = 38.1, margemEsquerda = 4.5, margemSuperior = 15.0, espacamentoHoriz = 3.0;
       const dataHojeFormatada = new Date().toLocaleDateString('pt-BR');
 
       blocos.forEach((bloco, idx) => {
         const indicePosicao = (posicaoInicio - 1) + idx;
         const posNaPagina = indicePosicao % 14;
+        if (idx > 0 && posNaPagina === 0) doc.addPage();
 
-        if (idx > 0 && posNaPagina === 0) {
-          doc.addPage();
-        }
-
-        const col = posNaPagina % 2;
-        const lin = Math.floor(posNaPagina / 2);
-
+        const col = posNaPagina % 2, lin = Math.floor(posNaPagina / 2);
         const x = margemEsquerda + col * (etqLargura + espacamentoHoriz);
         const y = margemSuperior + lin * etqAltura;
 
-        doc.setLineWidth(0.1);
-        doc.setDrawColor(200);
-        doc.rect(x, y, etqLargura, etqAltura);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.setTextColor(4, 120, 87);
+        doc.setLineWidth(0.1); doc.setDrawColor(200); doc.rect(x, y, etqLargura, etqAltura);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(4, 120, 87);
         doc.text("COLONIZA - RASTREABILIDADE", x + 3, y + 5);
+        doc.setFontSize(7); doc.setTextColor(100); doc.text(`INOC: ${dataHojeFormatada}`, x + etqLargura - 25, y + 5);
 
-        doc.setFontSize(7);
-        doc.setTextColor(100);
-        doc.text(`INOC: ${dataHojeFormatada}`, x + etqLargura - 25, y + 5);
+        doc.setFontSize(8); doc.setTextColor(0); doc.text(`ESPÉCIE: ${bloco.especie}`, x + 3, y + 10);
+        doc.setFontSize(7); doc.text(`LOTE CMP: ${bloco.loteComposto}  |  SPAWN: ${spawnCodigo}`, x + 3, y + 14);
 
-        doc.setFontSize(8);
-        doc.setTextColor(0);
-        doc.text(`ESPÉCIE: ${bloco.especie}`, x + 3, y + 10);
+        JsBarcode("#barcodeCanvas", bloco.codigoRastreio, { format: "CODE128", width: 2, height: 35, displayValue: false });
+        doc.addImage(document.getElementById('barcodeCanvas').toDataURL("image/png"), 'PNG', x + 3, y + 16, 45, 12);
 
-        doc.setFontSize(7);
-        doc.text(`LOTE CMP: ${bloco.loteComposto}  |  SPAWN: ${spawnCodigo}`, x + 3, y + 14);
-
-        JsBarcode("#barcodeCanvas", bloco.codigoRastreio, {
-          format: "CODE128",
-          width: 2,
-          height: 35,
-          displayValue: false
-        });
-        const barcodeDataUrl = document.getElementById('barcodeCanvas').toDataURL("image/png");
-        doc.addImage(barcodeDataUrl, 'PNG', x + 3, y + 16, 45, 12);
-
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'bold');
-        doc.text(bloco.codigoRastreio, x + 50, y + 20);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
+        doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.text(bloco.codigoRastreio, x + 50, y + 20);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
         doc.text(`PESO: ${bloco.peso} kg`, x + 50, y + 24);
         doc.text(`RESP: ${userData.nome}`, x + 50, y + 28);
       });
-
       doc.save(`Etiquetas_Inoculacao_${new Date().getTime()}.pdf`);
-    }
-
-    // ==========================================
-    // TOAST NOTIFICATION LÓGICA
-    // ==========================================
-    function checarToastMessage() {
-      const msg = sessionStorage.getItem("flash_message");
-      if (msg) {
-        exibirToast(msg);
-        sessionStorage.removeItem("flash_message");
-      }
     }
 
     function exibirToast(mensagem) {
       const toast = document.getElementById('toastNotification');
-      const toastMsg = document.getElementById('toastMessage');
-      
-      toastMsg.textContent = mensagem;
+      document.getElementById('toastMessage').textContent = mensagem;
       toast.classList.remove('translate-x-full', 'opacity-0');
       toast.classList.add('translate-x-0', 'opacity-100');
-
       setTimeout(() => { fecharToast(); }, 4000);
     }
 
@@ -610,8 +416,11 @@ async function carregarMeusDados() {
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
 
-    window.addEventListener('DOMContentLoaded', checarToastMessage);
-    loadData();
+    window.addEventListener('DOMContentLoaded', () => {
+      const msg = sessionStorage.getItem("flash_message");
+      if (msg) { exibirToast(msg); sessionStorage.removeItem("flash_message"); }
+      loadData();
+    });
   </script>
 </body>
 </html>

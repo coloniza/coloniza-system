@@ -218,6 +218,7 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
+
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
@@ -235,7 +236,6 @@
         });
         const res = await response.json();
         if (res.success) {
-          // Lê diretamente da aba Receitas_Spawn sem necessidade de filtros manuais
           receitasCache = res.receitasSpawn || [];
           estoqueCache = res.estoque || {};
           matrizesCache = res.matrizes || [];

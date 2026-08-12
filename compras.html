@@ -283,7 +283,6 @@
 
     async function loadData() {
       try {
-        // 1. Busca compras existentes
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -294,7 +293,6 @@
           renderTable(res.compras || []);
         }
 
-        // 2. Busca o Estoque para preencher o select
         const resEstoque = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
