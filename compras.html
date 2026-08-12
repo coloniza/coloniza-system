@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Compras &amp; Investimentos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
+          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
+        </div>
+      </div>
+      <nav class="p-2 space-y-1 text-xs">
+		<a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="compras.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
+          <span>Compras &amp; Investimentos</span>
+        </a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Estoque &amp; Insumos</span>
+        </a>		
+        <a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Banco de Culturas &amp; CL</span>
+        </a>
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de CL</span>
+        </a>
+        <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Spawn</span>
+		</a>		
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Composto</span>
+        </a>
+		<a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+		  <span>Controle de Blocos</span>
+		</a>
+		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Incubação</span>
+        </a>		
+      </nav>
+    </div>
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>
+        <div>Responsável: <span id="userName" class="text-white font-semibold">---</span></div>
+      </div>
+      <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">Sair</button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">COMPRAS &amp; INVESTIMENTOS</h2>
+        <p class="text-xs text-gray-500 font-medium">GESTÃO FINANCEIRA DE AQUISIÇÕES, INSUMOS E MAQUINÁRIO</p>
+      </div>
+      <button onclick="openModal('modalCompra')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
+        + Registrar Compra / Investimento
+      </button>
+    </header>
+
+    <div class="p-6 space-y-6">
+      <!-- CARDS RESUMO -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total em Insumos</p>
+            <h4 id="totalInsumosCard" class="text-lg font-extrabold text-gray-800 mt-1">R$ 0,00</h4>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-lg">🧪</div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total em Investimentos</p>
+            <h4 id="totalInvestimentosCard" class="text-lg font-extrabold text-gray-800 mt-1">R$ 0,00</h4>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-lg">🏗️</div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Gasto Geral Total</p>
+            <h4 id="totalGeralCard" class="text-lg font-extrabold text-emerald-800 mt-1">R$ 0,00</h4>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-lg">💵</div>
+        </div>
+      </div>
+
+      <!-- TABELA DE HISTÓRICO DE COMPRAS -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
+            <span>🛒</span> Registro de Aquisições
+          </h3>
+          <input type="text" id="searchCompra" onkeyup="filterTable()" placeholder="Buscar por item, fornecedor ou categoria..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-64">
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tablaCompras" class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-2.5 font-semibold">DATA</th>
+                <th class="p-2.5 font-semibold">CATEGORIA</th>
+                <th class="p-2.5 font-semibold">DESCRIÇÃO / ITEM</th>
+                <th class="p-2.5 font-semibold">FORNECEDOR</th>
+                <th class="p-2.5 font-semibold">QTD</th>
+                <th class="p-2.5 font-semibold">MEDIDA</th>
+                <th class="p-2.5 font-semibold">VALOR UNIT.</th>
+                <th class="p-2.5 font-semibold">TOTAL (R$)</th>
+                <th class="p-2.5 font-semibold">PAGAMENTO</th>
+                <th class="p-2.5 font-semibold">RESPONSÁVEL</th>
+                <th class="p-2.5 font-semibold text-right">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="comprasBody" class="divide-y divide-gray-100">
+              <tr><td colspan="11" class="py-4 text-center text-gray-400">Carregando compras...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL NOVA COMPRA -->
+  <div id="modalCompra" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Nova Compra / Investimento</h3>
+      
+      <form onsubmit="submitForm(event)" class="space-y-3 text-xs">
+        <!-- CAMPO VINCULAR AO ESTOQUE -->
+        <div>
+          <label class="block font-semibold mb-1">Vincular ao Estoque (Opcional)</label>
+          <select id="compInsumoVinculado" name="insumoId" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+            <option value="">-- Não vincular ao estoque (Compra geral/equipamento) --</option>
+          </select>
+          <p class="text-[10px] text-gray-500 mt-0.5">Se selecionado, dará entrada automática da quantidade no estoque.</p>
+        </div>
+
+        <!-- CATEGORIA -->
+        <div>
+          <label class="block font-semibold mb-1">Categoria</label>
+          <select name="categoria" required class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+            <option value="Insumo / Matéria-Prima">Insumo / Matéria-Prima (Grãos, Sacos, Reagentes)</option>
+            <option value="Equipamento / Maquinário">Equipamento / Maquinário (Autoclave, Capela, Ar)</option>
+            <option value="Infraestrutura / Instalações">Infraestrutura / Instalações</option>
+            <option value="Embalagens &amp; Rótulos">Embalagens &amp; Rótulos</option>
+            <option value="Manutenção &amp; Outros">Manutenção &amp; Outros</option>
+          </select>
+        </div>
+
+        <!-- DESCRIÇÃO -->
+        <div>
+          <label class="block font-semibold mb-1">Descrição do Item / Produto</label>
+          <input type="text" name="descricao" required placeholder="Ex: Trigo em Grãos" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Fornecedor</label>
+            <input type="text" name="fornecedor" placeholder="Ex: Cerealista Silva" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Data da Compra</label>
+            <input type="date" name="dataCompra" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Quantidade Adquirida</label>
+            <input type="number" step="any" name="qtd" id="qtdInput" oninput="calcularTotalModal()" required placeholder="Ex: 5" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Valor Unitário (R$)</label>
+            <input type="number" step="0.01" name="valorUnit" id="valorUnitInput" oninput="calcularTotalModal()" required placeholder="Ex: 85.00" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <!-- UNIDADE DE MEDIDA -->
+        <div class="grid grid-cols-2 gap-2 bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
+          <div>
+            <label class="block font-semibold mb-1 text-emerald-900">Unidade de Medida</label>
+            <select name="unidadeMedida" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
+              <option value="kg">kg (Quilograma)</option>
+              <option value="g">g (Grama)</option>
+              <option value="mg">mg (Miligrama)</option>
+              <option value="t">t (Tonelada)</option>
+              <option value="l">l (Litro)</option>
+              <option value="m³">m³ (Metro Cúbico)</option>
+              <option value="lb">lb (Líbria)</option>
+              <option value="oz">oz (Onça)</option>
+              <option value="un">un (Unidade)</option>
+              <option value="cx">cx (Caixa)</option>
+              <option value="pct">pct (Pacote/Saco)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-emerald-900">Qtd por Unidade/Saco</label>
+            <input type="number" step="any" name="medidaValor" placeholder="Ex: 25 (p/ saco 25kg)" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-2.5 rounded-lg border text-right font-semibold text-gray-700">
+          Valor Total Calculado: <span id="modalTotalCalculado" class="text-emerald-700 font-bold">R$ 0,00</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Forma de Pagamento</label>
+            <select name="pagamento" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+              <option value="PIX / Dinheiro">PIX / Dinheiro</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Boleto Bancário">Boleto Bancário</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Status do Pagamento</label>
+            <select name="status" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+              <option value="Concluído / Pago">Concluído / Pago</option>
+              <option value="Pendente / A Pagar">Pendente / A Pagar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalCompra')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Salvar Compra</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
+    
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+
+    function calcularTotalModal() {
+      const q = parseFloat(document.getElementById('qtdInput').value) || 0;
+      const v = parseFloat(document.getElementById('valorUnitInput').value) || 0;
+      const total = q * v;
+      document.getElementById('modalTotalCalculado').textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    async function loadData() {
+      try {
+        // 1. Busca compras existentes
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getCompras' })
+        });
+        const res = await response.json();
+        if (res.success) {
+          renderTable(res.compras || []);
+        }
+
+        // 2. Busca o Estoque para preencher o select
+        const resEstoque = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getEstoque' })
+        });
+        const resEstoqueJson = await resEstoque.json();
+        if (resEstoqueJson.success) {
+          populateSelectInsumosCompras(resEstoqueJson.insumos || []);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      }
+    }
+
+    function populateSelectInsumosCompras(insumos) {
+      const select = document.getElementById('compInsumoVinculado');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Não vincular ao estoque (Compra geral/equipamento) --</option>';
+      insumos.forEach(i => {
+        select.innerHTML += `<option value="${i.id}">${i.nome} (${i.categoria})</option>`;
+      });
+    }
+
+    function renderTable(compras) {
+      const tbody = document.getElementById('comprasBody');
+      tbody.innerHTML = '';
+      let totalInsumos = 0;
+      let totalInvestimentos = 0;
+
+      if (!compras || compras.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="py-4 text-center text-gray-400">Nenhuma compra registrada até o momento.</td></tr>';
+        document.getElementById('totalInsumosCard').textContent = 'R$ 0,00';
+        document.getElementById('totalInvestimentosCard').textContent = 'R$ 0,00';
+        document.getElementById('totalGeralCard').textContent = 'R$ 0,00';
+        return;
+      }
+
+      compras.forEach(c => {
+        const total = parseFloat(c.valorTotal) || 0;
+        const unit = parseFloat(c.valorUnit) || 0;
+
+        if (c.categoria && (c.categoria.includes('Insumo') || c.categoria.includes('Embalagens'))) {
+          totalInsumos += total;
+        } else {
+          totalInvestimentos += total;
+        }
+
+        const medidaTexto = (c.medidaValor ? c.medidaValor + ' ' : '') + (c.unidadeMedida || '-');
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="p-2.5 font-medium text-gray-600">${c.data}</td>
+            <td class="p-2.5 font-medium">${c.categoria}</td>
+            <td class="p-2.5 font-bold text-gray-800">${c.descricao}</td>
+            <td class="p-2.5 text-gray-600">${c.fornecedor}</td>
+            <td class="p-2.5 font-semibold">${c.qtd}</td>
+            <td class="p-2.5 font-medium text-emerald-700 bg-emerald-50/50 rounded">${medidaTexto}</td>
+            <td class="p-2.5">${unit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            <td class="p-2.5 font-bold text-emerald-800">${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            <td class="p-2.5 text-gray-500">${c.pagamento}</td>
+            <td class="p-2.5 text-gray-500">${c.responsavel}</td>
+            <td class="p-2.5 text-right">
+              <button onclick="excluirCompra('${c.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir">
+                🗑️ Excluir
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      const totalGeral = totalInsumos + totalInvestimentos;
+      document.getElementById('totalInsumosCard').textContent = totalInsumos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('totalInvestimentosCard').textContent = totalInvestimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('totalGeralCard').textContent = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    async function submitForm(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = { action: 'cadastrarCompra', responsavel: userData.nome };
+
+      formData.forEach((value, key) => data[key] = value);
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(data)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message);
+          form.reset();
+          document.getElementById('modalTotalCalculado').textContent = 'R$ 0,00';
+          closeModal('modalCompra');
+          loadData();
+        } else {
+          alert('Erro ao salvar: ' + res.message);
+        }
+      } catch (err) {
+        alert('Erro de conexão ao salvar.');
+      }
+    }
+
+    async function excluirCompra(id) {
+      if (!confirm('Deseja realmente excluir este registro de compra?')) return;
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'excluirCompra', id: id })
+        });
+        const res = await response.json();
+        if (res.success) {
+          loadData();
+        } else {
+          alert('Erro ao excluir: ' + res.message);
+        }
+      } catch (err) {
+        alert('Erro de conexão ao excluir.');
+      }
+    }
+
+    function filterTable() {
+      const filter = document.getElementById('searchCompra').value.toLowerCase();
+      const trs = document.getElementById('tablaCompras').getElementsByTagName('tr');
+      for (let i = 1; i < trs.length; i++) {
+        const tdText = trs[i].innerText.toLowerCase();
+        trs[i].style.display = tdText.includes(filter) ? '' : 'none';
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

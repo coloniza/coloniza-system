@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Dashboard Geral</title>
+  <!-- Tailwind CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js para Gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+
+  <!-- ================= SIDEBAR ESQUERDA ================= -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
+          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
+        </div>
+      </div>
+
+      <nav class="p-2 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-140px)] custom-scroll">
+        <a href="dashboard.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Compras e Investimentos</span>
+        </a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Estoque e Insumos</span>
+        </a>
+	<a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+  	  <span>Banco de Culturas &amp; CL</span>
+	</a>        
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Produção de CL</span>
+        </a>
+        <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Produção de Spawn</span>
+        </a>
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Produção de Composto</span>
+        </a>
+        <a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Controle de Blocos</span>
+        </a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Sala de Incubação</span>
+        </a>
+        <a href="#" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Frutificação</span>
+        </a>
+        <a href="#" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Colheita e Produção</span>
+        </a>
+        <a href="#" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Vendas</span>
+        </a>
+        <a href="#" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300">
+          <span>Clientes</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>
+        <div id="userDate" class="font-medium text-emerald-400">08/08/2026 | 09:30</div>
+        <div>Responsável: <span id="userName" class="text-white font-semibold">Álvaro</span></div>
+      </div>
+      <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= ÁREA PRINCIPAL ================= -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+
+    <!-- Topbar Header com Ações Rápidas -->
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">DASHBOARD GERAL</h2>
+        <p class="text-xs text-gray-500 font-medium">VISÃO GERAL DA PRODUÇÃO</p>
+      </div>
+
+      <!-- BOTÕES DE AÇÃO RÁPIDA -->
+      <div class="flex items-center space-x-3">
+        <button onclick="openModal('modalColheita')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
+          <span>+ Colheita</span>
+        </button>
+        <button onclick="openModal('modalClima')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
+          <span>+ Clima</span>
+        </button>
+        <button onclick="openModal('modalLote')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
+          <span>+ Novo Lote</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Conteúdo do Dashboard -->
+    <div class="p-6 space-y-6">
+
+      <!-- LINHA 1: CARDS DE KPIS -->
+      <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">📦</div>
+          <div>
+            <div id="kpi_blocos" class="text-xl font-bold text-gray-800">---</div>
+            <div class="text-[11px] text-gray-500 font-medium">Blocos em Produção</div>
+            <div id="sub_blocos" class="text-[10px] text-emerald-600 font-medium">--</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">🌡️</div>
+          <div>
+            <div id="kpi_temp" class="text-xl font-bold text-gray-800">---</div>
+            <div class="text-[11px] text-gray-500 font-medium">Temperatura Média</div>
+            <div id="sub_temp" class="text-[10px] text-gray-400 font-medium">--</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">💧</div>
+          <div>
+            <div id="kpi_umidade" class="text-xl font-bold text-gray-800">---</div>
+            <div class="text-[11px] text-gray-500 font-medium">Umidade Média</div>
+            <div id="sub_umidade" class="text-[10px] text-gray-400 font-medium">--</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold">🍄</div>
+          <div>
+            <div id="kpi_prod" class="text-xl font-bold text-gray-800">---</div>
+            <div class="text-[11px] text-gray-500 font-medium">Produção Semanal</div>
+            <div id="sub_prod" class="text-[10px] text-emerald-600 font-medium">--</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center text-emerald-300 font-bold">R$</div>
+          <div>
+            <div id="kpi_fat" class="text-xl font-bold text-gray-800">---</div>
+            <div class="text-[11px] text-gray-500 font-medium">Faturamento Mensal</div>
+            <div id="sub_fat" class="text-[10px] text-emerald-600 font-medium">--</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold">📋</div>
+          <div>
+            <div id="kpi_tarefas" class="text-xl font-bold text-gray-800">---</div>
+            <div class="text-[11px] text-gray-500 font-medium">Tarefas Pendentes</div>
+            <div id="sub_tarefas" class="text-[10px] text-amber-600 font-medium underline cursor-pointer">Verificar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LINHA 2: FUNIL E GRÁFICOS -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-4 tracking-wider">Produção em Andamento</h3>
+          <div id="funilContainer" class="space-y-2 text-xs">
+            <div class="text-center py-8 text-gray-400">Carregando funil...</div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="text-xs font-bold uppercase text-gray-700 mb-2 tracking-wider">Produção Semanal (kg)</h3>
+            <div class="h-48 relative">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t">
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-gray-500 uppercase">Meta Semanal</span>
+              <span class="text-gray-800">1.500 kg <span class="text-gray-400 font-normal">(32%)</span></span>
+            </div>
+            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+              <div class="bg-emerald-600 h-full rounded-full" style="width: 32%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-4 tracking-wider">Produção por Espécie (Semana)</h3>
+          <div class="flex items-center">
+            <div class="w-1/2 h-44 relative">
+              <canvas id="doughnutChart"></canvas>
+            </div>
+            <div id="especiesLegend" class="w-1/2 space-y-2 pl-3 text-xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LINHA 3: TABELAS E ALERTAS -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Status da Produção</h3>
+          <table class="w-full text-left text-xs">
+            <thead class="text-gray-400 border-b">
+              <tr>
+                <th class="pb-2 font-medium">ETAPA</th>
+                <th class="pb-2 font-medium">STATUS</th>
+                <th class="pb-2 font-medium text-right">DETALHES</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr>
+                <td class="py-2.5 font-medium">Produção de CL</td>
+                <td><span class="inline-flex items-center text-amber-600"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>Em andamento</span></td>
+                <td class="text-right text-gray-500">12 lotes &gt;</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 font-medium">Produção de Spawn</td>
+                <td><span class="inline-flex items-center text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Dentro do esperado</span></td>
+                <td class="text-right text-gray-500">28 lotes &gt;</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 font-medium">Frutificação</td>
+                <td><span class="inline-flex items-center text-amber-600"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>Atenção</span></td>
+                <td class="text-right text-gray-500">UR alta em 2 salas &gt;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Alertas e Atenções</h3>
+          <div class="space-y-3 text-xs">
+            <div class="flex items-start space-x-3 p-2 bg-amber-50 rounded-lg border border-amber-100">
+              <div class="text-amber-600 font-bold">⚠️</div>
+              <div class="flex-1">
+                <div class="font-bold text-gray-800">Umidade acima do ideal na Sala 2</div>
+                <div class="text-gray-500 text-[11px]">Atual: 95% | Ideal: 85-90%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-3 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Top 5 Culturas / CL Ativas</h3>
+          <table class="w-full text-left text-xs">
+            <thead class="text-gray-400 border-b">
+              <tr>
+                <th class="pb-2 font-medium">CÓDIGO</th>
+                <th class="pb-2 font-medium">ESPÉCIE</th>
+                <th class="pb-2 font-medium text-right">VOL</th>
+              </tr>
+            </thead>
+            <tbody id="topCulturasBody" class="divide-y divide-gray-100">
+              <tr><td colspan="3" class="py-4 text-center text-gray-400">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= MODAIS DE CADASTRO ================= -->
+
+  <!-- Modal Colheita -->
+  <div id="modalColheita" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Nova Colheita</h3>
+      <form onsubmit="submitForm(event, 'registrarColheita')" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Espécie</label>
+          <select name="especie" required class="w-full border rounded-lg p-2.5 outline-none">
+            <option value="Shimeji Branco">Shimeji Branco</option>
+            <option value="Shimeji Preto">Shimeji Preto</option>
+            <option value="Shiitake">Shiitake</option>
+            <option value="Juba de Leão">Juba de Leão</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Quantidade Colhida (kg)</label>
+          <input type="number" step="0.1" name="quantidade" required placeholder="Ex: 12.5" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Código do Lote (Opcional)</label>
+          <input type="text" name="lote" placeholder="Ex: FRUT-SHB-001" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalColheita')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold">Salvar Colheita</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Clima -->
+  <div id="modalClima" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Leitura Ambiental</h3>
+      <form onsubmit="submitForm(event, 'registrarClima')" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Ambiente / Sala</label>
+          <select name="ambiente" required class="w-full border rounded-lg p-2.5 outline-none">
+            <option value="Sala de Frutificação 1">Sala de Frutificação 1</option>
+            <option value="Sala de Frutificação 2">Sala de Frutificação 2</option>
+            <option value="Sala de Incubação">Sala de Incubação</option>
+            <option value="Laboratório">Laboratório</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">Temperatura (°C)</label>
+            <input type="number" step="0.1" name="temperatura" required placeholder="Ex: 24.5" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Umidade (%)</label>
+            <input type="number" name="umidade" required placeholder="Ex: 88" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalClima')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">Salvar Leitura</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Lote -->
+  <div id="modalLote" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Novo Lote</h3>
+      <form onsubmit="submitForm(event, 'registrarLote')" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Tipo de Lote</label>
+          <select name="tipo" required class="w-full border rounded-lg p-2.5 outline-none">
+            <option value="Cultura Líquida (CL)">Cultura Líquida (CL)</option>
+            <option value="Spawn (Semente)">Spawn (Semente)</option>
+            <option value="Bloco de Composto">Bloco de Composto</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Código do Lote</label>
+          <input type="text" name="codigo" required placeholder="Ex: CL-SHB-260809-001" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Espécie</label>
+          <select name="especie" required class="w-full border rounded-lg p-2.5 outline-none">
+            <option value="Shimeji Branco">Shimeji Branco</option>
+            <option value="Shimeji Preto">Shimeji Preto</option>
+            <option value="Shiitake">Shiitake</option>
+            <option value="Juba de Leão">Juba de Leão</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Volume / Quantidade</label>
+          <input type="text" name="volume" required placeholder="Ex: 300 ml ou 10 pacotes" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalLote')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold">Salvar Lote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JS CONTROLE -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
+
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+
+    async function submitForm(e, action) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = { action: action, responsavel: userData.nome };
+
+      formData.forEach((value, key) => data[key] = value);
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(data)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message);
+          form.reset();
+          closeModal(form.closest('.fixed').id);
+          fetchDashboardData(); // Recarrega os dados do Dashboard na hora!
+        } else {
+          alert('Erro ao salvar: ' + res.message);
+        }
+      } catch (err) {
+        alert('Erro de conexão ao salvar os dados.');
+      }
+    }
+
+    async function fetchDashboardData() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getDashboardData' })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          renderKPIs(res.data.kpis);
+          renderFunil(res.data.funil);
+          renderEspecies(res.data.especies);
+          renderTopCulturas(res.data.topCulturas);
+          renderBarChart();
+        }
+      } catch (e) {
+        console.error("Erro ao carregar dados:", e);
+      }
+    }
+
+    function renderKPIs(kpis) {
+      if (kpis.blocos_producao) {
+        document.getElementById('kpi_blocos').textContent = kpis.blocos_producao.valor;
+        document.getElementById('sub_blocos').textContent = kpis.blocos_producao.subtexto;
+      }
+      if (kpis.temp_media) {
+        document.getElementById('kpi_temp').textContent = kpis.temp_media.valor;
+        document.getElementById('sub_temp').textContent = kpis.temp_media.subtexto;
+      }
+      if (kpis.umidade_media) {
+        document.getElementById('kpi_umidade').textContent = kpis.umidade_media.valor;
+        document.getElementById('sub_umidade').textContent = kpis.umidade_media.subtexto;
+      }
+      if (kpis.prod_semanal) {
+        document.getElementById('kpi_prod').textContent = kpis.prod_semanal.valor;
+        document.getElementById('sub_prod').textContent = kpis.prod_semanal.subtexto;
+      }
+      if (kpis.faturamento) {
+        document.getElementById('kpi_fat').textContent = kpis.faturamento.valor;
+        document.getElementById('sub_fat').textContent = kpis.faturamento.subtexto;
+      }
+      if (kpis.tarefas_pendentes) {
+        document.getElementById('kpi_tarefas').textContent = kpis.tarefas_pendentes.valor;
+      }
+    }
+
+    function renderFunil(funil) {
+      const container = document.getElementById('funilContainer');
+      container.innerHTML = '';
+      const colors = ['bg-blue-100 text-blue-800', 'bg-emerald-100 text-emerald-800', 'bg-amber-100 text-amber-800', 'bg-purple-100 text-purple-800', 'bg-orange-100 text-orange-800', 'bg-emerald-200 text-emerald-900'];
+      
+      funil.forEach((item, index) => {
+        const color = colors[index % colors.length];
+        const widthPct = 100 - (index * 8);
+        container.innerHTML += `
+          <div class="mx-auto flex justify-between items-center p-2 rounded-lg font-semibold ${color}" style="width: ${widthPct}%;">
+            <span>${item.etapa}</span>
+            <span class="bg-white px-2 py-0.5 rounded text-gray-800 shadow-sm">${item.qtd}</span>
+          </div>
+        `;
+      });
+    }
+
+    function renderEspecies(especies) {
+      const legend = document.getElementById('especiesLegend');
+      legend.innerHTML = '';
+      const labels = [];
+      const data = [];
+      const bgColors = ['#2e7d32', '#374151', '#8d6e63', '#d7ccc8'];
+
+      especies.forEach((item, index) => {
+        labels.push(item.nome);
+        data.push(item.kg);
+        legend.innerHTML += `
+          <div>
+            <div class="flex items-center space-x-1.5 font-semibold text-gray-700">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${bgColors[index]}"></span>
+              <span>${item.nome}</span>
+            </div>
+            <div class="text-[11px] text-gray-500 pl-4">${item.kg} kg (${item.pct})</div>
+          </div>
+        `;
+      });
+
+      const ctx = document.getElementById('doughnutChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] },
+        options: { cutout: '70%', plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function renderTopCulturas(culturas) {
+      const tbody = document.getElementById('topCulturasBody');
+      tbody.innerHTML = '';
+      culturas.forEach(c => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="py-2 font-mono text-[11px] text-gray-600">${c.codigo}</td>
+            <td class="font-medium">${c.especie}</td>
+            <td class="text-right text-gray-500">${c.volume}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderBarChart() {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['02/08', '03/08', '04/08', '05/08', '06/08', '07/08', '08/08'],
+          datasets: [{ data: [412, 438, 501, 465, 478, 455, 482], backgroundColor: '#a7f3d0', hoverBackgroundColor: '#059669', borderRadius: 4 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } }, responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    fetchDashboardData();
+  </script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Produção de Spawn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
+          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
+        </div>
+      </div>
+      <nav class="p-2 space-y-1 text-xs">
+		<a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Compras &amp; Investimentos</span>
+        </a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Estoque &amp; Insumos</span>
+        </a>		
+        <a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Banco de Culturas &amp; CL</span>
+        </a>
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de CL</span>
+        </a>
+        <a href="producao_spawn.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
+          <span>Produção de Spawn</span> 
+        </a>
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Composto</span>
+        </a>
+		<a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+		  <span>Controle de Blocos</span>
+		</a>
+		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Incubação</span>
+        </a>		
+      </nav>
+    </div>
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>
+        <div>Responsável: <span id="userName" class="text-white font-semibold">---</span></div>
+      </div>
+      <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">Sair</button>
+    </div>
+  </aside>
+  <!-- ÁREA PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <!-- HEADER DA PÁGINA -->
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">PRODUÇÃO DE SPAWN (INÓCULO EM GRÃOS)</h2>
+        <p class="text-xs text-gray-500 font-medium">PREPARAÇÃO DE GRÃOS, CORREÇÃO DE PH, ESTERILIZAÇÃO E INOCULAÇÃO</p>
+      </div>
+      <!-- BOTÕES SUPERIORES DE GESTÃO DE RECEITAS -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openModalGerenciarReceita('incluir')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>+</span> Nova Receita Spawn
+        </button>
+        <button onclick="openModalGerenciarReceita('editar')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>✏️</span> Modificar Receita
+        </button>
+        <button onclick="openModalGerenciarReceita('excluir')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>🗑️</span> Excluir Receita
+        </button>
+      </div>
+    </header>
+    <div class="p-6 space-y-6">
+      <!-- PAINEL DE SELEÇÃO E CONFIGURAÇÃO DA PRODUÇÃO -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
+          <span>⚙️</span> Seleção de Parâmetros do Spawn
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Seleção da Receita -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Selecione a Receita de Spawn</label>
+            <select id="selectReceita" onchange="onReceitaChange()" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option value="">-- Escolha uma Receita --</option>
+            </select>
+          </div>
+          <!-- Peso / Volume Desejado -->
+          <div id="containerVolume" class="hidden">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Quantidade de Grãos Secos (kg)</label>
+            <input type="number" id="inputVolume" oninput="calcularProporcoes()" step="0.1" placeholder="Ex: 5" min="0.1" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <!-- Matriz / CL de Inoculação -->
+          <div id="containerMatriz" class="hidden">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Inóculo de Origem (CL ou Placa)</label>
+            <select id="selectMatriz" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option value="">-- Selecione a Origem --</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- PAINEL DUPLO: INGREDIENTES vs INSTRUÇÕES DE PREPARO -->
+      <div id="painelProducao" class="hidden grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- LADO ESQUERDO: LISTA DE INGREDIENTES E ESTOQUE -->
+        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+              <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
+                <span>🌾</span> Grãos e Aditivos Necessários
+              </h3>
+              <span id="labelBaseReceita" class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium border border-emerald-200"></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-500 border-b">
+                  <tr>
+                    <th class="p-2 font-semibold">INSUMO / GRÃO</th>
+                    <th class="p-2 font-semibold text-right">QTD. NECESSÁRIA</th>
+                    <th class="p-2 font-semibold text-right">DISPONÍVEL EM ESTOQUE</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyIngredientes" class="divide-y divide-gray-100">
+                  <!-- Inserido dinamicamente via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- BOTÃO DE AÇÃO CRÍTICA -->
+          <div class="mt-6 pt-4 border-t flex justify-end">
+            <button id="btnNovoSpawn" onclick="executarProducaoSpawn()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow transition flex items-center gap-2">
+              <span>🚀</span> Produzir e Inocular Lote de Spawn
+            </button>
+          </div>
+        </div>
+        <!-- LADO DIREITO: INSTRUÇÕES DE PREPARO -->
+        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-sm font-bold uppercase text-amber-800 tracking-wider flex items-center gap-2 mb-4 border-b pb-2">
+            <span>📋</span> Instruções de Preparo e Esterilização
+          </h3>
+          <div id="textoInstrucoes" class="text-xs text-gray-700 space-y-3 leading-relaxed whitespace-pre-line">
+            <!-- Instruções da receita serão carregadas aqui -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <!-- MODAL INCLUIR / EDITAR / EXCLUIR RECEITAS DE SPAWN -->
+  <div id="modalGerenciarReceita" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <h3 id="modalReceitaTitulo" class="text-lg font-bold text-gray-800 mb-4">Gerenciar Receita de Spawn</h3>
+      
+      <form id="formReceita" onsubmit="salvarReceita(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="actionReceitaType" value="incluir">
+        
+        <div id="containerSelectEditar" class="hidden">
+          <label class="block font-semibold mb-1">Selecione a Receita</label>
+          <select id="selectReceitaModal" onchange="carregarDadosReceitaModal()" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <option value="">-- Escolha --</option>
+          </select>
+        </div>
+        <div id="camposFormularioReceita">
+          <div>
+            <label class="block font-semibold mb-1">Título da Receita de Spawn</label>
+            <input type="text" id="recTitulo" required placeholder="Ex: Spawn Trigo + Gesso 2%" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-semibold mb-1">Peso Base de Grão Seco (kg)</label>
+              <input type="number" step="0.1" id="recVolumeBase" required placeholder="Ex: 1" class="w-full border rounded-lg p-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Espécie Indicada</label>
+              <input type="text" id="recEspecie" placeholder="Ex: Geral / Pleurotus / Shimeji" class="w-full border rounded-lg p-2.5 outline-none">
+            </div>
+          </div>
+          <div class="pt-2">
+            <label class="block font-semibold mb-1">Ingredientes &amp; Aditivos (para a base acima)</label>
+            <div id="listaIngredientesForm" class="space-y-2">
+              <!-- Linhas de ingredientes geradas via JS -->
+            </div>
+            <button type="button" onclick="adicionarLinhaIngrediente()" class="mt-2 text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1">
+              + Adicionar Insumo
+            </button>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 mt-2">Instruções de Cozimento / Esterilização</label>
+            <textarea id="recInstrucoes" rows="4" required placeholder="Ex: Deixar de molho por 12h, ferver por 15 min, secar a superfície, embalar em sacos filtro e autoclavar a 121°C por 90 min..." class="w-full border rounded-lg p-2.5 outline-none"></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalGerenciarReceita')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" id="btnSalvarReceitaModal" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold">Salvar Receita</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+    let receitasCache = [];
+    let estoqueCache = {};
+    let matrizesCache = [];
+    let idReceitaEmEdicao = null;
+    async function loadData(autoSelectTitulo = null) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getDadosProducaoSpawn' })
+        });
+        const res = await response.json();
+        if (res.success) {
+          // Lê diretamente da aba Receitas_Spawn sem necessidade de filtros manuais
+          receitasCache = res.receitasSpawn || [];
+          estoqueCache = res.estoque || {};
+          matrizesCache = res.matrizes || [];
+          populateReceitasSelect(autoSelectTitulo);
+          populateMatrizesSelect();
+        } else {
+          alert("Erro ao carregar dados de produção de spawn: " + res.message);
+        }
+      } catch (err) {
+        console.error("Erro na conexão:", err);
+      }
+    }
+    function populateReceitasSelect(autoSelectTitulo = null) {
+      const select = document.getElementById('selectReceita');
+      select.innerHTML = '<option value="">-- Escolha uma Receita --</option>';
+      
+      let idxParaSelecionar = "";
+      receitasCache.forEach((r, idx) => {
+        select.innerHTML += `<option value="${idx}">${r.titulo}</option>`;
+        if (autoSelectTitulo && r.titulo === autoSelectTitulo) {
+          idxParaSelecionar = String(idx);
+        }
+      });
+      if (idxParaSelecionar !== "") {
+        select.value = idxParaSelecionar;
+        onReceitaChange();
+      }
+    }
+    function populateMatrizesSelect() {
+      const select = document.getElementById('selectMatriz');
+      select.innerHTML = '<option value="">-- Selecione a Origem --</option>';
+      matrizesCache.forEach(m => {
+        select.innerHTML += `<option value="${m.codigo}">${m.codigo} - ${m.especie} (${m.variedade || 'Geral'})</option>`;
+      });
+    }
+    function onReceitaChange() {
+      const idx = document.getElementById('selectReceita').value;
+      const containerVolume = document.getElementById('containerVolume');
+      const containerMatriz = document.getElementById('containerMatriz');
+      const painelProducao = document.getElementById('painelProducao');
+      if (idx === "") {
+        containerVolume.classList.add('hidden');
+        containerMatriz.classList.add('hidden');
+        painelProducao.classList.add('hidden');
+        painelProducao.classList.remove('grid');
+        return;
+      }
+      containerVolume.classList.remove('hidden');
+      containerMatriz.classList.remove('hidden');
+      
+      const receita = receitasCache[idx];
+      document.getElementById('textoInstrucoes').textContent = receita.instrucoes || "Nenhuma instrução cadastrada.";
+      document.getElementById('labelBaseReceita').textContent = `Base da Receita: ${receita.volumeBase} kg de grão seco`;
+      calcularProporcoes();
+    }
+    function calcularProporcoes() {
+      const idx = document.getElementById('selectReceita').value;
+      const volInput = parseFloat(document.getElementById('inputVolume').value);
+      const painelProducao = document.getElementById('painelProducao');
+      const tbody = document.getElementById('tbodyIngredientes');
+      if (idx === "" || isNaN(volInput) || volInput <= 0) {
+        painelProducao.classList.add('hidden');
+        painelProducao.classList.remove('grid');
+        return;
+      }
+      painelProducao.classList.remove('hidden');
+      painelProducao.classList.add('grid');
+      const receita = receitasCache[idx];
+      const fator = volInput / (receita.volumeBase || 1);
+      tbody.innerHTML = '';
+      let estoqueSuficiente = true;
+      receita.ingredientes.forEach(ing => {
+        const qtdNecessaria = ing.quantidade * fator;
+        const qtdEstoque = estoqueCache[ing.nome] || 0;
+        const semEstoque = qtdEstoque < qtdNecessaria;
+        if (semEstoque) estoqueSuficiente = false;
+        tbody.innerHTML += `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="p-2 font-medium text-gray-800">${ing.nome}</td>
+            <td class="p-2 text-right font-bold text-emerald-800">${qtdNecessaria.toFixed(2)} ${ing.unidade}</td>
+            <td class="p-2 text-right font-semibold ${semEstoque ? 'text-red-600 bg-red-50' : 'text-gray-600'}">
+              ${qtdEstoque.toFixed(2)} ${ing.unidade} ${semEstoque ? '⚠️ (Insuficiente)' : ''}
+            </td>
+          </tr>
+        `;
+      });
+      const btnNovoSpawn = document.getElementById('btnNovoSpawn');
+      if (!estoqueSuficiente) {
+        btnNovoSpawn.classList.add('opacity-50', 'cursor-not-allowed');
+        btnNovoSpawn.title = "Estoque insuficiente para alguns insumos";
+      } else {
+        btnNovoSpawn.classList.remove('opacity-50', 'cursor-not-allowed');
+        btnNovoSpawn.title = "";
+      }
+    }
+    async function executarProducaoSpawn() {
+      const idx = document.getElementById('selectReceita').value;
+      const volInput = parseFloat(document.getElementById('inputVolume').value);
+      const matrizCodigo = document.getElementById('selectMatriz').value;
+      if (idx === "" || !volInput || matrizCodigo === "") {
+        alert("Por favor, selecione a Receita, informe a quantidade de grão (kg) e escolha a cultura de origem.");
+        return;
+      }
+      const receita = receitasCache[idx];
+      const matriz = matrizesCache.find(m => m.codigo === matrizCodigo);
+      const confirmou = confirm(`Confirmar a produção de ${volInput} kg de Spawn?\n\n- Receita: ${receita.titulo}\n- Origem: ${matrizCodigo}\n- Os grãos e aditivos serão deduzidos do estoque e o lote será registrado no sistema.`);
+      if (!confirmou) return;
+      const payload = {
+        action: 'produzirEInocularSpawn',
+        receitaTitulo: receita.titulo,
+        volume: volInput + " kg",
+        matrizOrigem: matrizCodigo,
+        especie: matriz ? matriz.especie : 'Geral',
+        ingredientesUtilizados: receita.ingredientes.map(i => ({
+          nome: i.nome,
+          qtdDeducao: i.quantidade * (volInput / receita.volumeBase)
+        })),
+        responsavel: userData.nome
+      };
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert("Lote de Spawn produzido e inoculado com sucesso!\nInsumos deduzidos do estoque.");
+          window.location.href = "culturas.html";
+        } else {
+          alert("Erro na operação: " + res.message);
+        }
+      } catch (e) {
+        alert("Erro de conexão ao processar produção.");
+      }
+    }
+    function openModalGerenciarReceita(modo) {
+      document.getElementById('actionReceitaType').value = modo;
+      const titulo = document.getElementById('modalReceitaTitulo');
+      const containerSelect = document.getElementById('containerSelectEditar');
+      const campos = document.getElementById('camposFormularioReceita');
+      const btnSalvar = document.getElementById('btnSalvarReceitaModal');
+      document.getElementById('formReceita').reset();
+      document.getElementById('listaIngredientesForm').innerHTML = '';
+      if (modo === 'incluir') {
+        idReceitaEmEdicao = null;
+        titulo.textContent = "Inserir Nova Receita de Spawn";
+        containerSelect.classList.add('hidden');
+        campos.classList.remove('hidden');
+        btnSalvar.textContent = "Salvar Receita";
+        btnSalvar.className = "px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold";
+        adicionarLinhaIngrediente();
+      } else if (modo === 'editar') {
+        titulo.textContent = "Modificar Receita de Spawn";
+        containerSelect.classList.remove('hidden');
+        campos.classList.remove('hidden');
+        btnSalvar.textContent = "Atualizar Receita";
+        btnSalvar.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold";
+        populateModalSelect();
+      } else if (modo === 'excluir') {
+        titulo.textContent = "Excluir Receita de Spawn";
+        containerSelect.classList.remove('hidden');
+        campos.classList.add('hidden');
+        btnSalvar.textContent = "Excluir Definitivamente";
+        btnSalvar.className = "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold";
+        populateModalSelect();
+      }
+      openModal('modalGerenciarReceita');
+    }
+    function populateModalSelect() {
+      const select = document.getElementById('selectReceitaModal');
+      select.innerHTML = '<option value="">-- Selecione para carregar --</option>';
+      receitasCache.forEach((r, i) => {
+        select.innerHTML += `<option value="${i}">${r.titulo}</option>`;
+      });
+    }
+    function carregarDadosReceitaModal() {
+      const idx = document.getElementById('selectReceitaModal').value;
+      if (idx === "") { idReceitaEmEdicao = null; return; }
+      const receita = receitasCache[idx];
+      idReceitaEmEdicao = receita.id || null;
+      document.getElementById('recTitulo').value = receita.titulo;
+      document.getElementById('recVolumeBase').value = receita.volumeBase;
+      document.getElementById('recEspecie').value = receita.especie || '';
+      document.getElementById('recInstrucoes').value = receita.instrucoes;
+      const container = document.getElementById('listaIngredientesForm');
+      container.innerHTML = '';
+      
+      receita.ingredientes.forEach(ing => {
+        adicionarLinhaIngrediente(ing.nome, ing.quantidade, ing.unidade);
+      });
+    }
+    function adicionarLinhaIngrediente(nome = '', qtd = '', unidade = 'kg') {
+      const container = document.getElementById('listaIngredientesForm');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center";
+      div.innerHTML = `
+        <input type="text" placeholder="Grão/Insumo (Ex: Trigo, Gesso)" value="${nome}" required class="ing-nome flex-1 border rounded-lg p-2 outline-none">
+        <input type="number" step="0.01" placeholder="Qtd" value="${qtd}" required class="ing-qtd w-20 border rounded-lg p-2 outline-none">
+        <select class="ing-unidade border rounded-lg p-2 outline-none bg-white">
+          <option value="kg" ${unidade === 'kg' ? 'selected' : ''}>kg</option>
+          <option value="g" ${unidade === 'g' ? 'selected' : ''}>g</option>
+          <option value="L" ${unidade === 'L' ? 'selected' : ''}>L</option>
+        </select>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+      `;
+      container.appendChild(div);
+    }
+    async function salvarReceita(e) {
+      e.preventDefault();
+      const modo = document.getElementById('actionReceitaType').value;
+      if (modo === 'excluir') {
+        const idx = document.getElementById('selectReceitaModal').value;
+        if (idx === "") { alert("Selecione uma receita para excluir."); return; }
+        const rec = receitasCache[idx];
+        
+        if (!confirm(`Tem certeza que deseja excluir a receita "${rec.titulo}"?`)) return;
+        enviarAcaoReceita({ action: 'excluirReceitaSpawn', id: rec.id, titulo: rec.titulo }, null);
+        return;
+      }
+      const nomes = document.querySelectorAll('.ing-nome');
+      const qtds = document.querySelectorAll('.ing-qtd');
+      const unidades = document.querySelectorAll('.ing-unidade');
+      const ingredientes = [];
+      nomes.forEach((el, i) => {
+        ingredientes.push({
+          nome: el.value.trim(),
+          quantidade: parseFloat(qtds[i].value),
+          unidade: unidades[i].value
+        });
+      });
+      let tituloReceita = document.getElementById('recTitulo').value.trim();
+      const payload = {
+        action: 'salvarReceitaSpawn',
+        id: modo === 'editar' ? idReceitaEmEdicao : null,
+        titulo: tituloReceita,
+        volumeBase: parseFloat(document.getElementById('recVolumeBase').value),
+        especie: document.getElementById('recEspecie').value,
+        instrucoes: document.getElementById('recInstrucoes').value,
+        ingredientes: ingredientes
+      };
+      enviarAcaoReceita(payload, tituloReceita);
+    }
+    async function enviarAcaoReceita(payload, tituloParaAutoSelecionar = null) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message || "Operação realizada com sucesso!");
+          closeModal('modalGerenciarReceita');
+          loadData(tituloParaAutoSelecionar);
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro ao comunicar com o servidor.");
+      }
+    }
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+    loadData();
+  </script>
+</body>
+</html>

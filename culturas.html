@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Banco de Culturas &amp; CL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
+          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
+        </div>
+      </div>
+      <nav class="p-2 space-y-1 text-xs">
+		<a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Compras &amp; Investimentos</span>
+        </a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Estoque &amp; Insumos</span>
+        </a>		
+        <a href="culturas.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
+          <span>Banco de Culturas &amp; CL</span>
+        </a>
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de CL</span>
+        </a>
+        <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Spawn</span>
+        </a>
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Composto</span>
+        </a>
+		<a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+		  <span>Controle de Blocos</span>
+		</a>
+		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Incubação</span>
+        </a>		
+      </nav>
+    </div>
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>
+        <div>Responsável: <span id="userName" class="text-white font-semibold">---</span></div>
+      </div>
+      <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">Sair</button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">BANCO DE CULTURAS, CL &amp; SPAWN</h2>
+        <p class="text-xs text-gray-500 font-medium">GESTÃO DE GENÉTICA, MATRIZES, PRODUÇÃO DE CL E SPAWN</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <!-- BOTÃO ESPÉCIES -->
+        <button onclick="openModalGerenciarEspecies('incluir')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>🍄</span> Espécies
+        </button>
+        <button onclick="openModal('modalCultura')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
+          + Nova Matriz (Placa/Tubo)
+        </button>
+        <button onclick="openModal('modalCL')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
+          + Inocular Lote de CL
+        </button>
+      </div>
+    </header>
+    
+    <div class="p-6 space-y-8">
+      <!-- SEÇÃO 1: BANCO DE CULTURAS ATIVAS -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
+            <span>🧬</span> Matrizes e Cepas Ativas (PDA / Tubos)
+          </h3>
+          <input type="text" id="searchCultura" onkeyup="filterTable('searchCultura', 'tablaCulturas')" placeholder="Buscar espécie ou código..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-64">
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tablaCulturas" class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-2.5 font-semibold">CÓDIGO</th>
+                <th class="p-2.5 font-semibold">ESPÉCIE</th>
+                <th class="p-2.5 font-semibold">VARIEDADE/CEPA</th>
+                <th class="p-2.5 font-semibold">MEIO</th>
+                <th class="p-2.5 font-semibold">ISOLAMENTO</th>
+                <th class="p-2.5 font-semibold">GERAÇÃO</th>
+                <th class="p-2.5 font-semibold">STATUS (ALTERAR)</th>
+                <th class="p-2.5 font-semibold text-right">EXCLUIR</th>
+              </tr>
+            </thead>
+            <tbody id="culturasBody" class="divide-y divide-gray-100">
+              <tr><td colspan="8" class="py-4 text-center text-gray-400">Carregando matrizes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2: LOTES DE CULTURA LÍQUIDA ATIVOS -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-bold uppercase text-amber-800 tracking-wider flex items-center gap-2">
+            <span>🧪</span> Lotes de Cultura Líquida Ativos (CL)
+          </h3>
+          <input type="text" id="searchCL" onkeyup="filterTable('searchCL', 'tablaCL')" placeholder="Buscar lote de CL..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-64">
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tablaCL" class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-2.5 font-semibold">CÓDIGO LOTE</th>
+                <th class="p-2.5 font-semibold">MATRIZ ORIGEM</th>
+                <th class="p-2.5 font-semibold">ESPÉCIE</th>
+                <th class="p-2.5 font-semibold">VOLUME</th>
+                <th class="p-2.5 font-semibold">INOCULAÇÃO</th>
+                <th class="p-2.5 font-semibold">STATUS (ALTERAR)</th>
+                <th class="p-2.5 font-semibold">RESPONSÁVEL</th>
+                <th class="p-2.5 font-semibold text-right">EXCLUIR</th>
+              </tr>
+            </thead>
+            <tbody id="clBody" class="divide-y divide-gray-100">
+              <tr><td colspan="8" class="py-4 text-center text-gray-400">Carregando lotes de CL...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: LOTES DE SPAWN (INÓCULO EM GRÃOS) ATIVOS -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-bold uppercase text-amber-900 tracking-wider flex items-center gap-2">
+            <span>🌾</span> Lotes de Spawn em Colonização (Sementes/Grãos)
+          </h3>
+          <input type="text" id="searchSpawn" onkeyup="filterTable('searchSpawn', 'tablaSpawn')" placeholder="Buscar lote de Spawn..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-64">
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tablaSpawn" class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-2.5 font-semibold">CÓDIGO LOTE</th>
+                <th class="p-2.5 font-semibold">INÓCULO ORIGEM</th>
+                <th class="p-2.5 font-semibold">ESPÉCIE</th>
+                <th class="p-2.5 font-semibold">PESO</th>
+                <th class="p-2.5 font-semibold">INOCULAÇÃO</th>
+                <th class="p-2.5 font-semibold">STATUS (ALTERAR)</th>
+                <th class="p-2.5 font-semibold">RESPONSÁVEL</th>
+                <th class="p-2.5 font-semibold text-right">EXCLUIR</th>
+              </tr>
+            </thead>
+            <tbody id="spawnBody" class="divide-y divide-gray-100">
+              <tr><td colspan="8" class="py-4 text-center text-gray-400">Carregando lotes de spawn...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4: HISTÓRICO & DESCARTES (EM CINZA) -->
+      <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
+            <span>📦</span> Histórico de Uso &amp; Descartes (Inativos / Restaurável)
+          </h3>
+          <input type="text" id="searchHistorico" onkeyup="filterTable('searchHistorico', 'tablaHistorico')" placeholder="Filtrar histórico..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-64 bg-white">
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tablaHistorico" class="w-full text-left text-xs text-gray-500">
+            <thead class="bg-gray-200/60 text-gray-600 border-b">
+              <tr>
+                <th class="p-2.5 font-semibold">TIPO</th>
+                <th class="p-2.5 font-semibold">CÓDIGO</th>
+                <th class="p-2.5 font-semibold">ESPÉCIE / DETALHE</th>
+                <th class="p-2.5 font-semibold">DATA REGISTRO</th>
+                <th class="p-2.5 font-semibold">STATUS (RESTAURAR)</th>
+                <th class="p-2.5 font-semibold text-right">EXCLUIR</th>
+              </tr>
+            </thead>
+            <tbody id="historicoBody" class="divide-y divide-gray-200 bg-gray-100/50">
+              <tr><td colspan="6" class="py-4 text-center text-gray-400">Nenhum item no histórico.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL GERENCIAR ESPÉCIES -->
+  <div id="modalGerenciarEspecies" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b pb-3">
+        <h3 id="modalEspecieTitulo" class="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <span>🍄</span> Gerenciar Espécies
+        </h3>
+        <div class="flex space-x-1">
+          <button type="button" onclick="openModalGerenciarEspecies('incluir')" class="px-2 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11px] font-bold rounded transition">Incluir Nova</button>
+          <button type="button" onclick="openModalGerenciarEspecies('editar')" class="px-2 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 text-[11px] font-bold rounded transition">Editar</button>
+          <button type="button" onclick="openModalGerenciarEspecies('excluir')" class="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 text-[11px] font-bold rounded transition">Excluir</button>
+        </div>
+      </div>
+      
+      <form id="formEspecie" onsubmit="salvarEspecie(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="actionEspecieType" value="incluir">
+        <input type="hidden" id="idEspecieEmEdicao" value="">
+        
+        <div id="containerSelectEspecieEditar" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-100 mb-3">
+          <label class="block font-semibold mb-1 text-gray-700">Selecione a Espécie</label>
+          <select id="selectEspecieModal" onchange="carregarDadosEspecieModal()" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+            <option value="">-- Escolha --</option>
+          </select>
+        </div>
+
+        <div id="camposFormularioEspecie" class="space-y-3">
+          <div>
+            <label class="block font-semibold mb-1">Espécie / Genética</label>
+            <input type="text" id="espNome" required placeholder="Ex: Hericium erinaceus (Juba de Leão)" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          
+          <!-- DIAS DE INCUBAÇÃO (MÍN / MÁX) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Dias Mín. (Incubação)</label>
+              <input type="number" id="espDiasMin" required placeholder="Ex: 14" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Dias Máx. (Incubação)</label>
+              <input type="number" id="espDiasMax" required placeholder="Ex: 21" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <!-- TEMPERATURA IDEAL (MÍN / MÁX) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Temp. Mín. (°C)</label>
+              <input type="number" step="0.1" id="espTempMin" placeholder="Ex: 18" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Temp. Máx. (°C)</label>
+              <input type="number" step="0.1" id="espTempMax" placeholder="Ex: 21" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <!-- UMIDADE IDEAL (MÍN / MÁX) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Umidade Mín. (%)</label>
+              <input type="number" id="espUmiMin" placeholder="Ex: 90" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Umidade Máx. (%)</label>
+              <input type="number" id="espUmiMax" placeholder="Ex: 95" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 mt-2">Observações de Manejo</label>
+            <textarea id="espObs" rows="3" placeholder="Ex: Sensível a CO2 elevado, exige choque térmico..." class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t mt-4">
+          <button type="button" onclick="closeModal('modalGerenciarEspecies')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition">Cancelar</button>
+          <button type="submit" id="btnSalvarEspecieModal" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition shadow-sm">Salvar Espécie</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL NOVA MATRIZ -->
+  <div id="modalCultura" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Cadastrar Nova Matriz / Placa</h3>
+      <form onsubmit="submitForm(event, 'cadastrarCultura')" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Código da Matriz</label>
+          <input type="text" name="codigo" required placeholder="Ex: MAT-SHB-G1-001" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Espécie</label>
+            <select name="especie" required class="w-full border rounded-lg p-2.5 outline-none select-especie-dinamico">
+              <option value="">-- Carregando --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Variedade / Cepa</label>
+            <input type="text" name="variedade" required placeholder="Ex: HK35, Flor" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Meio de Cultura</label>
+            <select name="meio" class="w-full border rounded-lg p-2.5 outline-none">
+              <option value="BDA / PDA">BDA / PDA</option>
+              <option value="MEA (Extrato de Malte)">MEA (Extrato de Malte)</option>
+              <option value="Soro de Leite">Soro de Leite</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Geração</label>
+            <select name="geracao" class="w-full border rounded-lg p-2.5 outline-none">
+              <option value="G0 (Matriz Mãe)">G0 (Matriz Mãe)</option>
+              <option value="G1 (Replicação)">G1 (Replicação)</option>
+              <option value="G2 (Trabalho)">G2 (Trabalho)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Data de Isolamento</label>
+            <input type="date" name="dataIsolamento" required class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Status</label>
+            <select name="status" class="w-full border rounded-lg p-2.5 outline-none">
+              <option value="Ativa / Colonizando">Ativa / Colonizando</option>
+              <option value="Pronta para Uso">Pronta para Uso</option>
+              <option value="Reservada / Banco">Reservada / Banco</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalCultura')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold">Salvar Matriz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL NOVO LOTE CL -->
+  <div id="modalCL" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Inocular Novo Lote de Cultura Líquida</h3>
+      <form onsubmit="submitForm(event, 'cadastrarCL')" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Código do Lote CL</label>
+          <input type="text" name="codigoLote" required placeholder="Ex: CL-SHB-260809-01" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Matriz de Origem</label>
+            <input type="text" name="matrizOrigem" required placeholder="Ex: MAT-SHB-G1-001" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Espécie</label>
+            <select name="especie" required class="w-full border rounded-lg p-2.5 outline-none select-especie-dinamico">
+              <option value="">-- Carregando --</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Volume Total (ml)</label>
+            <input type="text" name="volume" required placeholder="Ex: 500 ml" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Data de Inoculação</label>
+            <input type="date" name="dataInoculacao" required class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Status Inicial</label>
+          <select name="status" class="w-full border rounded-lg p-2.5 outline-none">
+            <option value="Incubando / Colonizando">Incubando / Colonizando</option>
+            <option value="Pronta para Inoculação">Pronta para Inoculação</option>
+          </select>
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalCL')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold">Salvar Lote CL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+
+    // Variáveis Globais
+    let especiesCache = [];
+
+    async function loadData() {
+      loadEspecies(); // Carrega as espécies para alimentar os selects dinâmicos
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getCulturasECL' })
+        });
+        const res = await response.json();
+        if (res.success) {
+          renderTables(res.culturas || [], res.lotesCL || [], res.lotesSpawn || []);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados de culturas:", err);
+      }
+    }
+
+    // ==========================================
+    // MÓDULO ESPÉCIES (INSERIR / MODIFICAR / EXCLUIR)
+    // ==========================================
+    
+    async function loadEspecies() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getEspecies' })
+        });
+        const res = await response.json();
+        if (res.success) {
+          especiesCache = res.especies || [];
+          atualizarSelectsEspecies();
+        }
+      } catch (e) {
+        console.error("Erro ao carregar espécies:", e);
+      }
+    }
+
+    function atualizarSelectsEspecies() {
+      const selects = document.querySelectorAll('.select-especie-dinamico');
+      selects.forEach(select => {
+        const valAtual = select.value;
+        select.innerHTML = '<option value="">-- Selecione a Espécie --</option>';
+        especiesCache.forEach(esp => {
+          select.innerHTML += `<option value="${esp.nome}">${esp.nome}</option>`;
+        });
+        if(valAtual) select.value = valAtual;
+      });
+    }
+
+   function openModalGerenciarEspecies(modo) {
+      document.getElementById('actionEspecieType').value = modo;
+      const campos = document.getElementById('camposFormularioEspecie');
+      const containerSelect = document.getElementById('containerSelectEspecieEditar');
+      const btnSalvar = document.getElementById('btnSalvarEspecieModal');
+      
+      document.getElementById('formEspecie').reset();
+      document.getElementById('idEspecieEmEdicao').value = '';
+
+      // Utiliza o cache atual instantaneamente (sem lentidão de fetch)
+      if (modo === 'incluir') {
+        containerSelect.classList.add('hidden');
+        campos.classList.remove('hidden');
+        btnSalvar.textContent = "Salvar Nova Espécie";
+        btnSalvar.className = "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition shadow-sm";
+      } else if (modo === 'editar') {
+        containerSelect.classList.remove('hidden');
+        campos.classList.remove('hidden');
+        btnSalvar.textContent = "Atualizar Espécie";
+        btnSalvar.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition shadow-sm";
+        populateModalSelectEspecie();
+      } else if (modo === 'excluir') {
+        containerSelect.classList.remove('hidden');
+        campos.classList.add('hidden');
+        btnSalvar.textContent = "Excluir Definitivamente";
+        btnSalvar.className = "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition shadow-sm";
+        populateModalSelectEspecie();
+      }
+      openModal('modalGerenciarEspecies');
+    }
+
+    function populateModalSelectEspecie() {
+      const select = document.getElementById('selectEspecieModal');
+      select.innerHTML = '<option value="">-- Selecione para carregar --</option>';
+      
+      // Usa o nome da espécie diretamente como identificador no value para evitar dessincronia
+      especiesCache.forEach((esp) => {
+        select.innerHTML += `<option value="${esp.nome}">${esp.nome}</option>`;
+      });
+    }
+
+    function carregarDadosEspecieModal() {
+      const nomeSelecionado = document.getElementById('selectEspecieModal').value;
+      if (!nomeSelecionado) { 
+        document.getElementById('formEspecie').reset(); 
+        return; 
+      }
+      
+      // Busca a espécie correspondente no cache pelo nome
+      const esp = especiesCache.find(e => e.nome === nomeSelecionado);
+      if (!esp) return;
+      
+      document.getElementById('idEspecieEmEdicao').value = esp.nome;
+      document.getElementById('espNome').value = esp.nome || '';
+      document.getElementById('espDiasMin').value = esp.diasMin || '';
+      document.getElementById('espDiasMax').value = esp.diasMax || '';
+      document.getElementById('espTempMin').value = esp.tempMin || '';
+      document.getElementById('espTempMax').value = esp.tempMax || '';
+      document.getElementById('espUmiMin').value = esp.umiMin || '';
+      document.getElementById('espUmiMax').value = esp.umiMax || '';
+      document.getElementById('espObs').value = esp.observacoes || '';
+    }
+
+    async function salvarEspecie(e) {
+      e.preventDefault();
+      const modo = document.getElementById('actionEspecieType').value;
+      
+      let payload = { action: '' };
+
+      if (modo === 'excluir') {
+        const idx = document.getElementById('selectEspecieModal').value;
+        if (idx === "") { alert("Selecione uma espécie para excluir."); return; }
+        const esp = especiesCache[idx];
+        if (!confirm(`Tem certeza que deseja excluir a espécie "${esp.nome}"?`)) return;
+        
+        payload = {
+          action: 'excluirEspecie',
+          nome: esp.nome
+        };
+      } else {
+        payload = {
+          action: modo === 'editar' ? 'editarEspecie' : 'cadastrarEspecie',
+          idAtual: document.getElementById('idEspecieEmEdicao').value,
+          nome: document.getElementById('espNome').value.trim(),
+          diasMin: document.getElementById('espDiasMin').value.trim(),
+          diasMax: document.getElementById('espDiasMax').value.trim(),
+          tempMin: document.getElementById('espTempMin').value.trim(),
+          tempMax: document.getElementById('espTempMax').value.trim(),
+          umiMin: document.getElementById('espUmiMin').value.trim(),
+          umiMax: document.getElementById('espUmiMax').value.trim(),
+          observacoes: document.getElementById('espObs').value.trim(),
+          responsavel: userData.nome
+        };
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message || "Operação realizada com sucesso!");
+          closeModal('modalGerenciarEspecies');
+          loadEspecies();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro ao comunicar com o servidor.");
+      }
+    }
+    // ==========================================
+
+    function renderTables(culturas, lotesCL, lotesSpawn) {
+      const tbodyCulturas = document.getElementById('culturasBody');
+      const tbodyCL = document.getElementById('clBody');
+      const tbodySpawn = document.getElementById('spawnBody');
+      const tbodyHistorico = document.getElementById('historicoBody');
+      
+      tbodyCulturas.innerHTML = '';
+      tbodyCL.innerHTML = '';
+      tbodySpawn.innerHTML = '';
+      tbodyHistorico.innerHTML = '';
+      
+      let countCulturasAtivas = 0;
+      let countCLAtivas = 0;
+      let countSpawnAtivos = 0;
+      let countHistorico = 0;
+
+      // Render Culturas
+      culturas.forEach(c => {
+        const statusStr = String(c.status || '');
+        const isHistorico = statusStr.includes('Utilizada') || statusStr.includes('Descartada') || statusStr.includes('Esgotada');
+        if (isHistorico) {
+          countHistorico++;
+          tbodyHistorico.innerHTML += `
+            <tr class="hover:bg-gray-200/50 transition">
+              <td class="p-2.5 font-medium text-emerald-800">🧬 Matriz</td>
+              <td class="p-2.5 font-mono font-bold">${c.codigo}</td>
+              <td class="p-2.5">${c.especie} (${c.variedade})</td>
+              <td class="p-2.5">${c.data}</td>
+              <td class="p-2.5">
+                <select onchange="alterarStatus('cultura', '${c.codigo}', this.value, true)" class="border rounded px-2 py-1 text-xs outline-none bg-white font-medium cursor-pointer shadow-sm focus:ring-2 focus:ring-emerald-500">
+                  <option value="Utilizada / Esgotada" ${statusStr.includes('Utilizada') ? 'selected' : ''}>⚪ Utilizada / Esgotada</option>
+                  <option value="Descartada / Contaminada" ${statusStr.includes('Descartada') ? 'selected' : ''}>🔴 Descartada / Contaminada</option>
+                  <option value="Ativa / Colonizando">🟢 Restaurar -> Ativa / Colonizando</option>
+                  <option value="Pronta para Uso">🔵 Restaurar -> Pronta para Uso</option>
+                  <option value="Reservada / Banco">🟡 Restaurar -> Reservada / Banco</option>
+                </select>
+              </td>
+              <td class="p-2.5 text-right">
+                <button onclick="excluirItem('cultura', '${c.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir Registro">
+                  🗑️ Excluir
+                </button>
+              </td>
+            </tr>
+          `;
+        } else {
+          countCulturasAtivas++;
+          tbodyCulturas.innerHTML += `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="p-2.5 font-mono font-bold text-gray-700">${c.codigo}</td>
+              <td class="p-2.5 font-medium">${c.especie}</td>
+              <td class="p-2.5 text-gray-600">${c.variedade}</td>
+              <td class="p-2.5 text-gray-500">${c.meio}</td>
+              <td class="p-2.5 text-gray-500">${c.data}</td>
+              <td class="p-2.5 font-medium">${c.geracao}</td>
+              <td class="p-2.5">
+                <select onchange="alterarStatus('cultura', '${c.codigo}', this.value, false)" class="border rounded px-2 py-1 text-xs outline-none bg-white font-medium cursor-pointer shadow-sm focus:ring-2 focus:ring-emerald-500">
+                  <option value="Ativa / Colonizando" ${statusStr.includes('Colonizando') ? 'selected' : ''}>🟢 Ativa / Colonizando</option>
+                  <option value="Pronta para Uso" ${statusStr.includes('Pronta') ? 'selected' : ''}>🔵 Pronta para Uso</option>
+                  <option value="Reservada / Banco" ${statusStr.includes('Reservada') ? 'selected' : ''}>🟡 Reservada / Banco</option>
+                  <option value="Utilizada / Esgotada" ${statusStr.includes('Utilizada') ? 'selected' : ''}>⚪ Utilizada / Esgotada</option>
+                  <option value="Descartada / Contaminada" ${statusStr.includes('Descartada') ? 'selected' : ''}>🔴 Descartada / Contaminada</option>
+                </select>
+              </td>
+              <td class="p-2.5 text-right">
+                <button onclick="excluirItem('cultura', '${c.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir Registro">
+                  🗑️ Excluir
+                </button>
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      // Render CLs
+      lotesCL.forEach(l => {
+        const statusStr = String(l.status || '');
+        const isHistorico = statusStr.includes('Esgotada') || statusStr.includes('Utilizada') || statusStr.includes('Descartada');
+        if (isHistorico) {
+          countHistorico++;
+          tbodyHistorico.innerHTML += `
+            <tr class="hover:bg-gray-200/50 transition">
+              <td class="p-2.5 font-medium text-amber-800">🧪 Lote CL</td>
+              <td class="p-2.5 font-mono font-bold">${l.codigo}</td>
+              <td class="p-2.5">${l.especie} (${l.volume})</td>
+              <td class="p-2.5">${l.data}</td>
+              <td class="p-2.5">
+                <select onchange="alterarStatus('cl', '${l.codigo}', this.value, true)" class="border rounded px-2 py-1 text-xs outline-none bg-white font-medium cursor-pointer shadow-sm focus:ring-2 focus:ring-amber-500">
+                  <option value="Utilizada / Esgotada" ${statusStr.includes('Esgotada') || statusStr.includes('Utilizada') ? 'selected' : ''}>⚪ Utilizada / Esgotada</option>
+                  <option value="Descartada / Contaminada" ${statusStr.includes('Descartada') ? 'selected' : ''}>🔴 Descartada / Contaminada</option>
+                  <option value="Incubando / Colonizando">🟡 Restaurar -> Incubando / Colonizando</option>
+                  <option value="Pronta para Inoculação">🟢 Restaurar -> Pronta para Inoculação</option>
+                </select>
+              </td>
+              <td class="p-2.5 text-right">
+                <button onclick="excluirItem('cl', '${l.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir Registro">
+                  🗑️ Excluir
+                </button>
+              </td>
+            </tr>
+          `;
+        } else {
+          countCLAtivas++;
+          tbodyCL.innerHTML += `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="p-2.5 font-mono font-bold text-amber-700">${l.codigo}</td>
+              <td class="p-2.5 font-mono text-gray-600">${l.matriz}</td>
+              <td class="p-2.5 font-medium">${l.especie}</td>
+              <td class="p-2.5 font-semibold text-gray-700">${l.volume}</td>
+              <td class="p-2.5 text-gray-500">${l.data}</td>
+              <td class="p-2.5">
+                <select onchange="alterarStatus('cl', '${l.codigo}', this.value, false)" class="border rounded px-2 py-1 text-xs outline-none bg-white font-medium cursor-pointer shadow-sm focus:ring-2 focus:ring-amber-500">
+                  <option value="Incubando / Colonizando" ${statusStr.includes('Colonizando') ? 'selected' : ''}>🟡 Incubando / Colonizando</option>
+                  <option value="Pronta para Inoculação" ${statusStr.includes('Pronta') ? 'selected' : ''}>🟢 Pronta para Inoculação</option>
+                  <option value="Utilizada / Esgotada" ${statusStr.includes('Esgotada') || statusStr.includes('Utilizada') ? 'selected' : ''}>⚪ Utilizada / Esgotada</option>
+                  <option value="Descartada / Contaminada" ${statusStr.includes('Descartada') ? 'selected' : ''}>🔴 Descartada / Contaminada</option>
+                </select>
+              </td>
+              <td class="p-2.5 text-gray-500">${l.responsavel}</td>
+              <td class="p-2.5 text-right">
+                <button onclick="excluirItem('cl', '${l.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir Registro">
+                  🗑️ Excluir
+                </button>
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      // Render Spawns
+      lotesSpawn.forEach(s => {
+        const statusStr = String(s.status || '');
+        const isHistorico = statusStr.includes('Esgotado') || statusStr.includes('Utilizado') || statusStr.includes('Descartado');
+        if (isHistorico) {
+          countHistorico++;
+          tbodyHistorico.innerHTML += `
+            <tr class="hover:bg-gray-200/50 transition">
+              <td class="p-2.5 font-medium text-amber-900">🌾 Spawn</td>
+              <td class="p-2.5 font-mono font-bold">${s.codigo}</td>
+              <td class="p-2.5">${s.especie} (${s.peso})</td>
+              <td class="p-2.5">${s.data}</td>
+              <td class="p-2.5">
+                <select onchange="alterarStatus('spawn', '${s.codigo}', this.value, true)" class="border rounded px-2 py-1 text-xs outline-none bg-white font-medium cursor-pointer shadow-sm focus:ring-2 focus:ring-amber-500">
+                  <option value="Utilizado / Esgotado" ${statusStr.includes('Esgotado') || statusStr.includes('Utilizado') ? 'selected' : ''}>⚪ Utilizado / Esgotado</option>
+                  <option value="Descartado / Contaminado" ${statusStr.includes('Descartado') ? 'selected' : ''}>🔴 Descartado / Contaminado</option>
+                  <option value="Incubando / Colonizando">🟡 Restaurar -> Incubando / Colonizando</option>
+                  <option value="Pronto para Inoculação">🟢 Restaurar -> Pronto para Inoculação</option>
+                </select>
+              </td>
+              <td class="p-2.5 text-right">
+                <button onclick="excluirItem('spawn', '${s.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir Registro">
+                  🗑️ Excluir
+                </button>
+              </td>
+            </tr>
+          `;
+        } else {
+          countSpawnAtivos++;
+          tbodySpawn.innerHTML += `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="p-2.5 font-mono font-bold text-amber-900">${s.codigo}</td>
+              <td class="p-2.5 font-mono text-gray-600">${s.matriz}</td>
+              <td class="p-2.5 font-medium">${s.especie}</td>
+              <td class="p-2.5 font-semibold text-gray-700">${s.peso}</td>
+              <td class="p-2.5 text-gray-500">${s.data}</td>
+              <td class="p-2.5">
+                <select onchange="alterarStatus('spawn', '${s.codigo}', this.value, false)" class="border rounded px-2 py-1 text-xs outline-none bg-white font-medium cursor-pointer shadow-sm focus:ring-2 focus:ring-amber-500">
+                  <option value="Incubando / Colonizando" ${statusStr.includes('Colonizando') ? 'selected' : ''}>🟡 Incubando / Colonizando</option>
+                  <option value="Pronto para Inoculação" ${statusStr.includes('Pronto') ? 'selected' : ''}>🟢 Pronto para Inoculação</option>
+                  <option value="Utilizado / Esgotado" ${statusStr.includes('Esgotado') || statusStr.includes('Utilizado') ? 'selected' : ''}>⚪ Utilizado / Esgotado</option>
+                  <option value="Descartado / Contaminado" ${statusStr.includes('Descartado') ? 'selected' : ''}>🔴 Descartado / Contaminado</option>
+                </select>
+              </td>
+              <td class="p-2.5 text-gray-500">${s.responsavel}</td>
+              <td class="p-2.5 text-right">
+                <button onclick="excluirItem('spawn', '${s.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir Registro">
+                  🗑️ Excluir
+                </button>
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      if (countCulturasAtivas === 0) tbodyCulturas.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-400">Nenhuma matriz ativa no momento.</td></tr>';
+      if (countCLAtivas === 0) tbodyCL.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-400">Nenhum lote de CL ativo no momento.</td></tr>';
+      if (countSpawnAtivos === 0) tbodySpawn.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-400">Nenhum lote de Spawn ativo no momento.</td></tr>';
+      if (countHistorico === 0) tbodyHistorico.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">Nenhum item finalizado ou descartado.</td></tr>';
+    }
+
+    async function alterarStatus(tipo, codigo, novoStatus, estavaNoHistorico) {
+      const vaiParaHistorico = novoStatus.includes('Utilizad') || novoStatus.includes('Descartad') || novoStatus.includes('Esgotad');
+      if (!estavaNoHistorico && vaiParaHistorico) {
+        const confirmou = confirm(`Deseja mover o registro "${codigo}" para o Histórico / Descarte?\n\nEle será arquivado com o status: ${novoStatus}`);
+        if (!confirmou) {
+          loadData();
+          return;
+        }
+      }
+      if (estavaNoHistorico && !vaiParaHistorico) {
+        const confirmouRestaurar = confirm(`Deseja RESTAURAR o registro "${codigo}" para a lista ativa?\n\nNovo status: ${novoStatus}`);
+        if (!confirmouRestaurar) {
+          loadData();
+          return;
+        }
+      }
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'atualizarStatus', tipo: tipo, codigo: codigo, novoStatus: novoStatus })
+        });
+        const res = await response.json();
+        if (res.success) {
+          loadData();
+        } else {
+          alert('Erro ao atualizar status: ' + res.message);
+        }
+      } catch (e) {
+        alert('Erro de conexão ao atualizar status.');
+      }
+    }
+
+    async function excluirItem(tipo, codigo) {
+      const confirmou = confirm(`Tem certeza que deseja excluir DEFINITIVAMENTE o registro "${codigo}"?\n\nEsta ação apagará os dados da planilha.`);
+      if (!confirmou) return;
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'excluirItem', tipo: tipo, codigo: codigo })
+        });
+        const res = await response.json();
+        if (res.success) {
+          loadData();
+        } else {
+          alert('Erro ao excluir: ' + res.message);
+        }
+      } catch (e) {
+        alert('Erro de conexão ao excluir item.');
+      }
+    }
+
+    async function submitForm(e, action) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = { action: action, responsavel: userData.nome };
+      formData.forEach((value, key) => data[key] = value);
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(data)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message);
+          form.reset();
+          closeModal(form.closest('.fixed').id);
+          loadData();
+        } else {
+          alert('Erro ao salvar: ' + res.message);
+        }
+      } catch (err) {
+        alert('Erro de conexão ao salvar.');
+      }
+    }
+
+    function filterTable(inputId, tableId) {
+      const input = document.getElementById(inputId);
+      const filter = input.value.toLowerCase();
+      const table = document.getElementById(tableId);
+      const trs = table.getElementsByTagName('tr');
+      for (let i = 1; i < trs.length; i++) {
+        const tdText = trs[i].innerText.toLowerCase();
+        trs[i].style.display = tdText.includes(filter) ? '' : 'none';
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
