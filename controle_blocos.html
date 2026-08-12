@@ -229,6 +229,29 @@
     let spawnsCache = [];
     let selecionados = new Set();
 
+async function carregarMeusDados() {
+  try {
+    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
+    });
+    
+    const res = await response.json(); // Converte a resposta para JSON
+
+    // 2. Trata os dados recebidos
+    if (res.success) {
+      console.log("Dados recebidos com sucesso:", res);
+    } else {
+      console.error("Erro do servidor:", res.message);
+    }
+
+  } catch (err) {
+    console.error("Erro de conexão:", err);
+  }
+}
+	  
     async function loadData() {
       try {
         const [resBlocos, resSpawns] = await Promise.all([
