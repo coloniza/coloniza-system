@@ -65,6 +65,9 @@
         <a href="incubacao.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
           <span>Sala de Incubação</span>
         </a>
+        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Frutificação</span>
+        </a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -216,15 +219,17 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
-	
+
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
     }
+
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
       document.getElementById(id).classList.add('flex');
     }
+
     function closeModal(id) {
       document.getElementById(id).classList.add('hidden');
       document.getElementById(id).classList.remove('flex');
@@ -261,6 +266,8 @@
     function processarDadosBloco(b) {
       const hoje = new Date();
       hoje.setHours(0,0,0,0);
+      
+      // Considera estritamente a data exata da inoculação ou criação na etapa
       const dataInoc = new Date(b.dataInoculacao || b.dataCriacao);
       dataInoc.setHours(0,0,0,0);
       const diffTime = hoje - dataInoc;
@@ -330,7 +337,7 @@
             <td class="p-3 font-mono font-bold text-gray-800">${b.codigo}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie}</td>
             <td class="p-3 text-gray-600">${b.receita || b.spawnOrigem || '---'}</td>
-            <td class="p-3 text-gray-500">${b.dataCriacao || '---'}</td>
+            <td class="p-3 text-gray-500">${b.dataInoculacao || b.dataCriacao || '---'}</td>
             <td class="p-3 w-64">
               <div class="space-y-1">
                 <div class="flex justify-between text-[10px] font-bold">
@@ -385,7 +392,7 @@
 
             <div class="text-xs text-gray-600 space-y-1 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
               <div class="flex justify-between"><span>Receita/Origem:</span> <span class="font-medium text-gray-800">${b.receita || b.spawnOrigem || '---'}</span></div>
-              <div class="flex justify-between"><span>Inoculação:</span> <span class="font-medium text-gray-800">${b.dataCriacao || '---'}</span></div>
+              <div class="flex justify-between"><span>Inoculação:</span> <span class="font-medium text-gray-800">${b.dataInoculacao || b.dataCriacao || '---'}</span></div>
               <div class="flex justify-between"><span>Peso:</span> <span class="font-medium text-gray-800">${b.peso} kg</span></div>
             </div>
 

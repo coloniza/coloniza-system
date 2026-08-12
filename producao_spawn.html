@@ -56,6 +56,9 @@
 		</a>
 		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Incubação</span>
+        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Frutificação</span>
+        </a>
         </a>		
       </nav>
     </div>
@@ -218,6 +221,29 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
+	
+	async function carregarMeusDados() {
+  try {
+    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
+    });
+    
+    const res = await response.json(); // Converte a resposta para JSON
+
+    // 2. Trata os dados recebidos
+    if (res.success) {
+      console.log("Dados recebidos com sucesso:", res);
+    } else {
+      console.error("Erro do servidor:", res.message);
+    }
+
+  } catch (err) {
+    console.error("Erro de conexão:", err);
+  }
+}
 
     function logout() {
       localStorage.removeItem('coloniza_user');
@@ -236,6 +262,7 @@
         });
         const res = await response.json();
         if (res.success) {
+          // Lê diretamente da aba Receitas_Spawn sem necessidade de filtros manuais
           receitasCache = res.receitasSpawn || [];
           estoqueCache = res.estoque || {};
           matrizesCache = res.matrizes || [];

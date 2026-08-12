@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Sala de Frutificação</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+    
+    /* Custom Toggle Switch */
+    .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: #047857; }
+    input:checked + .slider:before { transform: translateX(22px); }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
+          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
+        </div>
+      </div>
+      <nav class="p-2 space-y-1 text-xs">
+        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Compras &amp; Investimentos</span>
+        </a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Estoque &amp; Insumos</span>
+        </a>
+        <a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Banco de Culturas &amp; CL</span>
+        </a>
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de CL</span>
+        </a>
+        <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Spawn</span>
+        </a>
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Composto</span>
+        </a>
+        <a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Controle de Blocos</span>
+        </a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Incubação</span>
+        </a>
+        <a href="frutificacao.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
+          <span>Sala de Frutificação</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>
+        <div>Responsável: <span id="userName" class="text-white font-semibold">---</span></div>
+      </div>
+      <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">Sair</button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <!-- HEADER DA PÁGINA -->
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">SALA DE FRUTIFICAÇÃO &amp; AMBIENTES</h2>
+        <p class="text-xs text-gray-500 font-medium">GESTÃO DE SALAS, ALOCAÇÃO DE BLOCOS E REGISTRO DE COLHEITAS</p>
+      </div>
+      <!-- BOTÕES DE GESTÃO DE SALAS -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openModalGerenciarSala('incluir')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>+</span> Nova Sala
+        </button>
+        <button onclick="openModalGerenciarSala('editar')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>✏️</span> Modificar Sala
+        </button>
+        <button onclick="openModalGerenciarSala('excluir')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+          <span>🗑️</span> Excluir Sala
+        </button>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- PAINEL SUPERIOR: FILTRO DE SALA E DESTAQUE DE KG COLHIDOS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- SELETOR DE FILTRO DE SALA -->
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Filtrar por Sala de Frutificação</label>
+          <select id="filterSala" onchange="renderizarInterface()" class="w-full border rounded-lg p-2.5 text-xs outline-none bg-white font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500">
+            <option value="">🏢 Todas as Salas</option>
+          </select>
+        </div>
+
+        <!-- INDICADOR DE KG COLHIDOS DA SALA SELECIONADA -->
+        <div class="bg-emerald-800 text-white p-4 rounded-xl shadow-sm flex items-center justify-between col-span-1 md:col-span-2">
+          <div>
+            <p id="labelKgColhidos" class="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">Total Colhido na Sala (Acumulado)</p>
+            <h3 id="kpiKgColhidos" class="text-2xl font-black text-white mt-1">0.00 kg</h3>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-700/60 border border-emerald-500/40 flex items-center justify-center text-white text-xl font-bold shadow-inner">
+            ⚖️
+          </div>
+        </div>
+      </div>
+
+      <!-- PAINEL DE CONTROLES E TRANSFERÊNCIA EM MASSA -->
+      <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+        <div class="flex items-center space-x-3">
+          <label class="flex items-center space-x-2 font-semibold cursor-pointer">
+            <input type="checkbox" id="checkSelectAll" onclick="toggleSelectAll(this)" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+            <span>Selecionar Todos</span>
+          </label>
+          <div class="flex items-center space-x-2 pl-4 border-l">
+            <select id="selectSalaDestino" class="border rounded-lg p-2 outline-none bg-white font-medium">
+              <option value="">-- Mover selecionados para a Sala --</option>
+            </select>
+            <button onclick="transferirBlocosParaSala()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold shadow-sm transition">
+              Transferir
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="w-64">
+            <input type="text" id="searchFrutificacao" onkeyup="renderizarInterface()" placeholder="🔍 Buscar por código ou espécie..." class="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <!-- ALTERNADOR DE LAYOUT (LISTA vs CAIXAS) -->
+          <div class="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg border border-gray-200">
+            <span class="font-semibold text-gray-600">📋 Tabela</span>
+            <label class="switch">
+              <input type="checkbox" id="toggleLayout" onchange="alternarLayout()">
+              <span class="slider"></span>
+            </label>
+            <span class="font-semibold text-gray-600">🧊 Cards por Sala</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUALIZAÇÃO 1: TABELA GERAL -->
+      <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800">Blocos em Frutificação</h3>
+          <span id="contadorBlocosGeral" class="text-xs font-semibold text-gray-500">Total: 0 blocos</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-3 w-10 text-center">#</th>
+                <th class="p-3 font-semibold">CÓDIGO RASTREIO</th>
+                <th class="p-3 font-semibold">ESPÉCIE</th>
+                <th class="p-3 font-semibold">SALA ATUAL</th>
+                <th class="p-3 font-semibold">DATA ENTRADA</th>
+                <th class="p-3 font-semibold">STATUS / PROGRESSO</th>
+                <th class="p-3 font-semibold text-center">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyFrutificacao" class="divide-y divide-gray-100">
+              <tr><td colspan="7" class="py-10 text-center text-gray-400">Carregando blocos em frutificação...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VISUALIZAÇÃO 2: GRID DE SALAS (CARDS) -->
+      <div id="visaoCaixas" class="hidden space-y-6">
+        <!-- Renderizado dinamicamente por Sala -->
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: GERENCIAR SALAS (INCLUIR, EDITAR, EXCLUIR) -->
+  <div id="modalGerenciarSala" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 id="modalSalaTitulo" class="text-lg font-bold text-gray-800 mb-4">Gerenciar Sala</h3>
+      
+      <form id="formSala" onsubmit="salvarSala(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="actionSalaType" value="incluir">
+        
+        <div id="containerSelectSalaEditar" class="hidden">
+          <label class="block font-semibold mb-1">Selecione a Sala</label>
+          <select id="selectSalaModal" onchange="carregarDadosSalaModal()" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <option value="">-- Escolha --</option>
+          </select>
+        </div>
+
+        <div id="camposFormularioSala" class="space-y-3">
+          <div>
+            <label class="block font-semibold mb-1">Nome / Identificação da Sala</label>
+            <input type="text" id="salaNome" required placeholder="Ex: Sala Alpha - Shimeji" class="w-full border rounded-lg p-2.5 outline-none">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block font-semibold mb-1">Temp. Ideal (°C)</label>
+              <input type="number" step="0.1" id="salaTemp" required placeholder="Ex: 18" class="w-full border rounded-lg p-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Umidade Ideal (%)</label>
+              <input type="number" id="salaUmi" required placeholder="Ex: 90" class="w-full border rounded-lg p-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">CO2 Ideal (ppm)</label>
+              <input type="number" id="salaCo2" required placeholder="Ex: 800" class="w-full border rounded-lg p-2.5 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalGerenciarSala')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" id="btnSalvarSalaModal" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold">Salvar Sala</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ATUALIZAR PARÂMETROS AMBIENTAIS DA SALA -->
+  <div id="modalAtualizarAmbiente" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Atualizar Condições Ambientais</h3>
+      <p class="text-xs text-gray-500 mb-4">Registrar novas leituras para a sala <span id="nomeSalaAmbiente" class="font-bold text-gray-700">---</span>:</p>
+      
+      <form onsubmit="salvarNovoRegistroAmbiente(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="inputSalaIdAmbiente">
+        
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Temperatura (°C)</label>
+            <input type="number" step="0.1" id="ambTemp" required class="w-full border rounded-lg p-2.5 outline-none font-bold text-emerald-800">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Umidade (%)</label>
+            <input type="number" id="ambUmi" required class="w-full border rounded-lg p-2.5 outline-none font-bold text-blue-800">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">CO2 (ppm)</label>
+            <input type="number" id="ambCo2" required class="w-full border rounded-lg p-2.5 outline-none font-bold text-purple-800">
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalAtualizarAmbiente')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">Salvar &amp; Registrar Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR COLHEITA NA SALA (MÚLTIPLAS ESPÉCIES) -->
+  <div id="modalColheitaSala" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Registrar Colheita - <span id="nomeSalaColheita" class="text-emerald-800">---</span></h3>
+      <p class="text-xs text-gray-500 mb-4">Selecione a(s) espécie(s) e informe a quantidade colhida em quilogramas:</p>
+      
+      <form onsubmit="confirmarColheitaSala(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="inputSalaIdColheita">
+        
+        <div id="listaColheitasForm" class="space-y-2">
+          <!-- Linhas geradas dinamicamente -->
+        </div>
+
+        <button type="button" onclick="adicionarLinhaColheita()" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1 pt-1">
+          + Adicionar Outra Espécie
+        </button>
+
+        <div class="pt-3">
+          <label class="block font-semibold mb-1">Observações da Colheita / Qualidade</label>
+          <textarea id="obsColheita" rows="2" placeholder="Ex: Cogumelos de excelente calibre, sem pragas..." class="w-full border rounded-lg p-2.5 outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalColheitaSala')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Finalizar e Registrar Colheita</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT DE CONTROLE -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+
+    let blocosFrutificacaoCache = [];
+    let salasCache = [];
+    let especiesCache = {};
+    let colheitasPorSalaCache = {};
+    let idSalaEmEdicao = null;
+
+    async function loadFrutificacaoData() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getDadosFrutificacao' })
+        });
+        const res = await response.json();
+        if (res.success) {
+          blocosFrutificacaoCache = res.blocos || [];
+          salasCache = res.salas || [];
+          especiesCache = res.especiesMap || {};
+          colheitasPorSalaCache = res.colheitasPorSala || {};
+          populateSalasSelects();
+          renderizarInterface();
+        } else {
+          console.error("Erro ao carregar dados de frutificação:", res.message);
+        }
+      } catch (err) {
+        console.error("Erro de conexão:", err);
+      }
+    }
+
+    function populateSalasSelects() {
+      const selectDestino = document.getElementById('selectSalaDestino');
+      const selectModal = document.getElementById('selectSalaModal');
+      const filterSala = document.getElementById('filterSala');
+      
+      const valorFiltroAtual = filterSala ? filterSala.value : '';
+
+      let optionsHtml = '<option value="">-- Selecionar Sala --</option>';
+      let filterOptionsHtml = '<option value="">🏢 Todas as Salas</option>';
+
+      salasCache.forEach(s => {
+        optionsHtml += `<option value="${s.id}">${s.nome}</option>`;
+        filterOptionsHtml += `<option value="${s.id}">${s.nome}</option>`;
+      });
+
+      selectDestino.innerHTML = optionsHtml;
+      selectModal.innerHTML = '<option value="">-- Escolha --</option>' + salasCache.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+      filterSala.innerHTML = filterOptionsHtml;
+      filterSala.value = valorFiltroAtual;
+    }
+
+    function obterKgColhidosSala(salaId) {
+      if (!colheitasPorSalaCache) return 0;
+      if (!salaId) {
+        let totalGeral = 0;
+        for (let k in colheitasPorSalaCache) {
+          totalGeral += (colheitasPorSalaCache[k] || 0);
+        }
+        return totalGeral;
+      }
+
+      const salaObj = salasCache.find(s => s.id === salaId);
+      const nomeSala = salaObj ? salaObj.nome : '';
+
+      let total = 0;
+      if (colheitasPorSalaCache[salaId]) total += colheitasPorSalaCache[salaId];
+      if (nomeSala && nomeSala !== salaId && colheitasPorSalaCache[nomeSala]) {
+        total += colheitasPorSalaCache[nomeSala];
+      }
+      return total;
+    }
+
+    function renderizarInterface() {
+      const salaSelecionadaId = document.getElementById('filterSala').value;
+      const totalKg = obterKgColhidosSala(salaSelecionadaId);
+      
+      const elKpi = document.getElementById('kpiKgColhidos');
+      const labelKpi = document.getElementById('labelKgColhidos');
+      
+      if (elKpi) {
+        elKpi.textContent = `${totalKg.toFixed(2)} kg`;
+      }
+
+      if (labelKpi) {
+        if (salaSelecionadaId) {
+          const salaObj = salasCache.find(s => s.id === salaSelecionadaId);
+          labelKpi.textContent = `Total Colhido na Sala: ${salaObj ? salaObj.nome : 'Selecionada'}`;
+        } else {
+          labelKpi.textContent = "Total Colhido em Todas as Salas (Geral)";
+        }
+      }
+
+      renderizarTabela();
+      renderizarCaixasSalas();
+    }
+
+    function processarProgressoBloco(b) {
+      const hoje = new Date();
+      hoje.setHours(0,0,0,0);
+      
+      const dataEntrada = new Date(b.dataAtualizacaoStatus || b.dataCriacao);
+      dataEntrada.setHours(0,0,0,0);
+      const diffTime = hoje - dataEntrada;
+      const diasDecorridos = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+
+      const infoEsp = especiesCache[b.especie] || { cicloFrutificacao: 25 };
+      const cicloTotal = Number(infoEsp.cicloFrutificacao) || 25;
+
+      let pct = Math.round((diasDecorridos / cicloTotal) * 100);
+      if (pct > 100) pct = 100;
+
+      let badgeText = `Dia ${diasDecorridos} de ${cicloTotal}d (Ciclo)`;
+      let badgeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
+      let statusClass = "bg-emerald-600";
+
+      if (diasDecorridos >= cicloTotal) {
+        badgeText = "PRONTO P/ COLHEITA FINAL";
+        badgeBg = "bg-purple-50 text-purple-700 border-purple-200";
+        statusClass = "bg-purple-600";
+      }
+
+      return { diasDecorridos, cicloTotal, pct, badgeText, badgeBg, statusClass };
+    }
+
+    function renderizarTabela() {
+      const tbody = document.getElementById('tbodyFrutificacao');
+      const filtroText = document.getElementById('searchFrutificacao').value.toLowerCase();
+      const filtroSalaId = document.getElementById('filterSala').value;
+      tbody.innerHTML = '';
+
+      const filtrados = blocosFrutificacaoCache.filter(b => {
+        const matchText = String(b.codigo).toLowerCase().includes(filtroText) || String(b.especie).toLowerCase().includes(filtroText);
+        const matchSala = !filtroSalaId || String(b.salaId) === String(filtroSalaId);
+        return matchText && matchSala;
+      });
+
+      document.getElementById('contadorBlocosGeral').textContent = `Total: ${filtrados.length} blocos`;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-gray-400">Nenhum bloco encontrado na frutificação.</td></tr>';
+        return;
+      }
+
+      filtrados.forEach(b => {
+        const calc = processarProgressoBloco(b);
+        const salaObj = salasCache.find(s => s.id === b.salaId);
+        const nomeSala = salaObj ? salaObj.nome : '<span class="text-amber-600 font-semibold">⚠️ Sem Sala</span>';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="p-3 text-center"><input type="checkbox" value="${b.codigo}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
+            <td class="p-3 font-mono font-bold text-gray-800">${b.codigo}</td>
+            <td class="p-3 font-semibold text-emerald-800">${b.especie}</td>
+            <td class="p-3">${nomeSala}</td>
+            <td class="p-3 text-gray-500">${b.dataAtualizacaoStatus || b.dataCriacao || '---'}</td>
+            <td class="p-3 w-56">
+              <div class="space-y-1">
+                <div class="flex justify-between text-[10px] font-bold">
+                  <span class="${calc.badgeBg.split(' ')[1]} px-1.5 py-0.2 rounded border">${calc.badgeText}</span>
+                  <span>${calc.pct}%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                  <div class="${calc.statusClass} h-2 rounded-full transition-all" style="width: ${calc.pct}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="abrirModalColheitaIndividual('${b.codigo}', '${b.especie}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm">
+                🍄 Colher
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderizarCaixasSalas() {
+      const container = document.getElementById('visaoCaixas');
+      const filtroText = document.getElementById('searchFrutificacao').value.toLowerCase();
+      const filtroSalaId = document.getElementById('filterSala').value;
+      container.innerHTML = '';
+
+      let salasExibir = salasCache;
+      if (filtroSalaId) {
+        salasExibir = salasCache.filter(s => String(s.id) === String(filtroSalaId));
+      }
+
+      if (salasExibir.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-xl text-center text-gray-400 border shadow-sm">Nenhuma sala encontrada com o filtro selecionado.</div>`;
+        return;
+      }
+
+      salasExibir.forEach(s => {
+        const blocosNaSala = blocosFrutificacaoCache.filter(b => String(b.salaId) === String(s.id) && (String(b.codigo).toLowerCase().includes(filtroText) || String(b.especie).toLowerCase().includes(filtroText)));
+        const kgColhidosNestaSala = obterKgColhidosSala(s.id);
+
+        let cardsBlocosHtml = '';
+        if (blocosNaSala.length === 0) {
+          cardsBlocosHtml = `<div class="col-span-full py-6 text-center text-gray-400 text-xs italic">Nenhum bloco alocado nesta sala no momento.</div>`;
+        } else {
+          blocosNaSala.forEach(b => {
+            const calc = processarProgressoBloco(b);
+            cardsBlocosHtml += `
+              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 flex flex-col justify-between space-y-2">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <input type="checkbox" value="${b.codigo}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
+                    <span class="font-mono font-bold text-xs text-gray-800">${b.codigo}</span>
+                  </div>
+                  <span class="text-[10px] font-semibold text-emerald-800">${b.especie}</span>
+                </div>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[10px] font-bold text-gray-500">
+                    <span>${calc.badgeText}</span>
+                    <span>${calc.pct}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                    <div class="${calc.statusClass} h-1.5 rounded-full" style="width: ${calc.pct}%"></div>
+                  </div>
+                </div>
+                <div class="flex justify-end pt-1">
+                  <button onclick="abrirModalColheitaIndividual('${b.codigo}', '${b.especie}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[10px] font-semibold">
+                    🍄 Colher
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        container.innerHTML += `
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <!-- CABEÇALHO DA SALA -->
+            <div class="bg-[#11261d] text-white p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+              <div>
+                <h3 class="font-extrabold text-sm tracking-wide flex items-center gap-2">
+                  <span>🏢</span> ${s.nome}
+                </h3>
+                <div class="flex items-center space-x-3 text-[11px] mt-0.5">
+                  <span class="text-emerald-300 font-medium">Blocos Atuais: ${blocosNaSala.length}</span>
+                  <span class="text-emerald-600">•</span>
+                  <span class="text-amber-300 font-bold">Total Colhido: ${kgColhidosNestaSala.toFixed(2)} kg</span>
+                </div>
+              </div>
+
+              <!-- MÉTRICAS AMBIENTAIS -->
+              <div class="flex items-center space-x-3 text-xs bg-emerald-950/60 px-3 py-2 rounded-lg border border-emerald-800/60">
+                <div><span class="text-gray-400">Temp:</span> <strong class="text-emerald-300">${s.temperatura || '--'}°C</strong></div>
+                <span class="text-emerald-700">|</span>
+                <div><span class="text-gray-400">Umidade:</span> <strong class="text-blue-300">${s.umidade || '--'}%</strong></div>
+                <span class="text-emerald-700">|</span>
+                <div><span class="text-gray-400">CO2:</span> <strong class="text-purple-300">${s.co2 || '--'} ppm</strong></div>
+                
+                <button onclick="abrirModalAtualizarAmbiente('${s.id}', '${s.nome}', '${s.temperatura}', '${s.umidade}', '${s.co2}')" class="ml-2 bg-emerald-700 hover:bg-emerald-600 text-white p-1.5 rounded text-[11px] font-semibold transition" title="Alterar Leituras Ambientais">
+                  ✏️ Atualizar
+                </button>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="abrirModalColheitaSala('${s.id}', '${s.nome}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1">
+                  <span>🍄</span> Registrar Colheita na Sala
+                </button>
+              </div>
+            </div>
+
+            <!-- CORPO DO CARD COM OS BLOCOS -->
+            <div class="p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              ${cardsBlocosHtml}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function alternarLayout() {
+      const ehCaixas = document.getElementById('toggleLayout').checked;
+      document.getElementById('visaoTabela').classList.toggle('hidden', ehCaixas);
+      document.getElementById('visaoCaixas').classList.toggle('hidden', !ehCaixas);
+    }
+
+    function toggleSelectAll(master) {
+      const checkboxes = document.querySelectorAll('.checkbox-bloco');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    async function transferirBlocosParaSala() {
+      const salaId = document.getElementById('selectSalaDestino').value;
+      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+
+      if (!salaId) {
+        alert("Selecione uma sala de destino.");
+        return;
+      }
+      if (selecionados.length === 0) {
+        alert("Selecione ao menos um bloco para transferir.");
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'atribuirBlocosSala',
+            codigos: selecionados,
+            salaId: salaId,
+            responsavel: userData.nome
+          })
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert("Blocos alocados na sala com sucesso!");
+          loadFrutificacaoData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro de conexão ao transferir blocos.");
+      }
+    }
+
+    function openModalGerenciarSala(modo) {
+      document.getElementById('actionSalaType').value = modo;
+      const titulo = document.getElementById('modalSalaTitulo');
+      const containerSelect = document.getElementById('containerSelectSalaEditar');
+      const campos = document.getElementById('camposFormularioSala');
+      const btnSalvar = document.getElementById('btnSalvarSalaModal');
+
+      document.getElementById('formSala').reset();
+
+      if (modo === 'incluir') {
+        idSalaEmEdicao = null;
+        titulo.textContent = "Criar Nova Sala de Frutificação";
+        containerSelect.classList.add('hidden');
+        campos.classList.remove('hidden');
+        btnSalvar.textContent = "Salvar Sala";
+        btnSalvar.className = "px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold";
+      } else if (modo === 'editar') {
+        titulo.textContent = "Modificar Informações da Sala";
+        containerSelect.classList.remove('hidden');
+        campos.classList.remove('hidden');
+        btnSalvar.textContent = "Atualizar Sala";
+        btnSalvar.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold";
+      } else if (modo === 'excluir') {
+        titulo.textContent = "Excluir Sala";
+        containerSelect.classList.remove('hidden');
+        campos.classList.add('hidden');
+        btnSalvar.textContent = "Excluir Definitivamente";
+        btnSalvar.className = "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold";
+      }
+      openModal('modalGerenciarSala');
+    }
+
+    function carregarDadosSalaModal() {
+      const id = document.getElementById('selectSalaModal').value;
+      if (!id) { idSalaEmEdicao = null; return; }
+      const sala = salasCache.find(s => s.id === id);
+      if (!sala) return;
+
+      idSalaEmEdicao = sala.id;
+      document.getElementById('salaNome').value = sala.nome;
+      document.getElementById('salaTemp').value = sala.temperatura;
+      document.getElementById('salaUmi').value = sala.umidade;
+      document.getElementById('salaCo2').value = sala.co2;
+    }
+
+    async function salvarSala(e) {
+      e.preventDefault();
+      const modo = document.getElementById('actionSalaType').value;
+
+      if (modo === 'excluir') {
+        const id = document.getElementById('selectSalaModal').value;
+        if (!id) { alert("Selecione uma sala para excluir."); return; }
+        const sala = salasCache.find(s => s.id === id);
+        if (!confirm(`Deseja realmente excluir a sala "${sala.nome}"?`)) return;
+
+        enviarAcaoSala({ action: 'excluirSala', id: id });
+        return;
+      }
+
+      const payload = {
+        action: modo === 'incluir' ? 'salvarSala' : 'atualizarSala',
+        id: modo === 'editar' ? idSalaEmEdicao : null,
+        nome: document.getElementById('salaNome').value.trim(),
+        temperatura: parseFloat(document.getElementById('salaTemp').value),
+        umidade: parseFloat(document.getElementById('salaUmi').value),
+        co2: parseFloat(document.getElementById('salaCo2').value),
+        responsavel: userData.nome
+      };
+
+      enviarAcaoSala(payload);
+    }
+
+    async function enviarAcaoSala(payload) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message || "Operação realizada com sucesso!");
+          closeModal('modalGerenciarSala');
+          loadFrutificacaoData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro de conexão ao salvar sala.");
+      }
+    }
+
+    function abrirModalAtualizarAmbiente(id, nome, temp, umi, co2) {
+      document.getElementById('inputSalaIdAmbiente').value = id;
+      document.getElementById('nomeSalaAmbiente').textContent = nome;
+      document.getElementById('ambTemp').value = temp || '';
+      document.getElementById('ambUmi').value = umi || '';
+      document.getElementById('ambCo2').value = co2 || '';
+      openModal('modalAtualizarAmbiente');
+    }
+
+    async function salvarNovoRegistroAmbiente(e) {
+      e.preventDefault();
+      const payload = {
+        action: 'registrarLogAmbienteSala',
+        salaId: document.getElementById('inputSalaIdAmbiente').value,
+        temperatura: parseFloat(document.getElementById('ambTemp').value),
+        umidade: parseFloat(document.getElementById('ambUmi').value),
+        co2: parseFloat(document.getElementById('ambCo2').value),
+        responsavel: userData.nome
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert("Leituras ambientais atualizadas e registradas no histórico!");
+          closeModal('modalAtualizarAmbiente');
+          loadFrutificacaoData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro de conexão ao registrar ambiente.");
+      }
+    }
+
+    function abrirModalColheitaSala(salaId, salaNome) {
+      document.getElementById('inputSalaIdColheita').value = salaId;
+      document.getElementById('nomeSalaColheita').textContent = salaNome;
+      document.getElementById('obsColheita').value = '';
+      document.getElementById('listaColheitasForm').innerHTML = '';
+      adicionarLinhaColheita();
+      openModal('modalColheitaSala');
+    }
+
+    function abrirModalColheitaIndividual(codigoBloco, especieSugerida) {
+      document.getElementById('inputSalaIdColheita').value = "";
+      document.getElementById('nomeSalaColheita').textContent = `Bloco ${codigoBloco}`;
+      document.getElementById('obsColheita').value = `Colheita direta do bloco ${codigoBloco}`;
+      document.getElementById('listaColheitasForm').innerHTML = '';
+      adicionarLinhaColheita(especieSugerida, '');
+      openModal('modalColheitaSala');
+    }
+
+    function adicionarLinhaColheita(especiePadrao = '', qtdPadrao = '') {
+      const container = document.getElementById('listaColheitasForm');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center";
+
+      let opcoesEspecies = '<option value="">-- Selecione a Espécie --</option>';
+      const especiesUnicas = [...new Set(blocosFrutificacaoCache.map(b => b.especie))];
+      especiesUnicas.forEach(esp => {
+        const sel = (esp === especiePadrao) ? 'selected' : '';
+        opcoesEspecies += `<option value="${esp}" ${sel}>${esp}</option>`;
+      });
+
+      div.innerHTML = `
+        <select class="colheita-especie flex-1 border rounded-lg p-2.5 outline-none bg-white font-medium" required>
+          ${opcoesEspecies}
+        </select>
+        <input type="number" step="0.01" min="0.01" placeholder="Qtd (kg)" value="${qtdPadrao}" class="colheita-qtd w-28 border rounded-lg p-2.5 outline-none font-bold" required>
+        <span class="text-xs font-bold text-gray-500">kg</span>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    async function confirmarColheitaSala(e) {
+      e.preventDefault();
+      const salaId = document.getElementById('inputSalaIdColheita').value;
+      const especiesEls = document.querySelectorAll('.colheita-especie');
+      const qtdsEls = document.querySelectorAll('.colheita-qtd');
+      const obs = document.getElementById('obsColheita').value.trim();
+
+      const itensColheita = [];
+      especiesEls.forEach((el, i) => {
+        itensColheita.push({
+          especie: el.value,
+          quantidadeKg: parseFloat(qtdsEls[i].value) || 0
+        });
+      });
+
+      if (itensColheita.length === 0) {
+        alert("Adicione ao menos uma espécie colhida.");
+        return;
+      }
+
+      const payload = {
+        action: 'registrarColheitaSala',
+        salaId: salaId || null,
+        itens: itensColheita,
+        observacao: obs,
+        responsavel: userData.nome
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert("Colheita registrada com sucesso!");
+          closeModal('modalColheitaSala');
+          loadFrutificacaoData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro de conexão ao registrar colheita.");
+      }
+    }
+
+    loadFrutificacaoData();
+  </script>
+</body>
+</html>

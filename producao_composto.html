@@ -56,6 +56,9 @@
         </a>
 		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Incubação</span>
+        </a>
+        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Frutificação</span>
         </a>		
       </nav>
     </div>
@@ -228,6 +231,29 @@
       document.getElementById('userName').textContent = userData.nome;
     }
 
+async function carregarMeusDados() {
+  try {
+    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
+    });
+    
+    const res = await response.json(); // Converte a resposta para JSON
+
+    // 2. Trata os dados recebidos
+    if (res.success) {
+      console.log("Dados recebidos com sucesso:", res);
+    } else {
+      console.error("Erro do servidor:", res.message);
+    }
+
+  } catch (err) {
+    console.error("Erro de conexão:", err);
+  }
+}
+
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
@@ -303,6 +329,7 @@
       painel.classList.remove('hidden');
       painel.classList.add('grid');
 
+      // 1. Cálculos de Massa Geral
       const pesoFinalTotal = pesoSaco * qtdSacos;
       const pctMateriaSeca = (100 - umidadePct) / 100;
       const materiaSecaTotal = pesoFinalTotal * pctMateriaSeca;
@@ -314,6 +341,7 @@
       tbody.innerHTML = '';
       let estoqueSuficiente = true;
 
+      // 2. Calcula cada ingrediente seco proporcionalmente à Matéria Seca Total
       receita.ingredientes.forEach(ing => {
         const proporcao = ing.quantidade / 100;
         const qtdNecessaria = materiaSecaTotal * proporcao;
@@ -332,6 +360,7 @@
         `;
       });
 
+      // 3. Adiciona a linha da Água Calculada
       tbody.innerHTML += `
         <tr class="bg-blue-50/60 font-bold">
           <td class="p-2 text-blue-900">💧 Água Destilada / Purificada</td>
