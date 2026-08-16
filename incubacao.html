@@ -180,6 +180,25 @@
     </div>
   </main>
 
+  <!-- MODAL DE EDITAR DATA DE INOCULAÇÃO -->
+  <div id="modalEditarData" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Alterar Data de Inoculação</h3>
+      <p class="text-xs text-gray-500 mb-4">Selecione a nova data de inoculação para o bloco <span id="codigoBlocoData" class="font-mono font-bold text-gray-700">---</span>:</p>
+      
+      <form onsubmit="confirmarAlteracaoData(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Nova Data de Inoculação</label>
+          <input type="date" id="novaDataInoculacao" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="fecharModalEditarData()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">Salvar Alteração</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL DE DESCARTE / CONTAMINAÇÃO -->
   <div id="modalDescarte" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
@@ -187,10 +206,9 @@
       <p class="text-xs text-gray-500 mb-4">Informe o motivo do descarte para o bloco <span id="codigoBlocoDescarte" class="font-mono font-bold text-gray-700">---</span>:</p>
       
       <form onsubmit="confirmarDescarte(event)" class="space-y-3 text-xs">
-        <input type="hidden" id="inputCodigoDescarte">
         <div>
           <label class="block font-semibold mb-1">Motivo do Descarte</label>
-          <select id="selectMotivoDescarte" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
+          <select id="motivoDescarte" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
             <option value="">-- Selecione o Motivo --</option>
             <option value="Contaminação por Trichoderma (Limo Verde)">Contaminação por Trichoderma (Limo Verde)</option>
             <option value="Contaminação Bacteriana (Bactéria/Bofe)">Contaminação Bacteriana (Bactéria/Bofe)</option>
@@ -201,10 +219,10 @@
         </div>
         <div>
           <label class="block font-semibold mb-1">Observações Adicionais</label>
-          <textarea id="inputObsDescarte" rows="3" placeholder="Detalhes opcionais..." class="w-full border rounded-lg p-2.5 outline-none"></textarea>
+          <textarea id="obsDescarte" rows="3" placeholder="Detalhes opcionais..." class="w-full border rounded-lg p-2.5 outline-none"></textarea>
         </div>
         <div class="flex justify-end space-x-2 pt-2">
-          <button type="button" onclick="closeModal('modalDescarte')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="button" onclick="fecharModalDescarte()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
           <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold">Confirmar Descarte</button>
         </div>
       </form>
@@ -220,19 +238,18 @@
       document.getElementById('userName').textContent = userData.nome;
     }
 
+    function converterDataBR(dataString) {
+      if (!dataString) return new Date();
+      const partes = String(dataString).split('/');
+      if (partes.length === 3) {
+        return new Date(partes[2], partes[1] - 1, partes[0]);
+      }
+      return new Date(dataString);
+    }	
+
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
-    }
-
-    function openModal(id) {
-      document.getElementById(id).classList.remove('hidden');
-      document.getElementById(id).classList.add('flex');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-      document.getElementById(id).classList.remove('flex');
     }
 
     let blocosCache = [];
@@ -264,45 +281,40 @@
     }
 
     function processarDadosBloco(b) {
+      const dataInicio = converterDataBR(b.dataInoculacao || b.dataCriacao);
       const hoje = new Date();
-      hoje.setHours(0,0,0,0);
       
-      // Considera estritamente a data exata da inoculação ou criação na etapa
-      const dataInoc = new Date(b.dataInoculacao || b.dataCriacao);
-      dataInoc.setHours(0,0,0,0);
-      const diffTime = hoje - dataInoc;
-      const diasDecorridos = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+      dataInicio.setHours(0,0,0,0);
+      hoje.setHours(0,0,0,0);
 
-      const infoEsp = especiesCache[b.especie] || { diasMin: 14, diasMax: 21 };
-      const diasMax = Number(infoEsp.diasMax) || 21;
-      const diasMin = Number(infoEsp.diasMin) || 14;
+      const diffTempo = hoje - dataInicio;
+      let diasPassados = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
+      if (diasPassados < 0) diasPassados = 0;
 
-      let pct = Math.round((diasDecorridos / diasMax) * 100);
+      const tempoMinimo = 14; 
+      const tempoMaximo = 21; 
+
+      let pct = Math.round((diasPassados / tempoMaximo) * 100);
       if (pct > 100) pct = 100;
+      if (pct < 0) pct = 0;
 
-      let statusClass = "bg-blue-500";
-      let badgeText = `Dia ${diasDecorridos} de ${diasMax} (Mín: ${diasMin}d)`;
-      let badgeBg = "bg-blue-50 text-blue-700 border-blue-200";
-      let isPronto = false;
-      let isAtrasado = false;
+      const isPronto = diasPassados >= tempoMinimo && diasPassados <= tempoMaximo;
+      const isAtrasado = diasPassados > tempoMaximo;
 
-      if (diasDecorridos >= diasMax) {
-        isPronto = true;
-        pct = 100;
-        statusClass = "bg-emerald-600";
-        badgeText = "PRONTO P/ FRUTIFICAR";
-        badgeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
-      } else if (diasDecorridos >= diasMin) {
-        statusClass = "bg-amber-500";
-        badgeText = `Próximo do Prazo (${diasDecorridos}/${diasMax}d)`;
-        badgeBg = "bg-amber-50 text-amber-700 border-amber-200";
+      let badgeBg = 'bg-blue-50 text-blue-700 border-blue-200';
+      let badgeText = `Dia ${diasPassados} de ${tempoMaximo} (Mín: ${tempoMinimo}d)`;
+      // Barra de progresso sempre azul
+      let statusClass = 'bg-blue-600';
+
+      if (isAtrasado) {
+        badgeBg = 'bg-red-50 text-red-600 border-red-200';
+      } else if (isPronto) {
+        badgeBg = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+      } else {
+        badgeBg = 'bg-amber-50 text-amber-600 border-amber-200';
       }
 
-      if (diasDecorridos > diasMax + 7) {
-        isAtrasado = true;
-      }
-
-      return { diasDecorridos, diasMax, diasMin, pct, statusClass, badgeText, badgeBg, isPronto, isAtrasado };
+      return { pct, diasPassados, badgeBg, badgeText, statusClass, isPronto, isAtrasado };
     }
 
     function renderizarTabela() {
@@ -316,7 +328,7 @@
       let atrasados = 0;
 
       const blocosFiltrados = blocosCache.filter(b => 
-        String(b.codigo).toLowerCase().includes(filtro) || 
+        String(b.codigoRastreio).toLowerCase().includes(filtro) || 
         String(b.especie).toLowerCase().includes(filtro)
       );
 
@@ -333,8 +345,8 @@
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
-            <td class="p-3 text-center"><input type="checkbox" value="${b.codigo}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
-            <td class="p-3 font-mono font-bold text-gray-800">${b.codigo}</td>
+            <td class="p-3 text-center"><input type="checkbox" value="${b.codigoRastreio}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
+            <td class="p-3 font-mono font-bold text-gray-800">${b.codigoRastreio}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie}</td>
             <td class="p-3 text-gray-600">${b.receita || b.spawnOrigem || '---'}</td>
             <td class="p-3 text-gray-500">${b.dataInoculacao || b.dataCriacao || '---'}</td>
@@ -350,10 +362,13 @@
               </div>
             </td>
             <td class="p-3 text-center flex items-center justify-center space-x-2">
-              <button onclick="enviarIndividual('${b.codigo}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm flex items-center gap-1">
+              <button onclick="enviarIndividual('${b.codigoRastreio}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm flex items-center gap-1" title="Frutificar">
                 <span>🍄</span> Frutificar
               </button>
-              <button onclick="abrirModalDescarte('${b.codigo}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1.5 rounded border border-red-200 text-[11px] transition" title="Descartar">
+              <button onclick="abrirModalEditarData('${b.codigoRastreio}', '${b.dataInoculacao || ''}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2 py-1.5 rounded border border-blue-200 text-[11px] transition" title="Editar Data de Inoculação">
+                ✏️
+              </button>
+              <button onclick="abrirModalDescarte('${b.codigoRastreio}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1.5 rounded border border-red-200 text-[11px] transition" title="Descartar">
                 🗑️
               </button>
             </td>
@@ -370,7 +385,7 @@
       grid.innerHTML = '';
 
       const blocosFiltrados = blocosCache.filter(b => 
-        String(b.codigo).toLowerCase().includes(filtro) || 
+        String(b.codigoRastreio).toLowerCase().includes(filtro) || 
         String(b.especie).toLowerCase().includes(filtro)
       );
 
@@ -381,9 +396,9 @@
           <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between space-y-3 relative">
             <div class="flex justify-between items-start">
               <div class="flex items-start space-x-2">
-                <input type="checkbox" value="${b.codigo}" class="checkbox-bloco mt-1 rounded text-emerald-600 focus:ring-emerald-500">
+                <input type="checkbox" value="${b.codigoRastreio}" class="checkbox-bloco mt-1 rounded text-emerald-600 focus:ring-emerald-500">
                 <div>
-                  <h4 class="font-mono font-bold text-sm text-gray-800">${b.codigo}</h4>
+                  <h4 class="font-mono font-bold text-sm text-gray-800">${b.codigoRastreio}</h4>
                   <p class="text-xs font-semibold text-emerald-800">${b.especie}</p>
                 </div>
               </div>
@@ -396,7 +411,6 @@
               <div class="flex justify-between"><span>Peso:</span> <span class="font-medium text-gray-800">${b.peso} kg</span></div>
             </div>
 
-            <!-- BARRA DE PROGRESSO -->
             <div class="space-y-1">
               <div class="flex justify-between text-[11px] font-bold text-gray-600">
                 <span>Colonização</span>
@@ -408,12 +422,17 @@
             </div>
 
             <div class="flex justify-between items-center pt-2 border-t">
-              <button onclick="abrirModalDescarte('${b.codigo}')" class="text-red-600 hover:text-red-700 text-xs font-bold transition flex items-center gap-1">
-                <span>🗑️</span> Descartar
+              <button onclick="enviarIndividual('${b.codigoRastreio}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-sm">
+                <span>🍄</span> Frutificar
               </button>
-              <button onclick="enviarIndividual('${b.codigo}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-sm">
-                <span>🍄</span> Enviar p/ Frutificação
-              </button>
+              <div class="flex items-center space-x-2">
+                <button onclick="abrirModalEditarData('${b.codigoRastreio}', '${b.dataInoculacao || ''}')" class="text-blue-600 hover:text-blue-700 text-xs font-bold transition flex items-center gap-1 bg-blue-50 border border-blue-200 px-2 py-1 rounded" title="Editar Data">
+                  ✏️ Editar Data
+                </button>
+                <button onclick="abrirModalDescarte('${b.codigoRastreio}')" class="text-red-600 hover:text-red-700 text-xs font-bold transition flex items-center gap-1 bg-red-50 border border-red-200 px-2 py-1 rounded" title="Descartar">
+                  🗑️
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -468,8 +487,9 @@
           body: JSON.stringify({
             action: 'atualizarStatusBlocos',
             codigos: codigos,
+            idsBlocos: codigos,
             novoStatus: novoStatus,
-            responsavel: userData.nome
+            responsavel: userData ? userData.nome : 'Sistema'
           })
         });
         const res = await response.json();
@@ -480,44 +500,144 @@
           alert("Erro ao atualizar: " + res.message);
         }
       } catch (e) {
+        console.error("Erro na requisição:", e);
         alert("Erro de conexão ao processar requisição.");
       }
     }
 
-    function abrirModalDescarte(codigo) {
-      document.getElementById('inputCodigoDescarte').value = codigo;
-      document.getElementById('codigoBlocoDescarte').textContent = codigo;
-      document.getElementById('formDescarte')?.reset();
-      openModal('modalDescarte');
+    /* --- MODAL DE EDIÇÃO DE DATA DE INOCULAÇÃO --- */
+    let blocoParaEditarData = null;
+
+    function abrirModalEditarData(codigoRastreio, dataAtual) {
+      blocoParaEditarData = codigoRastreio;
+      document.getElementById('codigoBlocoData').innerText = codigoRastreio;
+
+      // Formata a data atual para YYYY-MM-DD se vier em formato BR (DD/MM/YYYY)
+      let dataFormatted = '';
+      if (dataAtual) {
+        const partes = dataAtual.split('/');
+        if (partes.length === 3) {
+          dataFormatted = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+        } else {
+          dataFormatted = dataAtual;
+        }
+      }
+      document.getElementById('novaDataInoculacao').value = dataFormatted;
+
+      document.getElementById('modalEditarData').classList.remove('hidden');
+      document.getElementById('modalEditarData').classList.add('flex');
     }
 
-    async function confirmarDescarte(e) {
-      e.preventDefault();
-      const codigo = document.getElementById('inputCodigoDescarte').value;
-      const motivo = document.getElementById('selectMotivoDescarte').value;
-      const obs = document.getElementById('inputObsDescarte').value;
+    function fecharModalEditarData() {
+      blocoParaEditarData = null;
+      document.getElementById('modalEditarData').classList.add('hidden');
+      document.getElementById('modalEditarData').classList.remove('flex');
+    }
+
+    async function confirmarAlteracaoData(event) {
+      if (event) event.preventDefault();
+
+      if (!blocoParaEditarData) {
+        alert("Nenhum bloco selecionado para edição.");
+        return;
+      }
+
+      const novaDataInput = document.getElementById('novaDataInoculacao').value;
+      if (!novaDataInput) {
+        alert("Por favor, selecione uma data válida.");
+        return;
+      }
+
+      // Formata YYYY-MM-DD para DD/MM/YYYY
+      const partes = novaDataInput.split('-');
+      const novaDataBR = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
-            action: 'descartarBloco',
-            codigo: codigo,
-            motivo: motivo + (obs ? ` - ${obs}` : ''),
-            responsavel: userData.nome
+            action: 'alterarDataInoculacao',
+            codigoRastreio: blocoParaEditarData,
+            novaData: novaDataBR,
+            responsavel: userData ? userData.nome : 'Sistema'
           })
         });
-        const res = await response.json();
-        if (res.success) {
-          alert("Bloco descartado com sucesso.");
-          closeModal('modalDescarte');
+
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message || "Data de inoculação alterada com sucesso!");
+          fecharModalEditarData();
           loadIncubacaoData();
         } else {
-          alert("Erro ao descartar: " + res.message);
+          alert("Erro ao alterar data: " + data.message);
         }
-      } catch (e) {
-        alert("Erro de conexão.");
+      } catch (err) {
+        alert("Erro na requisição: " + err.message);
+      }
+    }
+
+    /* --- BLOCO DO MODAL DE DESCARTE --- */
+    let blocoParaDescartar = null;
+
+    function abrirModalDescarte(codigoRastreio) {
+      blocoParaDescartar = codigoRastreio;
+      
+      const el = document.getElementById('codigoBlocoDescarte');
+      if (el) el.innerText = codigoRastreio;
+      
+      const motivoEl = document.getElementById('motivoDescarte');
+      const obsEl = document.getElementById('obsDescarte');
+      if (motivoEl) motivoEl.value = '';
+      if (obsEl) obsEl.value = '';
+
+      document.getElementById('modalDescarte').classList.remove('hidden');
+      document.getElementById('modalDescarte').classList.add('flex');
+    }
+
+    function fecharModalDescarte() {
+      blocoParaDescartar = null;
+      document.getElementById('modalDescarte').classList.add('hidden');
+      document.getElementById('modalDescarte').classList.remove('flex');
+    }
+
+    async function confirmarDescarte(event) {
+      if (event) event.preventDefault();
+
+      if (!blocoParaDescartar) {
+        alert("Nenhum bloco selecionado para descarte.");
+        return;
+      }
+
+      const motivo = document.getElementById('motivoDescarte').value;
+      const observacoes = document.getElementById('obsDescarte').value;
+
+      const payload = {
+        action: 'descartar',
+        codigoRastreio: blocoParaDescartar,
+        motivo: motivo,
+        observacoes: observacoes,
+        responsavel: userData ? userData.nome : 'Sistema'
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+
+        if (data.success) {
+          alert(data.message || "Bloco descartado com sucesso.");
+          fecharModalDescarte();
+          loadIncubacaoData();
+        } else {
+          alert("Erro ao descartar: " + data.message);
+        }
+      } catch (err) {
+        alert("Erro na requisição: " + err.message);
       }
     }
 

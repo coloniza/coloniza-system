@@ -102,17 +102,26 @@
 
     <div class="p-6 space-y-6">
 
-      <!-- PAINEL SUPERIOR: FILTRO DE SALA E DESTAQUE DE KG COLHIDOS -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- PAINEL SUPERIOR: FILTRO DE SALA, DATA E DESTAQUE DE KG COLHIDOS -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- SELETOR DE FILTRO DE SALA -->
         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
-          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Filtrar por Sala de Frutificação</label>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Filtrar por Sala</label>
           <select id="filterSala" onchange="renderizarInterface()" class="w-full border rounded-lg p-2.5 text-xs outline-none bg-white font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500">
             <option value="">🏢 Todas as Salas</option>
           </select>
         </div>
 
-        <!-- INDICADOR DE KG COLHIDOS DA SALA SELECIONADA -->
+        <!-- FILTROS DE DATA (INÍCIO E FIM) -->
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Período de Colheita</label>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="date" id="dataInicio" onchange="renderizarInterface()" class="w-full border rounded-lg p-2 text-xs outline-none">
+            <input type="date" id="dataFim" onchange="renderizarInterface()" class="w-full border rounded-lg p-2 text-xs outline-none">
+          </div>
+        </div>
+
+        <!-- INDICADOR DE KG COLHIDOS -->
         <div class="bg-emerald-800 text-white p-4 rounded-xl shadow-sm flex items-center justify-between col-span-1 md:col-span-2">
           <div>
             <p id="labelKgColhidos" class="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">Total Colhido na Sala (Acumulado)</p>
@@ -195,7 +204,7 @@
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
       <h3 id="modalSalaTitulo" class="text-lg font-bold text-gray-800 mb-4">Gerenciar Sala</h3>
       
-      <form id="formSala" onsubmit="salvarSala(event)" class="space-y-3 text-xs">
+      <form id="formSala" onsubmit="salvarSalaForm(event)" class="space-y-3 text-xs">
         <input type="hidden" id="actionSalaType" value="incluir">
         
         <div id="containerSelectSalaEditar" class="hidden">
@@ -324,8 +333,17 @@
     let blocosFrutificacaoCache = [];
     let salasCache = [];
     let especiesCache = {};
+    let colheitasListaCache = [];
     let colheitasPorSalaCache = {};
     let idSalaEmEdicao = null;
+
+    window.onload = function() {
+      loadFrutificacaoData();
+    };
+
+    function obterSalaDoBloco(b) {
+      return String(b.salaId || b.sala || b.salaNome || b.idSala || '').trim();
+    }
 
     async function loadFrutificacaoData() {
       try {
@@ -335,10 +353,12 @@
           body: JSON.stringify({ action: 'getDadosFrutificacao' })
         });
         const res = await response.json();
+
         if (res.success) {
           blocosFrutificacaoCache = res.blocos || [];
           salasCache = res.salas || [];
           especiesCache = res.especiesMap || {};
+          colheitasListaCache = res.colheitasLista || [];
           colheitasPorSalaCache = res.colheitasPorSala || {};
           populateSalasSelects();
           renderizarInterface();
@@ -361,40 +381,53 @@
       let filterOptionsHtml = '<option value="">🏢 Todas as Salas</option>';
 
       salasCache.forEach(s => {
-        optionsHtml += `<option value="${s.id}">${s.nome}</option>`;
-        filterOptionsHtml += `<option value="${s.id}">${s.nome}</option>`;
+        const idOuNome = s.id || s.nome;
+        optionsHtml += `<option value="${idOuNome}">${s.nome}</option>`;
+        filterOptionsHtml += `<option value="${idOuNome}">${s.nome}</option>`;
       });
 
       selectDestino.innerHTML = optionsHtml;
-      selectModal.innerHTML = '<option value="">-- Escolha --</option>' + salasCache.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+      selectModal.innerHTML = '<option value="">-- Escolha --</option>' + salasCache.map(s => `<option value="${s.id || s.nome}">${s.nome}</option>`).join('');
       filterSala.innerHTML = filterOptionsHtml;
       filterSala.value = valorFiltroAtual;
     }
 
-    function obterKgColhidosSala(salaId) {
-      if (!colheitasPorSalaCache) return 0;
-      if (!salaId) {
-        let totalGeral = 0;
-        for (let k in colheitasPorSalaCache) {
-          totalGeral += (colheitasPorSalaCache[k] || 0);
+    function obterKgColhidosFiltrados(salaId) {
+      if (!colheitasListaCache || colheitasListaCache.length === 0) return 0;
+
+      const dataIniVal = document.getElementById('dataInicio') ? document.getElementById('dataInicio').value : '';
+      const dataFimVal = document.getElementById('dataFim') ? document.getElementById('dataFim').value : '';
+
+      const dInicio = dataIniVal ? new Date(dataIniVal + 'T00:00:00') : null;
+      const dFim = dataFimVal ? new Date(dataFimVal + 'T23:59:59') : null;
+
+      const salaObj = salasCache.find(s => String(s.id) === String(salaId) || String(s.nome) === String(salaId));
+      const nomeSala = salaObj ? salaObj.nome : salaId;
+
+      let soma = 0;
+
+      colheitasListaCache.forEach(c => {
+        if (salaId) {
+          const matchSala = String(c.sala).toLowerCase() === String(salaId).toLowerCase() || 
+                            (nomeSala && String(c.sala).toLowerCase() === String(nomeSala).toLowerCase());
+          if (!matchSala) return;
         }
-        return totalGeral;
-      }
 
-      const salaObj = salasCache.find(s => s.id === salaId);
-      const nomeSala = salaObj ? salaObj.nome : '';
+        if (c.dataHora) {
+          const dataCol = new Date(c.dataHora);
+          if (dInicio && dataCol < dInicio) return;
+          if (dFim && dataCol > dFim) return;
+        }
 
-      let total = 0;
-      if (colheitasPorSalaCache[salaId]) total += colheitasPorSalaCache[salaId];
-      if (nomeSala && nomeSala !== salaId && colheitasPorSalaCache[nomeSala]) {
-        total += colheitasPorSalaCache[nomeSala];
-      }
-      return total;
+        soma += parseFloat(c.quantidadeKg) || 0;
+      });
+
+      return soma;
     }
 
     function renderizarInterface() {
       const salaSelecionadaId = document.getElementById('filterSala').value;
-      const totalKg = obterKgColhidosSala(salaSelecionadaId);
+      const totalKg = obterKgColhidosFiltrados(salaSelecionadaId);
       
       const elKpi = document.getElementById('kpiKgColhidos');
       const labelKpi = document.getElementById('labelKgColhidos');
@@ -404,11 +437,15 @@
       }
 
       if (labelKpi) {
+        const temFiltroData = (document.getElementById('dataInicio') && document.getElementById('dataInicio').value) || 
+                              (document.getElementById('dataFim') && document.getElementById('dataFim').value);
+        const sulfixoPeriodo = temFiltroData ? " (No Período)" : " (Geral)";
+
         if (salaSelecionadaId) {
-          const salaObj = salasCache.find(s => s.id === salaSelecionadaId);
-          labelKpi.textContent = `Total Colhido na Sala: ${salaObj ? salaObj.nome : 'Selecionada'}`;
+          const salaObj = salasCache.find(s => String(s.id) === String(salaSelecionadaId) || String(s.nome) === String(salaSelecionadaId));
+          labelKpi.textContent = `Total Colhido na Sala: ${salaObj ? salaObj.nome : 'Selecionada'}${sulfixoPeriodo}`;
         } else {
-          labelKpi.textContent = "Total Colhido em Todas as Salas (Geral)";
+          labelKpi.textContent = `Total Colhido em Todas as Salas${sulfixoPeriodo}`;
         }
       }
 
@@ -420,7 +457,7 @@
       const hoje = new Date();
       hoje.setHours(0,0,0,0);
       
-      const dataEntrada = new Date(b.dataAtualizacaoStatus || b.dataCriacao);
+      const dataEntrada = new Date(b.dataAtualizacaoStatus || b.dataCriacao || Date.now());
       dataEntrada.setHours(0,0,0,0);
       const diffTime = hoje - dataEntrada;
       const diasDecorridos = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
@@ -447,12 +484,17 @@
     function renderizarTabela() {
       const tbody = document.getElementById('tbodyFrutificacao');
       const filtroText = document.getElementById('searchFrutificacao').value.toLowerCase();
-      const filtroSalaId = document.getElementById('filterSala').value;
+      const filtroSalaId = document.getElementById('filterSala').value.toLowerCase();
       tbody.innerHTML = '';
 
       const filtrados = blocosFrutificacaoCache.filter(b => {
-        const matchText = String(b.codigo).toLowerCase().includes(filtroText) || String(b.especie).toLowerCase().includes(filtroText);
-        const matchSala = !filtroSalaId || String(b.salaId) === String(filtroSalaId);
+        const cod = String(b.codigoRastreio || b.codigo || b.id || '').toLowerCase();
+        const esp = String(b.especie || '').toLowerCase();
+        const salaBloco = obterSalaDoBloco(b).toLowerCase();
+
+        const matchText = cod.includes(filtroText) || esp.includes(filtroText);
+        const matchSala = !filtroSalaId || salaBloco === filtroSalaId;
+
         return matchText && matchSala;
       });
 
@@ -465,14 +507,17 @@
 
       filtrados.forEach(b => {
         const calc = processarProgressoBloco(b);
-        const salaObj = salasCache.find(s => s.id === b.salaId);
-        const nomeSala = salaObj ? salaObj.nome : '<span class="text-amber-600 font-semibold">⚠️ Sem Sala</span>';
+        const salaIdentificador = obterSalaDoBloco(b);
+        const salaObj = salasCache.find(s => String(s.id) === salaIdentificador || String(s.nome) === salaIdentificador);
+        const nomeSala = salaObj ? salaObj.nome : (salaIdentificador ? salaIdentificador : '<span class="text-amber-600 font-semibold">⚠️ Sem Sala</span>');
+        
+        const codExibir = b.codigoRastreio || b.codigo || b.id || 'Sem código';
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
-            <td class="p-3 text-center"><input type="checkbox" value="${b.codigo}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
-            <td class="p-3 font-mono font-bold text-gray-800">${b.codigo}</td>
-            <td class="p-3 font-semibold text-emerald-800">${b.especie}</td>
+            <td class="p-3 text-center"><input type="checkbox" value="${codExibir}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
+            <td class="p-3 font-mono font-bold text-gray-800">${codExibir}</td>
+            <td class="p-3 font-semibold text-emerald-800">${b.especie || 'Não informada'}</td>
             <td class="p-3">${nomeSala}</td>
             <td class="p-3 text-gray-500">${b.dataAtualizacaoStatus || b.dataCriacao || '---'}</td>
             <td class="p-3 w-56">
@@ -487,7 +532,7 @@
               </div>
             </td>
             <td class="p-3 text-center">
-              <button onclick="abrirModalColheitaIndividual('${b.codigo}', '${b.especie}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm">
+              <button onclick="abrirModalColheitaIndividual('${codExibir}', '${b.especie || ''}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm">
                 🍄 Colher
               </button>
             </td>
@@ -499,12 +544,12 @@
     function renderizarCaixasSalas() {
       const container = document.getElementById('visaoCaixas');
       const filtroText = document.getElementById('searchFrutificacao').value.toLowerCase();
-      const filtroSalaId = document.getElementById('filterSala').value;
+      const filtroSalaId = document.getElementById('filterSala').value.toLowerCase();
       container.innerHTML = '';
 
       let salasExibir = salasCache;
       if (filtroSalaId) {
-        salasExibir = salasCache.filter(s => String(s.id) === String(filtroSalaId));
+        salasExibir = salasCache.filter(s => String(s.id).toLowerCase() === filtroSalaId || String(s.nome).toLowerCase() === filtroSalaId);
       }
 
       if (salasExibir.length === 0) {
@@ -513,8 +558,21 @@
       }
 
       salasExibir.forEach(s => {
-        const blocosNaSala = blocosFrutificacaoCache.filter(b => String(b.salaId) === String(s.id) && (String(b.codigo).toLowerCase().includes(filtroText) || String(b.especie).toLowerCase().includes(filtroText)));
-        const kgColhidosNestaSala = obterKgColhidosSala(s.id);
+        const salaIdStr = String(s.id || s.nome).toLowerCase();
+        const salaNomeStr = String(s.nome).toLowerCase();
+
+        const blocosNaSala = blocosFrutificacaoCache.filter(b => {
+          const cod = String(b.codigoRastreio || b.codigo || b.id || '').toLowerCase();
+          const esp = String(b.especie || '').toLowerCase();
+          const salaBloco = obterSalaDoBloco(b).toLowerCase();
+
+          const matchSala = (salaBloco === salaIdStr || salaBloco === salaNomeStr);
+          const matchText = cod.includes(filtroText) || esp.includes(filtroText);
+
+          return matchSala && matchText;
+        });
+
+        const kgColhidosNestaSala = obterKgColhidosFiltrados(s.id || s.nome);
 
         let cardsBlocosHtml = '';
         if (blocosNaSala.length === 0) {
@@ -522,14 +580,16 @@
         } else {
           blocosNaSala.forEach(b => {
             const calc = processarProgressoBloco(b);
+            const codExibir = b.codigoRastreio || b.codigo || b.id || 'Sem código';
+
             cardsBlocosHtml += `
               <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 flex flex-col justify-between space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
-                    <input type="checkbox" value="${b.codigo}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
-                    <span class="font-mono font-bold text-xs text-gray-800">${b.codigo}</span>
+                    <input type="checkbox" value="${codExibir}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
+                    <span class="font-mono font-bold text-xs text-gray-800">${codExibir}</span>
                   </div>
-                  <span class="text-[10px] font-semibold text-emerald-800">${b.especie}</span>
+                  <span class="text-[10px] font-semibold text-emerald-800">${b.especie || 'N/I'}</span>
                 </div>
                 <div class="space-y-1">
                   <div class="flex justify-between text-[10px] font-bold text-gray-500">
@@ -541,7 +601,7 @@
                   </div>
                 </div>
                 <div class="flex justify-end pt-1">
-                  <button onclick="abrirModalColheitaIndividual('${b.codigo}', '${b.especie}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[10px] font-semibold">
+                  <button onclick="abrirModalColheitaIndividual('${codExibir}', '${b.especie || ''}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[10px] font-semibold">
                     🍄 Colher
                   </button>
                 </div>
@@ -573,13 +633,13 @@
                 <span class="text-emerald-700">|</span>
                 <div><span class="text-gray-400">CO2:</span> <strong class="text-purple-300">${s.co2 || '--'} ppm</strong></div>
                 
-                <button onclick="abrirModalAtualizarAmbiente('${s.id}', '${s.nome}', '${s.temperatura}', '${s.umidade}', '${s.co2}')" class="ml-2 bg-emerald-700 hover:bg-emerald-600 text-white p-1.5 rounded text-[11px] font-semibold transition" title="Alterar Leituras Ambientais">
+                <button onclick="abrirModalAtualizarAmbiente('${s.id || s.nome}', '${s.nome}', '${s.temperatura || ''}', '${s.umidade || ''}', '${s.co2 || ''}')" class="ml-2 bg-emerald-700 hover:bg-emerald-600 text-white p-1.5 rounded text-[11px] font-semibold transition" title="Alterar Leituras Ambientais">
                   ✏️ Atualizar
                 </button>
               </div>
 
               <div class="flex items-center space-x-2">
-                <button onclick="abrirModalColheitaSala('${s.id}', '${s.nome}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1">
+                <button onclick="abrirModalColheitaSala('${s.id || s.nome}', '${s.nome}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1">
                   <span>🍄</span> Registrar Colheita na Sala
                 </button>
               </div>
@@ -624,9 +684,10 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'atribuirBlocosSala',
+            idsBlocos: selecionados,
             codigos: selecionados,
             salaId: salaId,
-            responsavel: userData.nome
+            responsavel: userData ? userData.nome : 'Sistema'
           })
         });
         const res = await response.json();
@@ -637,6 +698,7 @@
           alert("Erro: " + res.message);
         }
       } catch (err) {
+        console.error("Erro na transferência:", err);
         alert("Erro de conexão ao transferir blocos.");
       }
     }
@@ -676,25 +738,25 @@
     function carregarDadosSalaModal() {
       const id = document.getElementById('selectSalaModal').value;
       if (!id) { idSalaEmEdicao = null; return; }
-      const sala = salasCache.find(s => s.id === id);
+      const sala = salasCache.find(s => String(s.id) === String(id) || String(s.nome) === String(id));
       if (!sala) return;
 
-      idSalaEmEdicao = sala.id;
+      idSalaEmEdicao = sala.id || sala.nome;
       document.getElementById('salaNome').value = sala.nome;
       document.getElementById('salaTemp').value = sala.temperatura;
       document.getElementById('salaUmi').value = sala.umidade;
       document.getElementById('salaCo2').value = sala.co2;
     }
 
-    async function salvarSala(e) {
+    async function salvarSalaForm(e) {
       e.preventDefault();
       const modo = document.getElementById('actionSalaType').value;
 
       if (modo === 'excluir') {
         const id = document.getElementById('selectSalaModal').value;
         if (!id) { alert("Selecione uma sala para excluir."); return; }
-        const sala = salasCache.find(s => s.id === id);
-        if (!confirm(`Deseja realmente excluir a sala "${sala.nome}"?`)) return;
+        const sala = salasCache.find(s => String(s.id) === String(id) || String(s.nome) === String(id));
+        if (!confirm(`Deseja realmente excluir a sala "${sala ? sala.nome : id}"?`)) return;
 
         enviarAcaoSala({ action: 'excluirSala', id: id });
         return;
@@ -707,7 +769,7 @@
         temperatura: parseFloat(document.getElementById('salaTemp').value),
         umidade: parseFloat(document.getElementById('salaUmi').value),
         co2: parseFloat(document.getElementById('salaCo2').value),
-        responsavel: userData.nome
+        responsavel: userData ? userData.nome : 'Sistema'
       };
 
       enviarAcaoSala(payload);
@@ -722,14 +784,15 @@
         });
         const res = await response.json();
         if (res.success) {
-          alert(res.message || "Operação realizada com sucesso!");
+          alert(res.message || "Ação realizada com sucesso!");
           closeModal('modalGerenciarSala');
           loadFrutificacaoData();
         } else {
           alert("Erro: " + res.message);
         }
       } catch (err) {
-        alert("Erro de conexão ao salvar sala.");
+        console.error("Erro na ação de sala:", err);
+        alert("Erro de conexão ao gerenciar sala.");
       }
     }
 
@@ -744,31 +807,60 @@
 
     async function salvarNovoRegistroAmbiente(e) {
       e.preventDefault();
-      const payload = {
+      
+      const salaId = document.getElementById('inputSalaIdAmbiente').value;
+      const temp = parseFloat(document.getElementById('ambTemp').value);
+      const umi = parseFloat(document.getElementById('ambUmi').value);
+      const co2 = parseFloat(document.getElementById('ambCo2').value);
+      
+      const salaObj = salasCache.find(s => String(s.id) === String(salaId) || String(s.nome) === String(salaId));
+      const nomeSala = salaObj ? salaObj.nome : salaId;
+
+      const payloadAtualizarSala = {
+        action: 'atualizarSala',
+        id: salaId,
+        nome: nomeSala,
+        temperatura: temp,
+        umidade: umi,
+        co2: co2,
+        responsavel: userData ? userData.nome : 'Sistema'
+      };
+
+      const payloadLog = {
         action: 'registrarLogAmbienteSala',
-        salaId: document.getElementById('inputSalaIdAmbiente').value,
-        temperatura: parseFloat(document.getElementById('ambTemp').value),
-        umidade: parseFloat(document.getElementById('ambUmi').value),
-        co2: parseFloat(document.getElementById('ambCo2').value),
-        responsavel: userData.nome
+        salaId: salaId,
+        temperatura: temp,
+        umidade: umi,
+        co2: co2,
+        responsavel: userData ? userData.nome : 'Sistema'
       };
 
       try {
-        const response = await fetch(API_URL, {
+        const respAtualiza = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payloadAtualizarSala)
         });
-        const res = await response.json();
-        if (res.success) {
-          alert("Leituras ambientais atualizadas e registradas no histórico!");
-          closeModal('modalAtualizarAmbiente');
-          loadFrutificacaoData();
-        } else {
-          alert("Erro: " + res.message);
+        const resAtualiza = await respAtualiza.json();
+
+        if (!resAtualiza.success) {
+          alert("Erro ao atualizar sala: " + resAtualiza.message);
+          return;
         }
+
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payloadLog)
+        });
+
+        alert("Condições ambientais registradas e atualizadas com sucesso!");
+        closeModal('modalAtualizarAmbiente');
+        loadFrutificacaoData();
+
       } catch (err) {
-        alert("Erro de conexão ao registrar ambiente.");
+        console.error("Erro no envio:", err);
+        alert("Erro de conexão ao salvar leituras ambientais.");
       }
     }
 
@@ -776,39 +868,75 @@
       document.getElementById('inputSalaIdColheita').value = salaId;
       document.getElementById('nomeSalaColheita').textContent = salaNome;
       document.getElementById('obsColheita').value = '';
-      document.getElementById('listaColheitasForm').innerHTML = '';
-      adicionarLinhaColheita();
-      openModal('modalColheitaSala');
-    }
-
-    function abrirModalColheitaIndividual(codigoBloco, especieSugerida) {
-      document.getElementById('inputSalaIdColheita').value = "";
-      document.getElementById('nomeSalaColheita').textContent = `Bloco ${codigoBloco}`;
-      document.getElementById('obsColheita').value = `Colheita direta do bloco ${codigoBloco}`;
-      document.getElementById('listaColheitasForm').innerHTML = '';
-      adicionarLinhaColheita(especieSugerida, '');
-      openModal('modalColheitaSala');
-    }
-
-    function adicionarLinhaColheita(especiePadrao = '', qtdPadrao = '') {
+      
       const container = document.getElementById('listaColheitasForm');
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center";
+      container.innerHTML = '';
+      adicionarLinhaColheita(salaId);
+      openModal('modalColheitaSala');
+    }
 
-      let opcoesEspecies = '<option value="">-- Selecione a Espécie --</option>';
-      const especiesUnicas = [...new Set(blocosFrutificacaoCache.map(b => b.especie))];
-      especiesUnicas.forEach(esp => {
-        const sel = (esp === especiePadrao) ? 'selected' : '';
-        opcoesEspecies += `<option value="${esp}" ${sel}>${esp}</option>`;
+    function abrirModalColheitaIndividual(codigoBloco, especieBloco) {
+      const bloco = blocosFrutificacaoCache.find(b => (b.codigoRastreio || b.codigo || b.id) === codigoBloco);
+      const salaId = bloco ? obterSalaDoBloco(bloco) : '';
+      const salaObj = salasCache.find(s => String(s.id) === String(salaId) || String(s.nome) === String(salaId));
+      
+      const codigoLote = bloco ? (bloco.codigoRastreio || bloco.codigo || bloco.lote || codigoBloco) : codigoBloco;
+      
+      document.getElementById('inputSalaIdColheita').value = salaId || 'Geral';
+      document.getElementById('nomeSalaColheita').textContent = (salaObj ? salaObj.nome : (salaId || 'Geral')) + ` (Bloco: ${codigoLote})`;
+      document.getElementById('obsColheita').value = `Colheita direta do bloco ${codigoLote}`;
+      
+      const container = document.getElementById('listaColheitasForm');
+      container.innerHTML = `
+        <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border">
+          <input type="text" value="${especieBloco || 'Geral'}" readonly class="w-1/2 border rounded p-2 bg-gray-100 font-semibold especie-colheita">
+          <div class="w-1/3 flex items-center bg-white border rounded px-2">
+            <input type="number" step="0.01" placeholder="0.00" required class="w-full py-2 outline-none quantidade-colheita font-bold">
+            <span class="text-xs font-bold text-gray-500 ml-1">kg</span>
+          </div>
+          <input type="hidden" class="lote-item-colheita" value="${codigoLote}">
+        </div>
+      `;
+      openModal('modalColheitaSala');
+    }
+
+    function adicionarLinhaColheita(salaId) {
+      const container = document.getElementById('listaColheitasForm');
+      
+      let especiesDisponiveis = new Set();
+
+      // 1. Coleta espécies dos blocos alocados na sala
+      if (salaId) {
+        blocosFrutificacaoCache.forEach(b => {
+          const sBloco = obterSalaDoBloco(b);
+          if (sBloco.toLowerCase() === String(salaId).toLowerCase() && b.especie) {
+            especiesDisponiveis.add(b.especie);
+          }
+        });
+      }
+
+      // 2. Se não houver blocos na sala, adiciona o mapa global de espécies
+      if (especiesDisponiveis.size === 0) {
+        Object.keys(especiesCache).forEach(esp => especiesDisponiveis.add(esp));
+      }
+
+      let optionsEspecies = '<option value="">-- Selecionar Espécie --</option>';
+      especiesDisponiveis.forEach(esp => {
+        optionsEspecies += `<option value="${esp}">${esp}</option>`;
       });
 
+      const div = document.createElement('div');
+      div.className = "flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border";
       div.innerHTML = `
-        <select class="colheita-especie flex-1 border rounded-lg p-2.5 outline-none bg-white font-medium" required>
-          ${opcoesEspecies}
+        <select required class="w-1/2 border rounded p-2 outline-none especie-colheita bg-white">
+          ${optionsEspecies}
         </select>
-        <input type="number" step="0.01" min="0.01" placeholder="Qtd (kg)" value="${qtdPadrao}" class="colheita-qtd w-28 border rounded-lg p-2.5 outline-none font-bold" required>
-        <span class="text-xs font-bold text-gray-500">kg</span>
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
+        <div class="w-1/3 flex items-center bg-white border rounded px-2">
+          <input type="number" step="0.01" placeholder="0.00" required class="w-full py-2 outline-none quantidade-colheita font-bold">
+          <span class="text-xs font-bold text-gray-500 ml-1">kg</span>
+        </div>
+        <input type="text" placeholder="Lote (opcional)" class="w-1/4 border rounded p-2 outline-none lote-item-colheita font-mono text-xs" value="-">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 font-bold px-2">✕</button>
       `;
       container.appendChild(div);
     }
@@ -816,29 +944,44 @@
     async function confirmarColheitaSala(e) {
       e.preventDefault();
       const salaId = document.getElementById('inputSalaIdColheita').value;
-      const especiesEls = document.querySelectorAll('.colheita-especie');
-      const qtdsEls = document.querySelectorAll('.colheita-qtd');
-      const obs = document.getElementById('obsColheita').value.trim();
+      const obs = document.getElementById('obsColheita').value;
+      
+      const linhas = document.querySelectorAll('#listaColheitasForm > div');
+      const itens = [];
 
-      const itensColheita = [];
-      especiesEls.forEach((el, i) => {
-        itensColheita.push({
-          especie: el.value,
-          quantidadeKg: parseFloat(qtdsEls[i].value) || 0
-        });
+      linhas.forEach(l => {
+        const elEspecie = l.querySelector('.especie-colheita');
+        const inputQtd = l.querySelector('.quantidade-colheita');
+        const inputLote = l.querySelector('.lote-item-colheita');
+        
+        if (elEspecie && inputQtd) {
+          const valorQtd = parseFloat(inputQtd.value);
+          const valorLote = inputLote ? inputLote.value.trim() : '-';
+          const valorEspecie = elEspecie.value ? elEspecie.value.trim() : 'Geral';
+
+          if (!isNaN(valorQtd) && valorQtd > 0) {
+            itens.push({
+              especie: valorEspecie,
+              quantidadeKg: valorQtd,
+              quantidade: valorQtd,
+              lote: valorLote,
+              codigoRastreio: valorLote
+            });
+          }
+        }
       });
 
-      if (itensColheita.length === 0) {
-        alert("Adicione ao menos uma espécie colhida.");
+      if (itens.length === 0) {
+        alert("Informe um valor válido maior que 0 para a quantidade colhida.");
         return;
       }
 
       const payload = {
         action: 'registrarColheitaSala',
-        salaId: salaId || null,
-        itens: itensColheita,
+        salaId: salaId,
         observacao: obs,
-        responsavel: userData.nome
+        responsavel: userData ? userData.nome : 'Sistema',
+        itens: itens
       };
 
       try {
@@ -849,18 +992,17 @@
         });
         const res = await response.json();
         if (res.success) {
-          alert("Colheita registrada com sucesso!");
+          alert(res.message || "Colheita registrada com sucesso!");
           closeModal('modalColheitaSala');
           loadFrutificacaoData();
         } else {
           alert("Erro: " + res.message);
         }
       } catch (err) {
+        console.error("Erro na colheita:", err);
         alert("Erro de conexão ao registrar colheita.");
       }
     }
-
-    loadFrutificacaoData();
   </script>
 </body>
 </html>

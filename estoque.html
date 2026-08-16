@@ -314,29 +314,6 @@
       document.getElementById('userName').textContent = userData.nome;
     }
 
-async function carregarMeusDados() {
-  try {
-    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
-    });
-    
-    const res = await response.json(); // Converte a resposta para JSON
-
-    // 2. Trata os dados recebidos
-    if (res.success) {
-      console.log("Dados recebidos com sucesso:", res);
-    } else {
-      console.error("Erro do servidor:", res.message);
-    }
-
-  } catch (err) {
-    console.error("Erro de conexão:", err);
-  }
-}
-
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
@@ -386,24 +363,57 @@ async function carregarMeusDados() {
           badgeStatus = `<span class="bg-amber-100 text-amber-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">Estoque Baixo</span>`;
         }
 
+        const nomeEscapado = ins.nome.replace(/'/g, "\\'");
+
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
             <td class="p-3 font-mono font-semibold text-gray-600">${ins.id}</td>
             <td class="p-3 font-bold text-gray-800">${ins.nome}</td>
             <td class="p-3 text-gray-600">${ins.categoria}</td>
             <td class="p-3 text-right font-extrabold ${abaixoDoMinimo ? 'text-red-600' : 'text-emerald-800'}">
-              ${ins.qtdAtual.toFixed(2)} ${ins.unidade}
+              ${parseFloat(ins.qtdAtual).toFixed(2)} ${ins.unidade}
             </td>
-            <td class="p-3 text-right text-gray-500">${ins.estoqueMinimo.toFixed(2)} ${ins.unidade}</td>
+            <td class="p-3 text-right text-gray-500">${parseFloat(ins.estoqueMinimo).toFixed(2)} ${ins.unidade}</td>
             <td class="p-3 text-center">${badgeStatus}</td>
-            <td class="p-3 text-right">
-              <button onclick="abrirModalEditar('${ins.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded border border-amber-200 font-bold" title="Editar">
+            <td class="p-3 text-right space-x-1">
+              <button onclick="abrirModalEditar('${ins.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded border border-amber-200 font-bold transition" title="Editar">
                 ✏️ Editar
+              </button>
+              <button onclick="excluirInsumo('${ins.id}', '${nomeEscapado}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold transition" title="Excluir Insumo">
+                🗑️
               </button>
             </td>
           </tr>
         `;
       });
+    }
+
+    async function excluirInsumo(id, nome) {
+      if (!confirm(`Tem certeza de que deseja excluir o insumo "${nome}" (ID: ${id})?\n\nEsta ação não poderá ser desfeita.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'excluirInsumo',
+            id: id,
+            responsavel: userData.nome
+          })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          alert(res.message);
+          loadEstoque();
+        } else {
+          alert("Erro ao excluir: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro de conexão ao tentar excluir o insumo.");
+      }
     }
 
     function atualizarKPIs(lista) {

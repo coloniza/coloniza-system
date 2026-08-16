@@ -218,7 +218,7 @@
           </div>
           <div>
             <label class="block font-semibold mb-1 text-emerald-900">Qtd por Unidade/Saco</label>
-            <input type="number" step="any" name="medidaValor" placeholder="Ex: 25 (p/ saco 25kg)" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <input type="number" step="any" name="medidaValor" id="medidaValorInput" placeholder="Ex: 25 (p/ saco 25kg)" class="w-full border rounded-lg p-2.5 outline-none bg-white">
           </div>
         </div>
 
@@ -262,29 +262,6 @@
       document.getElementById('userName').textContent = userData.nome;
     }
 
-async function carregarMeusDados() {
-  try {
-    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
-    });
-    
-    const res = await response.json(); // Converte a resposta para JSON
-
-    // 2. Trata os dados recebidos
-    if (res.success) {
-      console.log("Dados recebidos com sucesso:", res);
-    } else {
-      console.error("Erro do servidor:", res.message);
-    }
-
-  } catch (err) {
-    console.error("Erro de conexão:", err);
-  }
-}
-
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
@@ -309,7 +286,6 @@ async function carregarMeusDados() {
 
     async function loadData() {
       try {
-        // 1. Busca compras existentes
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -320,7 +296,6 @@ async function carregarMeusDados() {
           renderTable(res.compras || []);
         }
 
-        // 2. Busca o Estoque para preencher o select
         const resEstoque = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -340,7 +315,7 @@ async function carregarMeusDados() {
       if (!select) return;
       select.innerHTML = '<option value="">-- Não vincular ao estoque (Compra geral/equipamento) --</option>';
       insumos.forEach(i => {
-        select.innerHTML += `<option value="${i.id}">${i.nome} (${i.categoria})</option>`;
+        select.innerHTML += `<option value="${i.id}">${i.nome} (${i.categoria}) - Saldo: ${i.qtdAtual} ${i.unidade}</option>`;
       });
     }
 
@@ -404,6 +379,14 @@ async function carregarMeusDados() {
       const data = { action: 'cadastrarCompra', responsavel: userData.nome };
 
       formData.forEach((value, key) => data[key] = value);
+
+      // CÁLCULO DA QUANTIDADE FINAL A ENTRAR NO ESTOQUE:
+      // Exemplo: Qtd Adquirida = 2 sacos, Qtd por Unidade/Saco = 25 kg => Total = 50 kg
+      const qtdAdquirida = parseFloat(data.qtd) || 0;
+      const qtdPorUnidade = parseFloat(data.medidaValor) || 0;
+      
+      // Se tiver valor de 'medidaValor' (ex: 25 kg/saco), multiplica. Senão, usa a quantidade diretamente.
+      data.qtdEstoqueFinal = qtdPorUnidade > 0 ? (qtdAdquirida * qtdPorUnidade) : qtdAdquirida;
 
       try {
         const response = await fetch(API_URL, {

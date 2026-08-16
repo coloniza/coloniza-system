@@ -29,7 +29,7 @@
         </div>
       </div>
       <nav class="p-2 space-y-1 text-xs">
-		<a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
           <span>Dashboard</span>
         </a>
@@ -51,14 +51,14 @@
         <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Produção de Composto</span>
         </a>
-		<a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
-		  <span>Controle de Blocos</span>
-		</a>
-		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+        <a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Controle de Blocos</span>
+        </a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Incubação</span>
+        </a>
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Frutificação</span>
-        </a>
         </a>		
       </nav>
     </div>
@@ -69,6 +69,7 @@
       <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">Sair</button>
     </div>
   </aside>
+
   <!-- ÁREA PRINCIPAL -->
   <main class="flex-1 flex flex-col overflow-y-auto">
     <!-- HEADER DA PÁGINA -->
@@ -90,6 +91,7 @@
         </button>
       </div>
     </header>
+
     <div class="p-6 space-y-6">
       <!-- PAINEL DE SELEÇÃO E CONFIGURAÇÃO DA PRODUÇÃO -->
       <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
@@ -109,6 +111,7 @@
             <label class="block text-xs font-semibold text-gray-700 mb-1">Quantidade de Grãos Secos (kg)</label>
             <input type="number" id="inputVolume" oninput="calcularProporcoes()" step="0.1" placeholder="Ex: 5" min="0.1" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
+		  
           <!-- Matriz / CL de Inoculação -->
           <div id="containerMatriz" class="hidden">
             <label class="block text-xs font-semibold text-gray-700 mb-1">Inóculo de Origem (CL ou Placa)</label>
@@ -118,6 +121,7 @@
           </div>
         </div>
       </div>
+
       <!-- PAINEL DUPLO: INGREDIENTES vs INSTRUÇÕES DE PREPARO -->
       <div id="painelProducao" class="hidden grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- LADO ESQUERDO: LISTA DE INGREDIENTES E ESTOQUE -->
@@ -125,7 +129,7 @@
           <div>
             <div class="flex justify-between items-center mb-4 border-b pb-2">
               <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
-                <span>🌾</span> Grãos e Aditivos Necessários
+                <span>🌾</span> Grãos, Aditivos &amp; Hidratação
               </h3>
               <span id="labelBaseReceita" class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium border border-emerald-200"></span>
             </div>
@@ -151,6 +155,7 @@
             </button>
           </div>
         </div>
+
         <!-- LADO DIREITO: INSTRUÇÕES DE PREPARO -->
         <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
           <h3 class="text-sm font-bold uppercase text-amber-800 tracking-wider flex items-center gap-2 mb-4 border-b pb-2">
@@ -163,6 +168,7 @@
       </div>
     </div>
   </main>
+
   <!-- MODAL INCLUIR / EDITAR / EXCLUIR RECEITAS DE SPAWN -->
   <div id="modalGerenciarReceita" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -213,6 +219,7 @@
       </form>
     </div>
   </div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
     const userData = JSON.parse(localStorage.getItem('coloniza_user'));
@@ -221,38 +228,17 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
-	
-	async function carregarMeusDados() {
-  try {
-    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
-    });
-    
-    const res = await response.json(); // Converte a resposta para JSON
-
-    // 2. Trata os dados recebidos
-    if (res.success) {
-      console.log("Dados recebidos com sucesso:", res);
-    } else {
-      console.error("Erro do servidor:", res.message);
-    }
-
-  } catch (err) {
-    console.error("Erro de conexão:", err);
-  }
-}
 
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
     }
+
     let receitasCache = [];
     let estoqueCache = {};
     let matrizesCache = [];
     let idReceitaEmEdicao = null;
+
     async function loadData(autoSelectTitulo = null) {
       try {
         const response = await fetch(API_URL, {
@@ -262,7 +248,6 @@
         });
         const res = await response.json();
         if (res.success) {
-          // Lê diretamente da aba Receitas_Spawn sem necessidade de filtros manuais
           receitasCache = res.receitasSpawn || [];
           estoqueCache = res.estoque || {};
           matrizesCache = res.matrizes || [];
@@ -275,6 +260,7 @@
         console.error("Erro na conexão:", err);
       }
     }
+
     function populateReceitasSelect(autoSelectTitulo = null) {
       const select = document.getElementById('selectReceita');
       select.innerHTML = '<option value="">-- Escolha uma Receita --</option>';
@@ -291,6 +277,7 @@
         onReceitaChange();
       }
     }
+
     function populateMatrizesSelect() {
       const select = document.getElementById('selectMatriz');
       select.innerHTML = '<option value="">-- Selecione a Origem --</option>';
@@ -298,6 +285,7 @@
         select.innerHTML += `<option value="${m.codigo}">${m.codigo} - ${m.especie} (${m.variedade || 'Geral'})</option>`;
       });
     }
+
     function onReceitaChange() {
       const idx = document.getElementById('selectReceita').value;
       const containerVolume = document.getElementById('containerVolume');
@@ -318,11 +306,13 @@
       document.getElementById('labelBaseReceita').textContent = `Base da Receita: ${receita.volumeBase} kg de grão seco`;
       calcularProporcoes();
     }
+
     function calcularProporcoes() {
       const idx = document.getElementById('selectReceita').value;
       const volInput = parseFloat(document.getElementById('inputVolume').value);
       const painelProducao = document.getElementById('painelProducao');
       const tbody = document.getElementById('tbodyIngredientes');
+
       if (idx === "" || isNaN(volInput) || volInput <= 0) {
         painelProducao.classList.add('hidden');
         painelProducao.classList.remove('grid');
@@ -330,15 +320,22 @@
       }
       painelProducao.classList.remove('hidden');
       painelProducao.classList.add('grid');
+
       const receita = receitasCache[idx];
       const fator = volInput / (receita.volumeBase || 1);
       tbody.innerHTML = '';
       let estoqueSuficiente = true;
+
+      // 1. Insumos e Grãos
       receita.ingredientes.forEach(ing => {
+        // Ignora caso exista algum ingrediente 'Água' cadastrado na receita base para reexibir formatado ao final
+        if (ing.nome.toLowerCase().includes('água') || ing.nome.toLowerCase().includes('agua')) return;
+
         const qtdNecessaria = ing.quantidade * fator;
         const qtdEstoque = estoqueCache[ing.nome] || 0;
         const semEstoque = qtdEstoque < qtdNecessaria;
         if (semEstoque) estoqueSuficiente = false;
+
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
             <td class="p-2 font-medium text-gray-800">${ing.nome}</td>
@@ -349,6 +346,19 @@
           </tr>
         `;
       });
+
+      // 2. Cálculo e exibição padronizada da Água Purificada (Litros/kg de hidratação direta)
+      // Estimativa padrão de hidratação para grãos de hidratação comum (ex: 1kg grão seco ~ 0.8L a 1.0L de água)
+      const aguaCalculadaLitros = volInput * 1.5; 
+
+      tbody.innerHTML += `
+        <tr class="bg-blue-50/60 font-bold">
+          <td class="p-2 text-blue-900">💧 Água Purificada</td>
+          <td class="p-2 text-right text-blue-900">${aguaCalculadaLitros.toFixed(2)} Litragem (kg)</td>
+          <td class="p-2 text-right text-gray-500">Uso direto</td>
+        </tr>
+      `;
+
       const btnNovoSpawn = document.getElementById('btnNovoSpawn');
       if (!estoqueSuficiente) {
         btnNovoSpawn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -358,18 +368,22 @@
         btnNovoSpawn.title = "";
       }
     }
+
     async function executarProducaoSpawn() {
       const idx = document.getElementById('selectReceita').value;
       const volInput = parseFloat(document.getElementById('inputVolume').value);
       const matrizCodigo = document.getElementById('selectMatriz').value;
+
       if (idx === "" || !volInput || matrizCodigo === "") {
         alert("Por favor, selecione a Receita, informe a quantidade de grão (kg) e escolha a cultura de origem.");
         return;
       }
+
       const receita = receitasCache[idx];
       const matriz = matrizesCache.find(m => m.codigo === matrizCodigo);
       const confirmou = confirm(`Confirmar a produção de ${volInput} kg de Spawn?\n\n- Receita: ${receita.titulo}\n- Origem: ${matrizCodigo}\n- Os grãos e aditivos serão deduzidos do estoque e o lote será registrado no sistema.`);
       if (!confirmou) return;
+
       const payload = {
         action: 'produzirEInocularSpawn',
         receitaTitulo: receita.titulo,
@@ -382,6 +396,7 @@
         })),
         responsavel: userData.nome
       };
+
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -399,6 +414,7 @@
         alert("Erro de conexão ao processar produção.");
       }
     }
+
     function openModalGerenciarReceita(modo) {
       document.getElementById('actionReceitaType').value = modo;
       const titulo = document.getElementById('modalReceitaTitulo');
@@ -407,6 +423,7 @@
       const btnSalvar = document.getElementById('btnSalvarReceitaModal');
       document.getElementById('formReceita').reset();
       document.getElementById('listaIngredientesForm').innerHTML = '';
+
       if (modo === 'incluir') {
         idReceitaEmEdicao = null;
         titulo.textContent = "Inserir Nova Receita de Spawn";
@@ -432,6 +449,7 @@
       }
       openModal('modalGerenciarReceita');
     }
+
     function populateModalSelect() {
       const select = document.getElementById('selectReceitaModal');
       select.innerHTML = '<option value="">-- Selecione para carregar --</option>';
@@ -439,6 +457,7 @@
         select.innerHTML += `<option value="${i}">${r.titulo}</option>`;
       });
     }
+
     function carregarDadosReceitaModal() {
       const idx = document.getElementById('selectReceitaModal').value;
       if (idx === "") { idReceitaEmEdicao = null; return; }
@@ -455,6 +474,7 @@
         adicionarLinhaIngrediente(ing.nome, ing.quantidade, ing.unidade);
       });
     }
+
     function adicionarLinhaIngrediente(nome = '', qtd = '', unidade = 'kg') {
       const container = document.getElementById('listaIngredientesForm');
       const div = document.createElement('div');
@@ -471,6 +491,7 @@
       `;
       container.appendChild(div);
     }
+
     async function salvarReceita(e) {
       e.preventDefault();
       const modo = document.getElementById('actionReceitaType').value;
@@ -506,6 +527,7 @@
       };
       enviarAcaoReceita(payload, tituloReceita);
     }
+
     async function enviarAcaoReceita(payload, tituloParaAutoSelecionar = null) {
       try {
         const response = await fetch(API_URL, {
@@ -525,14 +547,17 @@
         alert("Erro ao comunicar com o servidor.");
       }
     }
+
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
       document.getElementById(id).classList.add('flex');
     }
+
     function closeModal(id) {
       document.getElementById(id).classList.add('hidden');
       document.getElementById(id).classList.remove('flex');
     }
+
     loadData();
   </script>
 </body>

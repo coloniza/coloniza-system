@@ -223,28 +223,26 @@
     if (!userData) { window.location.href = "index.html"; } 
     else { document.getElementById('userName').textContent = userData.nome; }
 
-async function carregarMeusDados() {
-  try {
-    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
-    });
-    
-    const res = await response.json(); // Converte a resposta para JSON
+    async function carregarMeusDados() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getBlocosIncubacao' })
+        });
+        
+        const res = await response.json();
 
-    // 2. Trata os dados recebidos
-    if (res.success) {
-      console.log("Dados recebidos com sucesso:", res);
-    } else {
-      console.error("Erro do servidor:", res.message);
+        if (res.success) {
+          console.log("Dados recebidos com sucesso:", res);
+        } else {
+          console.error("Erro do servidor:", res.message);
+        }
+
+      } catch (err) {
+        console.error("Erro de conexão:", err);
+      }
     }
-
-  } catch (err) {
-    console.error("Erro de conexão:", err);
-  }
-}
 
     function logout() { localStorage.removeItem('coloniza_user'); window.location.href = "index.html"; }
 
@@ -480,30 +478,40 @@ async function carregarMeusDados() {
       e.preventDefault();
       const id = document.getElementById('idBlocoExcluir').value;
       let motivo = document.getElementById('selectMotivoExclusao').value;
+      
       if (motivo === 'Outro motivo') {
         motivo = document.getElementById('inputOutroMotivo').value.trim();
       }
 
-      if (!motivo) { alert("Por favor, selecione ou informe o motivo do descarte."); return; }
+      if (!motivo) { 
+        alert("Por favor, selecione ou informe o motivo do descarte."); 
+        return; 
+      }
 
       const payload = {
-        action: 'atualizarStatusBloco',
+        action: 'descartarBloco',
         id: id,
-        status: 'Descartado',
-        obs: `Descarte: ${motivo}`
+        motivoDescarte: motivo,
+        usuario: userData ? userData.nome : 'Sistema'
       };
 
       try {
-        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(API_URL, { 
+          method: 'POST', 
+          body: JSON.stringify(payload) 
+        });
+        
         const res = await response.json();
+        
         if (res.success) {
-          exibirToast("Bloco descartado e removido da lista!");
+          exibirToast("Bloco descartado e enviado para Descartes_Blocos!");
           closeModal('modalExcluirBloco');
           loadData();
         } else {
-          alert("Erro ao excluir: " + res.message);
+          alert("Erro ao descartar: " + res.message);
         }
       } catch (err) {
+        console.error(err);
         alert("Erro ao comunicar com o servidor.");
       }
     }
