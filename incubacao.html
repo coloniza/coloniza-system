@@ -6,6 +6,11 @@
   <title>COLONIZA - Sala de Incubação</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bibliotecas para Geração de Etiquetas PDF & Código de Barras -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
     .sidebar { background-color: #11261d; }
@@ -68,6 +73,9 @@
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Frutificação</span>
         </a>
+		<a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+		<span>Colheita e Produção</span>
+		</a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -86,8 +94,11 @@
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">SALA DE INCUBAÇÃO DE BLOCOS</h2>
         <p class="text-xs text-gray-500 font-medium">MONITORAMENTO DE COLONIZAÇÃO, PROGRESSO E PRAZOS POR ESPÉCIE</p>
       </div>
-      <!-- BOTÃO DE AÇÃO RÁPIDA -->
+      <!-- BOTÕES DE AÇÃO RÁPIDA -->
       <div class="flex items-center space-x-2">
+        <button onclick="imprimirSelecionadosIncubacao()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1" title="Reimprimir etiquetas dos blocos selecionados">
+          <span>🏷️</span> Reimprimir Selecionados
+        </button>
         <button onclick="enviarSelecionadosFrutificacao()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
           <span>🍄</span> Mover Selecionados p/ Frutificação
         </button>
@@ -229,6 +240,9 @@
     </div>
   </div>
 
+  <!-- CANVAS OCULTO PARA IMPRESSÃO DE CÓDIGO DE BARRAS -->
+  <canvas id="barcodeCanvas" class="hidden"></canvas>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
     const userData = JSON.parse(localStorage.getItem('coloniza_user'));
@@ -301,18 +315,10 @@
       const isPronto = diasPassados >= tempoMinimo && diasPassados <= tempoMaximo;
       const isAtrasado = diasPassados > tempoMaximo;
 
-      let badgeBg = 'bg-blue-50 text-blue-700 border-blue-200';
+      // Texto de status com classe azul fixada
+      let badgeBg = 'bg-blue-50 text-blue-600 border-blue-200';
       let badgeText = `Dia ${diasPassados} de ${tempoMaximo} (Mín: ${tempoMinimo}d)`;
-      // Barra de progresso sempre azul
       let statusClass = 'bg-blue-600';
-
-      if (isAtrasado) {
-        badgeBg = 'bg-red-50 text-red-600 border-red-200';
-      } else if (isPronto) {
-        badgeBg = 'bg-emerald-50 text-emerald-600 border-emerald-200';
-      } else {
-        badgeBg = 'bg-amber-50 text-amber-600 border-amber-200';
-      }
 
       return { pct, diasPassados, badgeBg, badgeText, statusClass, isPronto, isAtrasado };
     }
@@ -352,21 +358,24 @@
             <td class="p-3 text-gray-500">${b.dataInoculacao || b.dataCriacao || '---'}</td>
             <td class="p-3 w-64">
               <div class="space-y-1">
-                <div class="flex justify-between text-[10px] font-bold">
-                  <span class="${calc.badgeBg.split(' ')[1]} px-1.5 py-0.2 rounded border">${calc.badgeText}</span>
-                  <span>${calc.pct}%</span>
+                <div class="flex justify-between text-[10px] font-bold text-blue-600">
+                  <span class="bg-blue-50 text-blue-600 px-1.5 py-0.2 rounded border border-blue-200">${calc.badgeText}</span>
+                  <span class="text-blue-600 font-bold">${calc.pct}%</span>
                 </div>
                 <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                   <div class="${calc.statusClass} h-2 rounded-full transition-all duration-500" style="width: ${calc.pct}%"></div>
                 </div>
               </div>
             </td>
-            <td class="p-3 text-center flex items-center justify-center space-x-2">
-              <button onclick="enviarIndividual('${b.codigoRastreio}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm flex items-center gap-1" title="Frutificar">
+            <td class="p-3 text-center flex items-center justify-center space-x-1.5">
+              <button onclick="enviarIndividual('${b.codigoRastreio}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-1.5 rounded text-[11px] transition shadow-sm flex items-center gap-1" title="Frutificar">
                 <span>🍄</span> Frutificar
               </button>
               <button onclick="abrirModalEditarData('${b.codigoRastreio}', '${b.dataInoculacao || ''}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2 py-1.5 rounded border border-blue-200 text-[11px] transition" title="Editar Data de Inoculação">
                 ✏️
+              </button>
+              <button onclick="reimprimirEtiquetaIncubacao('${b.codigoRastreio}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2 py-1.5 rounded border border-amber-200 text-[11px] transition" title="Reimprimir Etiqueta">
+                🏷️
               </button>
               <button onclick="abrirModalDescarte('${b.codigoRastreio}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1.5 rounded border border-red-200 text-[11px] transition" title="Descartar">
                 🗑️
@@ -412,7 +421,7 @@
             </div>
 
             <div class="space-y-1">
-              <div class="flex justify-between text-[11px] font-bold text-gray-600">
+              <div class="flex justify-between text-[11px] font-bold text-blue-600">
                 <span>Colonização</span>
                 <span>${calc.pct}%</span>
               </div>
@@ -425,9 +434,12 @@
               <button onclick="enviarIndividual('${b.codigoRastreio}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-sm">
                 <span>🍄</span> Frutificar
               </button>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-1.5">
                 <button onclick="abrirModalEditarData('${b.codigoRastreio}', '${b.dataInoculacao || ''}')" class="text-blue-600 hover:text-blue-700 text-xs font-bold transition flex items-center gap-1 bg-blue-50 border border-blue-200 px-2 py-1 rounded" title="Editar Data">
-                  ✏️ Editar Data
+                  ✏️
+                </button>
+                <button onclick="reimprimirEtiquetaIncubacao('${b.codigoRastreio}')" class="text-amber-700 hover:text-amber-800 text-xs font-bold transition flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-1 rounded" title="Reimprimir Etiqueta">
+                  🏷️
                 </button>
                 <button onclick="abrirModalDescarte('${b.codigoRastreio}')" class="text-red-600 hover:text-red-700 text-xs font-bold transition flex items-center gap-1 bg-red-50 border border-red-200 px-2 py-1 rounded" title="Descartar">
                   🗑️
@@ -503,6 +515,119 @@
         console.error("Erro na requisição:", e);
         alert("Erro de conexão ao processar requisição.");
       }
+    }
+
+    /* --- REIMPRESSÃO DE ETIQUETAS COLACRIL (ÚNICA OU EM LOTE) --- */
+    function reimprimirEtiquetaIncubacao(codigoRastreio) {
+      const bloco = blocosCache.find(b => String(b.codigoRastreio) === String(codigoRastreio) || String(b.id) === String(codigoRastreio));
+      
+      if (!bloco) {
+        alert("Bloco não encontrado no sistema.");
+        return;
+      }
+
+      const posInicio = prompt("Informe a posição inicial na folha Colacril A4 (1 a 14):", "1");
+      if (posInicio === null) return;
+
+      const posNum = parseInt(posInicio) || 1;
+      gerarPDFEtiquetasColacril([bloco], posNum);
+    }
+
+    function imprimirSelecionadosIncubacao() {
+      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      
+      if (selecionados.length === 0) {
+        alert("Atenção: Nenhum bloco foi selecionado para reimpressão de etiquetas.");
+        return;
+      }
+
+      const blocosParaImprimir = blocosCache.filter(b => selecionados.includes(String(b.codigoRastreio)) || selecionados.includes(String(b.id)));
+      
+      if (blocosParaImprimir.length === 0) {
+        alert("Nenhum dos blocos selecionados foi localizado no cache.");
+        return;
+      }
+
+      const posInicio = prompt(`Imprimir ${blocosParaImprimir.length} etiqueta(s).\nInforme a posição inicial na folha Colacril A4 (1 a 14):`, "1");
+      if (posInicio === null) return;
+
+      const posNum = parseInt(posInicio) || 1;
+      gerarPDFEtiquetasColacril(blocosParaImprimir, posNum);
+    }
+
+    function gerarPDFEtiquetasColacril(blocos, posInicial = 1) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+      // Layout Colacril CA4363 (A4 - 2 colunas x 7 linhas = 14 etiquetas)
+      const eLargura = 101.6;
+      const eAltura = 38.1;
+      const margemEsquerda = 4.8;
+      const margemTopo = 14.0;
+
+      let idxPos = posInicial - 1;
+
+      blocos.forEach((bloco) => {
+        if (idxPos >= 14) {
+          doc.addPage();
+          idxPos = 0;
+        }
+
+        const col = idxPos % 2;
+        const lin = Math.floor(idxPos / 2);
+
+        const x = margemEsquerda + col * eLargura;
+        const y = margemTopo + lin * eAltura;
+
+        // Borda suave da etiqueta para pré-visualização
+        doc.setDrawColor(220, 220, 220);
+        doc.rect(x, y, eLargura, eAltura);
+
+        // Header / Marca
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(4, 120, 87);
+        doc.text("COLONIZA - CULTIVO DE COGUMELOS", x + 5, y + 5);
+
+        // Código de Rastreio (Destaque)
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`CÓD: ${bloco.codigoRastreio}`, x + 5, y + 10);
+
+        // Informações Principais
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Espécie: ${bloco.especie || '---'}`, x + 5, y + 15);
+        doc.text(`Spawn Origem: ${bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
+        doc.text(`Data Inoculação: ${bloco.dataInoculacao || bloco.dataCriacao || '---'}`, x + 5, y + 23);
+        doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
+
+        // Gerar Código de Barras no Canvas e colar no PDF
+        try {
+          const canvas = document.getElementById("barcodeCanvas");
+          JsBarcode(canvas, bloco.codigoRastreio, {
+            format: "CODE128",
+            width: 1.2,
+            height: 35,
+            displayValue: false,
+            margin: 0
+          });
+
+          const imgData = canvas.toDataURL("image/png");
+          doc.addImage(imgData, "PNG", x + 58, y + 12, 38, 18);
+        } catch (e) {
+          console.error("Erro ao gerar barcode:", e);
+        }
+
+        // Rodapé da etiqueta
+        doc.setFontSize(5.5);
+        doc.setTextColor(120, 120, 120);
+        doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 33, { align: 'left' });
+
+        idxPos++;
+      });
+
+      doc.save(`Etiquetas_Incubacao_${new Date().toISOString().slice(0, 10)}.pdf`);
     }
 
     /* --- MODAL DE EDIÇÃO DE DATA DE INOCULAÇÃO --- */

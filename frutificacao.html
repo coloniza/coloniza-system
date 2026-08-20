@@ -68,6 +68,9 @@
         <a href="frutificacao.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
           <span>Sala de Frutificação</span>
         </a>
+        <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Colheita e Produção</span>
+        </a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -275,11 +278,11 @@
     </div>
   </div>
 
-  <!-- MODAL: REGISTRAR COLHEITA NA SALA (MÚLTIPLAS ESPÉCIES) -->
+  <!-- MODAL: REGISTRAR COLHEITA NA SALA / BLOCO -->
   <div id="modalColheitaSala" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto">
       <h3 class="text-lg font-bold text-gray-800 mb-2">Registrar Colheita - <span id="nomeSalaColheita" class="text-emerald-800">---</span></h3>
-      <p class="text-xs text-gray-500 mb-4">Selecione a(s) espécie(s) e informe a quantidade colhida em quilogramas:</p>
+      <p class="text-xs text-gray-500 mb-4">Selecione a espécie, informe o peso (kg), o ciclo de colheita e a qualidade:</p>
       
       <form onsubmit="confirmarColheitaSala(event)" class="space-y-3 text-xs">
         <input type="hidden" id="inputSalaIdColheita">
@@ -288,12 +291,12 @@
           <!-- Linhas geradas dinamicamente -->
         </div>
 
-        <button type="button" onclick="adicionarLinhaColheita()" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1 pt-1">
+        <button type="button" id="btnAdicionarLinhaColheita" onclick="adicionarLinhaColheita()" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1 pt-1">
           + Adicionar Outra Espécie
         </button>
 
         <div class="pt-3">
-          <label class="block font-semibold mb-1">Observações da Colheita / Qualidade</label>
+          <label class="block font-semibold mb-1">Observações da Colheita</label>
           <textarea id="obsColheita" rows="2" placeholder="Ex: Cogumelos de excelente calibre, sem pragas..." class="w-full border rounded-lg p-2.5 outline-none"></textarea>
         </div>
 
@@ -313,6 +316,48 @@
       window.location.href = "index.html";
     } else {
       document.getElementById('userName').textContent = userData.nome;
+    }
+
+    // Converter strings de data (dd/MM/yyyy ou yyyy-MM-dd / ISO) em objetos Date válidos
+    function parseDataBR(dataStr) {
+      if (!dataStr || dataStr === '---') return null;
+      if (dataStr instanceof Date) return isNaN(dataStr.getTime()) ? null : dataStr;
+
+      const apenasData = String(dataStr).split('T')[0].split(' ')[0];
+
+      // Formato BR: "16/08/2026"
+      if (apenasData.includes('/')) {
+        const partes = apenasData.split('/');
+        if (partes.length === 3) {
+          const [dia, mes, ano] = partes.map(Number);
+          return new Date(ano, mes - 1, dia);
+        }
+      }
+
+      // Formato ISO: "2026-08-16"
+      if (apenasData.includes('-')) {
+        const partes = apenasData.split('-');
+        if (partes.length === 3) {
+          const [ano, mes, dia] = partes.map(Number);
+          return new Date(ano, mes - 1, dia);
+        }
+      }
+
+      const d = new Date(dataStr);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    // Função utilitária para formatar datas no padrão BR (dd/MM/yyyy)
+    function formatarDataBR(dataVal) {
+      if (!dataVal || dataVal === '---') return '---';
+      
+      const dtObj = parseDataBR(dataVal);
+      if (!dtObj) return String(dataVal);
+
+      const dia = String(dtObj.getDate()).padStart(2, '0');
+      const mes = String(dtObj.getMonth() + 1).padStart(2, '0');
+      const ano = dtObj.getFullYear();
+      return `${dia}/${mes}/${ano}`;
     }
 
     function logout() {
@@ -398,8 +443,9 @@
       const dataIniVal = document.getElementById('dataInicio') ? document.getElementById('dataInicio').value : '';
       const dataFimVal = document.getElementById('dataFim') ? document.getElementById('dataFim').value : '';
 
-      const dInicio = dataIniVal ? new Date(dataIniVal + 'T00:00:00') : null;
-      const dFim = dataFimVal ? new Date(dataFimVal + 'T23:59:59') : null;
+      const dInicio = dataIniVal ? parseDataBR(dataIniVal) : null;
+      const dFim = dataFimVal ? parseDataBR(dataFimVal) : null;
+      if (dFim) dFim.setHours(23, 59, 59, 999);
 
       const salaObj = salasCache.find(s => String(s.id) === String(salaId) || String(s.nome) === String(salaId));
       const nomeSala = salaObj ? salaObj.nome : salaId;
@@ -414,9 +460,11 @@
         }
 
         if (c.dataHora) {
-          const dataCol = new Date(c.dataHora);
-          if (dInicio && dataCol < dInicio) return;
-          if (dFim && dataCol > dFim) return;
+          const dataCol = parseDataBR(c.dataHora);
+          if (dataCol) {
+            if (dInicio && dataCol < dInicio) return;
+            if (dFim && dataCol > dFim) return;
+          }
         }
 
         soma += parseFloat(c.quantidadeKg) || 0;
@@ -457,16 +505,19 @@
       const hoje = new Date();
       hoje.setHours(0,0,0,0);
       
-      const dataEntrada = new Date(b.dataAtualizacaoStatus || b.dataCriacao || Date.now());
+      const rawData = b.dataInoculacao || b.dataEntrada || b.dataAtualizacaoStatus || b.dataCriacao;
+      const dataEntrada = parseDataBR(rawData) || new Date();
       dataEntrada.setHours(0,0,0,0);
-      const diffTime = hoje - dataEntrada;
+
+      const diffTime = hoje.getTime() - dataEntrada.getTime();
       const diasDecorridos = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
 
       const infoEsp = especiesCache[b.especie] || { cicloFrutificacao: 25 };
-      const cicloTotal = Number(infoEsp.cicloFrutificacao) || 25;
+      const cicloTotal = parseFloat(infoEsp.cicloFrutificacao) || 25;
 
       let pct = Math.round((diasDecorridos / cicloTotal) * 100);
       if (pct > 100) pct = 100;
+      if (isNaN(pct)) pct = 0;
 
       let badgeText = `Dia ${diasDecorridos} de ${cicloTotal}d (Ciclo)`;
       let badgeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -512,6 +563,7 @@
         const nomeSala = salaObj ? salaObj.nome : (salaIdentificador ? salaIdentificador : '<span class="text-amber-600 font-semibold">⚠️ Sem Sala</span>');
         
         const codExibir = b.codigoRastreio || b.codigo || b.id || 'Sem código';
+        const dataExibir = formatarDataBR(b.dataEntrada || b.dataAtualizacaoStatus || b.dataCriacao || b.dataInoculacao);
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
@@ -519,7 +571,7 @@
             <td class="p-3 font-mono font-bold text-gray-800">${codExibir}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie || 'Não informada'}</td>
             <td class="p-3">${nomeSala}</td>
-            <td class="p-3 text-gray-500">${b.dataAtualizacaoStatus || b.dataCriacao || '---'}</td>
+            <td class="p-3 text-gray-500 font-medium">${dataExibir}</td>
             <td class="p-3 w-56">
               <div class="space-y-1">
                 <div class="flex justify-between text-[10px] font-bold">
@@ -869,6 +921,9 @@
       document.getElementById('nomeSalaColheita').textContent = salaNome;
       document.getElementById('obsColheita').value = '';
       
+      const btnAdd = document.getElementById('btnAdicionarLinhaColheita');
+      if (btnAdd) btnAdd.classList.remove('hidden');
+
       const container = document.getElementById('listaColheitasForm');
       container.innerHTML = '';
       adicionarLinhaColheita(salaId);
@@ -886,21 +941,30 @@
       document.getElementById('nomeSalaColheita').textContent = (salaObj ? salaObj.nome : (salaId || 'Geral')) + ` (Bloco: ${codigoLote})`;
       document.getElementById('obsColheita').value = `Colheita direta do bloco ${codigoLote}`;
       
+      const btnAdd = document.getElementById('btnAdicionarLinhaColheita');
+      if (btnAdd) btnAdd.classList.add('hidden');
+
       const container = document.getElementById('listaColheitasForm');
-      container.innerHTML = `
-        <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border">
-          <input type="text" value="${especieBloco || 'Geral'}" readonly class="w-1/2 border rounded p-2 bg-gray-100 font-semibold especie-colheita">
-          <div class="w-1/3 flex items-center bg-white border rounded px-2">
-            <input type="number" step="0.01" placeholder="0.00" required class="w-full py-2 outline-none quantidade-colheita font-bold">
-            <span class="text-xs font-bold text-gray-500 ml-1">kg</span>
-          </div>
-          <input type="hidden" class="lote-item-colheita" value="${codigoLote}">
-        </div>
-      `;
+      container.innerHTML = '';
+      
+      adicionarLinhaColheita(salaId, especieBloco, codigoLote);
       openModal('modalColheitaSala');
     }
 
-    function adicionarLinhaColheita(salaId) {
+    function alternarMotivoDescarte(selectQualidade) {
+      const containerLinha = selectQualidade.closest('.item-colheita-linha');
+      const containerMotivo = containerLinha.querySelector('.container-motivo-descarte');
+      const selectMotivo = containerLinha.querySelector('.motivo-descarte-colheita');
+      
+      if (selectQualidade.value === 'Descarte') {
+        containerMotivo.classList.remove('hidden');
+      } else {
+        containerMotivo.classList.add('hidden');
+        if (selectMotivo) selectMotivo.value = '';
+      }
+    }
+
+    function adicionarLinhaColheita(salaId, especiePreSelecionada, lotePreSelecionado) {
       const container = document.getElementById('listaColheitasForm');
       
       let especiesDisponiveis = new Set();
@@ -920,23 +984,72 @@
         Object.keys(especiesCache).forEach(esp => especiesDisponiveis.add(esp));
       }
 
+      // 3. Garante que a espécie pré-selecionada esteja no Set
+      if (especiePreSelecionada) {
+        especiesDisponiveis.add(especiePreSelecionada);
+      }
+
       let optionsEspecies = '<option value="">-- Selecionar Espécie --</option>';
       especiesDisponiveis.forEach(esp => {
-        optionsEspecies += `<option value="${esp}">${esp}</option>`;
+        const isSelected = especiePreSelecionada && esp.toLowerCase() === especiePreSelecionada.toLowerCase() ? 'selected' : '';
+        optionsEspecies += `<option value="${esp}" ${isSelected}>${esp}</option>`;
       });
 
+      const valorLote = lotePreSelecionado || '-';
+
       const div = document.createElement('div');
-      div.className = "flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border";
+      div.className = "item-colheita-linha flex flex-col gap-2 bg-gray-50 p-2.5 rounded-lg border";
       div.innerHTML = `
-        <select required class="w-1/2 border rounded p-2 outline-none especie-colheita bg-white">
-          ${optionsEspecies}
-        </select>
-        <div class="w-1/3 flex items-center bg-white border rounded px-2">
-          <input type="number" step="0.01" placeholder="0.00" required class="w-full py-2 outline-none quantidade-colheita font-bold">
-          <span class="text-xs font-bold text-gray-500 ml-1">kg</span>
+        <div class="flex items-center space-x-2">
+          <!-- SELEÇÃO DE ESPÉCIE VIA SELECT -->
+          <select required class="w-1/2 border rounded p-2 outline-none especie-colheita bg-white text-xs font-semibold">
+            ${optionsEspecies}
+          </select>
+          <div class="w-1/3 flex items-center bg-white border rounded px-2">
+            <input type="number" step="0.01" placeholder="0.00" required class="w-full py-1.5 outline-none quantidade-colheita font-bold text-xs">
+            <span class="text-xs font-bold text-gray-500 ml-1">kg</span>
+          </div>
+          <input type="text" placeholder="Lote" class="w-1/4 border rounded p-1.5 outline-none lote-item-colheita font-mono text-xs bg-white" value="${valorLote}">
+          <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700 font-bold px-1">✕</button>
         </div>
-        <input type="text" placeholder="Lote (opcional)" class="w-1/4 border rounded p-2 outline-none lote-item-colheita font-mono text-xs" value="-">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 font-bold px-2">✕</button>
+        
+        <!-- OPÇÃO DE CICLO E QUALIDADE -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="block font-semibold text-gray-600 text-[10px] uppercase">Ciclo (Flush)</label>
+            <select class="w-full border rounded p-1.5 outline-none ciclo-colheita bg-white font-medium">
+              <option value="1º Ciclo">1º Ciclo</option>
+              <option value="2º Ciclo">2º Ciclo</option>
+              <option value="3º Ciclo">3º Ciclo</option>
+              <option value="4º Ciclo">4º Ciclo</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-gray-600 text-[10px] uppercase">Qualidade / Classificação</label>
+            <select onchange="alternarMotivoDescarte(this)" class="w-full border rounded p-1.5 outline-none qualidade-colheita bg-white font-medium">
+              <option value="A+">A+</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="Descarte">Descarte</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SELETOR DE MOTIVO DO DESCARTE (EXIBIDO APENAS SE FOR DESCARTE) -->
+        <div class="container-motivo-descarte hidden">
+          <label class="block font-semibold text-red-600 text-[10px] uppercase mb-0.5">Motivo do Descarte</label>
+          <select class="w-full border border-red-300 rounded p-1.5 outline-none motivo-descarte-colheita bg-red-50 text-red-800 font-medium text-xs">
+            <option value="">-- Selecione o motivo --</option>
+            <option value="Contaminação">Contaminação</option>
+            <option value="Deformação">Deformação / Malformação</option>
+            <option value="Pragas/Insetos">Pragas / Insetos</option>
+            <option value="Passou do Ponto">Passou do Ponto / Abertura</option>
+            <option value="Sobras/Restos">Sobras / Restos de Limpeza</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
       `;
       container.appendChild(div);
     }
@@ -949,15 +1062,29 @@
       const linhas = document.querySelectorAll('#listaColheitasForm > div');
       const itens = [];
 
+      let validacaoOk = true;
+
       linhas.forEach(l => {
         const elEspecie = l.querySelector('.especie-colheita');
         const inputQtd = l.querySelector('.quantidade-colheita');
         const inputLote = l.querySelector('.lote-item-colheita');
+        const elCiclo = l.querySelector('.ciclo-colheita');
+        const elQualidade = l.querySelector('.qualidade-colheita');
+        const elMotivo = l.querySelector('.motivo-descarte-colheita');
         
         if (elEspecie && inputQtd) {
           const valorQtd = parseFloat(inputQtd.value);
           const valorLote = inputLote ? inputLote.value.trim() : '-';
           const valorEspecie = elEspecie.value ? elEspecie.value.trim() : 'Geral';
+          const valorCiclo = elCiclo ? elCiclo.value : '1º Ciclo';
+          const valorQualidade = elQualidade ? elQualidade.value : 'A+';
+          const valorMotivo = (valorQualidade === 'Descarte' && elMotivo) ? elMotivo.value : '';
+
+          if (valorQualidade === 'Descarte' && !valorMotivo) {
+            alert("Por favor, selecione o motivo do descarte.");
+            validacaoOk = false;
+            return;
+          }
 
           if (!isNaN(valorQtd) && valorQtd > 0) {
             itens.push({
@@ -965,11 +1092,16 @@
               quantidadeKg: valorQtd,
               quantidade: valorQtd,
               lote: valorLote,
-              codigoRastreio: valorLote
+              codigoRastreio: valorLote,
+              ciclo: valorCiclo,
+              qualidade: valorQualidade,
+              motivoDescarte: valorMotivo
             });
           }
         }
       });
+
+      if (!validacaoOk) return;
 
       if (itens.length === 0) {
         alert("Informe um valor válido maior que 0 para a quantidade colhida.");

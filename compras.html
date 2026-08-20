@@ -30,7 +30,7 @@
         </div>
       </div>
       <nav class="p-2 space-y-1 text-xs">
-		<a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
           <span>Dashboard</span>
         </a>
@@ -48,19 +48,22 @@
         </a>
         <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Produção de Spawn</span>
-		</a>		
+        </a>		
         <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Produção de Composto</span>
         </a>
-		<a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
-		  <span>Controle de Blocos</span>
-		</a>
-		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+        <a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Controle de Blocos</span>
+        </a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Incubação</span>
         </a>
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Frutificação</span>
-        </a>		
+        </a>
+        <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Colheita e Produção</span>
+        </a>	
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -78,7 +81,7 @@
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">COMPRAS &amp; INVESTIMENTOS</h2>
         <p class="text-xs text-gray-500 font-medium">GESTÃO FINANCEIRA DE AQUISIÇÕES, INSUMOS E MAQUINÁRIO</p>
       </div>
-      <button onclick="openModal('modalCompra')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
+      <button onclick="prepararNovoCadastro()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
         + Registrar Compra / Investimento
       </button>
     </header>
@@ -110,13 +113,14 @@
       </div>
 
       <!-- TABELA DE HISTÓRICO DE COMPRAS -->
-      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-        <div class="flex justify-between items-center mb-4">
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
           <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
             <span>🛒</span> Registro de Aquisições
           </h3>
-          <input type="text" id="searchCompra" onkeyup="filterTable()" placeholder="Buscar por item, fornecedor ou categoria..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-64">
+          <input type="text" id="searchCompra" onkeyup="filterTable()" placeholder="Buscar por item, fornecedor ou categoria..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-72 focus:ring-2 focus:ring-emerald-500 transition">
         </div>
+
         <div class="overflow-x-auto">
           <table id="tablaCompras" class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
@@ -125,32 +129,48 @@
                 <th class="p-2.5 font-semibold">CATEGORIA</th>
                 <th class="p-2.5 font-semibold">DESCRIÇÃO / ITEM</th>
                 <th class="p-2.5 font-semibold">FORNECEDOR</th>
+                <th class="p-2.5 font-semibold">LINK / CONTATO</th>
                 <th class="p-2.5 font-semibold">QTD</th>
                 <th class="p-2.5 font-semibold">MEDIDA</th>
                 <th class="p-2.5 font-semibold">VALOR UNIT.</th>
                 <th class="p-2.5 font-semibold">TOTAL (R$)</th>
                 <th class="p-2.5 font-semibold">PAGAMENTO</th>
                 <th class="p-2.5 font-semibold">RESPONSÁVEL</th>
-                <th class="p-2.5 font-semibold text-right">AÇÕES</th>
+                <th class="p-2.5 font-semibold text-center">AÇÕES</th>
               </tr>
             </thead>
             <tbody id="comprasBody" class="divide-y divide-gray-100">
-              <tr><td colspan="11" class="py-4 text-center text-gray-400">Carregando compras...</td></tr>
+              <tr><td colspan="12" class="py-4 text-center text-gray-400">Carregando compras...</td></tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- CONTROLES DE PAGINAÇÃO -->
+        <div class="flex justify-between items-center border-t pt-3 text-xs text-gray-500">
+          <span id="pageInfo">Mostrando 0 de 0 compras</span>
+          <div class="flex items-center space-x-2">
+            <button id="btnPrev" onclick="mudarPagina(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+              ◀ Anterior
+            </button>
+            <span id="pageIndicator" class="font-semibold text-gray-700">Página 1</span>
+            <button id="btnNext" onclick="mudarPagina(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+              Próxima ▶
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- MODAL NOVA COMPRA -->
+  <!-- MODAL COMPRA (CADASTRO / EDIÇÃO) -->
   <div id="modalCompra" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Nova Compra / Investimento</h3>
+      <h3 id="modalTitulo" class="text-lg font-bold text-gray-800 mb-4">Registrar Nova Compra / Investimento</h3>
       
-      <form onsubmit="submitForm(event)" class="space-y-3 text-xs">
-        <!-- CAMPO VINCULAR AO ESTOQUE -->
-        <div>
+      <form id="formCompra" onsubmit="submitForm(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="compraId" name="id" value="">
+
+        <div id="divVincularEstoque">
           <label class="block font-semibold mb-1">Vincular ao Estoque (Opcional)</label>
           <select id="compInsumoVinculado" name="insumoId" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
             <option value="">-- Não vincular ao estoque (Compra geral/equipamento) --</option>
@@ -158,10 +178,9 @@
           <p class="text-[10px] text-gray-500 mt-0.5">Se selecionado, dará entrada automática da quantidade no estoque.</p>
         </div>
 
-        <!-- CATEGORIA -->
         <div>
           <label class="block font-semibold mb-1">Categoria</label>
-          <select name="categoria" required class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+          <select id="categoriaInput" name="categoria" required class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
             <option value="Insumo / Matéria-Prima">Insumo / Matéria-Prima (Grãos, Sacos, Reagentes)</option>
             <option value="Equipamento / Maquinário">Equipamento / Maquinário (Autoclave, Capela, Ar)</option>
             <option value="Infraestrutura / Instalações">Infraestrutura / Instalações</option>
@@ -170,20 +189,23 @@
           </select>
         </div>
 
-        <!-- DESCRIÇÃO -->
         <div>
           <label class="block font-semibold mb-1">Descrição do Item / Produto</label>
-          <input type="text" name="descricao" required placeholder="Ex: Trigo em Grãos" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="text" id="descricaoInput" name="descricao" required placeholder="Ex: Trigo em Grãos" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-semibold mb-1">Fornecedor</label>
-            <input type="text" name="fornecedor" placeholder="Ex: Cerealista Silva" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+            <input type="text" id="fornecedorInput" name="fornecedor" placeholder="Ex: Cerealista Silva" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Link / Contato para Recompra</label>
+            <input type="text" id="linkContatoInput" name="linkContato" placeholder="URL do produto ou Telefone/Contato" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
           <div>
             <label class="block font-semibold mb-1">Data da Compra</label>
-            <input type="date" name="dataCompra" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+            <input type="date" id="dataCompraInput" name="dataCompra" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
 
@@ -198,11 +220,10 @@
           </div>
         </div>
 
-        <!-- UNIDADE DE MEDIDA -->
         <div class="grid grid-cols-2 gap-2 bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
           <div>
             <label class="block font-semibold mb-1 text-emerald-900">Unidade de Medida</label>
-            <select name="unidadeMedida" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <select id="unidadeMedidaInput" name="unidadeMedida" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
               <option value="kg">kg (Quilograma)</option>
               <option value="g">g (Grama)</option>
               <option value="mg">mg (Miligrama)</option>
@@ -229,7 +250,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-semibold mb-1">Forma de Pagamento</label>
-            <select name="pagamento" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <select id="pagamentoInput" name="pagamento" class="w-full border rounded-lg p-2.5 outline-none bg-white">
               <option value="PIX / Dinheiro">PIX / Dinheiro</option>
               <option value="Cartão de Crédito">Cartão de Crédito</option>
               <option value="Boleto Bancário">Boleto Bancário</option>
@@ -237,7 +258,7 @@
           </div>
           <div>
             <label class="block font-semibold mb-1">Status do Pagamento</label>
-            <select name="status" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <select id="statusInput" name="status" class="w-full border rounded-lg p-2.5 outline-none bg-white">
               <option value="Concluído / Pago">Concluído / Pago</option>
               <option value="Pendente / A Pagar">Pendente / A Pagar</option>
             </select>
@@ -246,7 +267,7 @@
 
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeModal('modalCompra')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Salvar Compra</button>
+          <button type="submit" id="btnSalvarModal" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Salvar Compra</button>
         </div>
       </form>
     </div>
@@ -254,7 +275,11 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
-    
+    let listaComprasCache = [];
+    let listaFiltrada = [];
+    let paginaAtual = 1;
+    const itensPorPagina = 5;
+
     const userData = JSON.parse(localStorage.getItem('coloniza_user'));
     if (!userData) {
       window.location.href = "index.html";
@@ -277,6 +302,59 @@
       document.getElementById(id).classList.remove('flex');
     }
 
+    function prepararNovoCadastro() {
+      document.getElementById('formCompra').reset();
+      document.getElementById('compraId').value = "";
+      document.getElementById('modalTitulo').textContent = "Registrar Nova Compra / Investimento";
+      document.getElementById('btnSalvarModal').textContent = "Salvar Compra";
+      document.getElementById('divVincularEstoque').classList.remove('hidden');
+      document.getElementById('modalTotalCalculado').textContent = 'R$ 0,00';
+      openModal('modalCompra');
+    }
+
+    function editarCompra(id) {
+      const compra = listaComprasCache.find(c => c.id === id);
+      if (!compra) return;
+
+      document.getElementById('compraId').value = compra.id;
+      document.getElementById('modalTitulo').textContent = "Editar Compra / Investimento";
+      document.getElementById('btnSalvarModal').textContent = "Atualizar Compra";
+      
+      document.getElementById('divVincularEstoque').classList.add('hidden');
+
+      document.getElementById('categoriaInput').value = compra.categoria || "Insumo / Matéria-Prima";
+      document.getElementById('descricaoInput').value = compra.descricao || "";
+      document.getElementById('fornecedorInput').value = (compra.fornecedor && compra.fornecedor !== '-') ? compra.fornecedor : "";
+      document.getElementById('linkContatoInput').value = (compra.linkContato && compra.linkContato !== '-') ? compra.linkContato : "";
+      document.getElementById('dataCompraInput').value = compra.data || "";
+      document.getElementById('qtdInput').value = compra.qtd || 1;
+      document.getElementById('valorUnitInput').value = compra.valorUnit || 0;
+
+      let medidaValor = "";
+      let unidadeMedida = "kg";
+      if (compra.medidaValor) {
+        const partes = compra.medidaValor.trim().split(" ");
+        if (partes.length >= 2) {
+          medidaValor = partes[0];
+          unidadeMedida = partes[1];
+        } else if (partes.length === 1) {
+          if (isNaN(partes[0])) {
+            unidadeMedida = partes[0];
+          } else {
+            medidaValor = partes[0];
+          }
+        }
+      }
+
+      document.getElementById('medidaValorInput').value = medidaValor;
+      document.getElementById('unidadeMedidaInput').value = unidadeMedida;
+      document.getElementById('pagamentoInput').value = compra.pagamento || "PIX / Dinheiro";
+      document.getElementById('statusInput').value = compra.status || "Concluído / Pago";
+
+      calcularTotalModal();
+      openModal('modalCompra');
+    }
+
     function calcularTotalModal() {
       const q = parseFloat(document.getElementById('qtdInput').value) || 0;
       const v = parseFloat(document.getElementById('valorUnitInput').value) || 0;
@@ -293,7 +371,9 @@
         });
         const res = await response.json();
         if (res.success) {
-          renderTable(res.compras || []);
+          listaComprasCache = res.compras || [];
+          atualizarTotaisCards(listaComprasCache);
+          filterTable();
         }
 
         const resEstoque = await fetch(API_URL, {
@@ -310,6 +390,25 @@
       }
     }
 
+    function atualizarTotaisCards(compras) {
+      let totalInsumos = 0;
+      let totalInvestimentos = 0;
+
+      compras.forEach(c => {
+        const total = parseFloat(c.valorTotal) || 0;
+        if (c.categoria && (c.categoria.includes('Insumo') || c.categoria.includes('Embalagens'))) {
+          totalInsumos += total;
+        } else {
+          totalInvestimentos += total;
+        }
+      });
+
+      const totalGeral = totalInsumos + totalInvestimentos;
+      document.getElementById('totalInsumosCard').textContent = totalInsumos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('totalInvestimentosCard').textContent = totalInvestimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('totalGeralCard').textContent = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
     function populateSelectInsumosCompras(insumos) {
       const select = document.getElementById('compInsumoVinculado');
       if (!select) return;
@@ -319,73 +418,115 @@
       });
     }
 
-    function renderTable(compras) {
+    function formatarLinkContato(val) {
+      if (!val || val === '-') return '-';
+      const valorLimpo = val.trim();
+      const ehLink = /^https?:\/\//i.test(valorLimpo) || /^www\./i.test(valorLimpo);
+      
+      if (ehLink) {
+        const urlFinal = /^https?:\/\//i.test(valorLimpo) ? valorLimpo : `https://${valorLimpo}`;
+        return `<a href="${urlFinal}" target="_blank" rel="noopener noreferrer" class="text-emerald-700 hover:text-emerald-900 underline font-medium flex items-center gap-1">
+                  <span>🔗 Abrir Link</span>
+                </a>`;
+      }
+      return `<span class="text-gray-600">${valorLimpo}</span>`;
+    }
+
+    function filterTable() {
+      const termo = document.getElementById('searchCompra').value.toLowerCase().trim();
+      paginaAtual = 1;
+
+      if (!termo) {
+        listaFiltrada = [...listaComprasCache];
+      } else {
+        listaFiltrada = listaComprasCache.filter(c => {
+          const desc = (c.descricao || '').toLowerCase();
+          const forn = (c.fornecedor || '').toLowerCase();
+          const cat = (c.categoria || '').toLowerCase();
+          return desc.includes(termo) || forn.includes(termo) || cat.includes(termo);
+        });
+      }
+
+      renderPage();
+    }
+
+    function renderPage() {
       const tbody = document.getElementById('comprasBody');
       tbody.innerHTML = '';
-      let totalInsumos = 0;
-      let totalInvestimentos = 0;
 
-      if (!compras || compras.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" class="py-4 text-center text-gray-400">Nenhuma compra registrada até o momento.</td></tr>';
-        document.getElementById('totalInsumosCard').textContent = 'R$ 0,00';
-        document.getElementById('totalInvestimentosCard').textContent = 'R$ 0,00';
-        document.getElementById('totalGeralCard').textContent = 'R$ 0,00';
+      if (listaFiltrada.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="py-4 text-center text-gray-400">Nenhum registro encontrado.</td></tr>';
+        document.getElementById('pageInfo').textContent = "Mostrando 0 de 0 compras";
+        document.getElementById('pageIndicator').textContent = "Página 0 de 0";
+        document.getElementById('btnPrev').disabled = true;
+        document.getElementById('btnNext').disabled = true;
         return;
       }
 
-      compras.forEach(c => {
+      const totalPaginas = Math.ceil(listaFiltrada.length / itensPorPagina);
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = Math.min(inicio + itensPorPagina, listaFiltrada.length);
+      const paginaItens = listaFiltrada.slice(inicio, fim);
+
+      paginaItens.forEach(c => {
         const total = parseFloat(c.valorTotal) || 0;
         const unit = parseFloat(c.valorUnit) || 0;
-
-        if (c.categoria && (c.categoria.includes('Insumo') || c.categoria.includes('Embalagens'))) {
-          totalInsumos += total;
-        } else {
-          totalInvestimentos += total;
-        }
-
-        const medidaTexto = (c.medidaValor ? c.medidaValor + ' ' : '') + (c.unidadeMedida || '-');
+        const medidaTexto = c.medidaValor || '-';
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
             <td class="p-2.5 font-medium text-gray-600">${c.data}</td>
             <td class="p-2.5 font-medium">${c.categoria}</td>
             <td class="p-2.5 font-bold text-gray-800">${c.descricao}</td>
-            <td class="p-2.5 text-gray-600">${c.fornecedor}</td>
+            <td class="p-2.5 text-gray-600">${c.fornecedor || '-'}</td>
+            <td class="p-2.5">${formatarLinkContato(c.linkContato)}</td>
             <td class="p-2.5 font-semibold">${c.qtd}</td>
             <td class="p-2.5 font-medium text-emerald-700 bg-emerald-50/50 rounded">${medidaTexto}</td>
             <td class="p-2.5">${unit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
             <td class="p-2.5 font-bold text-emerald-800">${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
             <td class="p-2.5 text-gray-500">${c.pagamento}</td>
             <td class="p-2.5 text-gray-500">${c.responsavel}</td>
-            <td class="p-2.5 text-right">
-              <button onclick="excluirCompra('${c.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 font-bold" title="Excluir">
-                🗑️ Excluir
+            <td class="p-2.5 text-center flex items-center justify-center space-x-1.5">
+              <button onclick="editarCompra('${c.id}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2 py-1.5 rounded border border-blue-200 text-[11px] transition" title="Editar">
+                ✏️
+              </button>
+              <button onclick="excluirCompra('${c.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1.5 rounded border border-red-200 text-[11px] transition" title="Excluir">
+                🗑️
               </button>
             </td>
           </tr>
         `;
       });
 
-      const totalGeral = totalInsumos + totalInvestimentos;
-      document.getElementById('totalInsumosCard').textContent = totalInsumos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('totalInvestimentosCard').textContent = totalInvestimentos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('totalGeralCard').textContent = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('pageInfo').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltrada.length} compras`;
+      document.getElementById('pageIndicator').textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+      document.getElementById('btnPrev').disabled = (paginaAtual === 1);
+      document.getElementById('btnNext').disabled = (paginaAtual === totalPaginas);
+    }
+
+    function mudarPagina(delta) {
+      paginaAtual += delta;
+      renderPage();
     }
 
     async function submitForm(e) {
       e.preventDefault();
       const form = e.target;
       const formData = new FormData(form);
-      const data = { action: 'cadastrarCompra', responsavel: userData.nome };
+      const compraId = document.getElementById('compraId').value;
+      const isEditing = !!compraId;
+
+      const data = { 
+        action: isEditing ? 'editarCompra' : 'cadastrarCompra', 
+        responsavel: userData.nome 
+      };
 
       formData.forEach((value, key) => data[key] = value);
 
-      // CÁLCULO DA QUANTIDADE FINAL A ENTRAR NO ESTOQUE:
-      // Exemplo: Qtd Adquirida = 2 sacos, Qtd por Unidade/Saco = 25 kg => Total = 50 kg
       const qtdAdquirida = parseFloat(data.qtd) || 0;
       const qtdPorUnidade = parseFloat(data.medidaValor) || 0;
-      
-      // Se tiver valor de 'medidaValor' (ex: 25 kg/saco), multiplica. Senão, usa a quantidade diretamente.
       data.qtdEstoqueFinal = qtdPorUnidade > 0 ? (qtdAdquirida * qtdPorUnidade) : qtdAdquirida;
 
       try {
@@ -425,15 +566,6 @@
         }
       } catch (err) {
         alert('Erro de conexão ao excluir.');
-      }
-    }
-
-    function filterTable() {
-      const filter = document.getElementById('searchCompra').value.toLowerCase();
-      const trs = document.getElementById('tablaCompras').getElementsByTagName('tr');
-      for (let i = 1; i < trs.length; i++) {
-        const tdText = trs[i].innerText.toLowerCase();
-        trs[i].style.display = tdText.includes(filter) ? '' : 'none';
       }
     }
 

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Escala Inteligente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FullCalendar JS & CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  
+  <!-- Tippy.js para Tooltips -->
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+
+    .fc { font-family: 'Inter', sans-serif; font-size: 11px; }
+    .fc-header-toolbar { padding: 12px; background-color: #ffffff; border-radius: 8px; margin-bottom: 12px !important; }
+    .fc-toolbar-title { font-size: 14px !important; font-weight: 700; color: #11261d; }
+    .fc-button-primary { background-color: #047857 !important; border-color: #047857 !important; font-size: 11px !important; font-weight: 600 !important; }
+    .fc-button-primary:hover { background-color: #065f46 !important; }
+    .fc-daygrid-day-number { font-weight: 600; color: #374151; font-size: 11px; }
+    .fc-event { border-radius: 4px; padding: 2px 4px; font-weight: 600; font-size: 10px; cursor: pointer; border: none; }
+    
+    /* Estilo para eventos Ideais (Transparencia + Borda) */
+    .evento-ideal {
+      opacity: 0.45 !important;
+      border: 1px dashed rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    .modal-backdrop { background-color: rgba(17, 38, 29, 0.6); backdrop-filter: blur(4px); }
+
+    .fc-event-img-container {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+    }
+    .fc-event-thumb {
+      width: 18px;
+      height: 18px;
+      object-fit: cover;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
+          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Otimização Operacional</p>
+        </div>
+      </div>
+      <nav class="p-2 space-y-1 text-xs">
+        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Dashboard</span></a>
+        <a href="escala_producao.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition"><span>Escala Otimizada</span></a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Sala de Incubação</span></a>
+        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Sala de Frutificação</span></a>
+      </nav>
+    </div>
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>Operador: <span id="userName" class="text-white font-semibold">---</span></div>
+      <button onclick="logout()" class="hover:text-red-400 transition">Sair</button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">ESCALA INTELIGENTE DE PRODUÇÃO</h2>
+        <p class="text-xs text-gray-500 font-medium">TEMPOS DE INCUBAÇÃO & CICLOS CONFIGURÁVEIS (ATÉ 12 MESES)</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="abrirModalTarefas()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          📋 Manutenções & Tarefas Manuais
+        </button>
+        <button onclick="abrirModalConfiguracoes()" class="bg-emerald-800 hover:bg-emerald-900 text-white p-2 rounded-lg shadow-sm transition flex items-center justify-center" title="Configurações da Escala">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- CARDS DE RESUMO (KPIS) -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Dias Utilizados</p>
+            <h3 id="resumoDiasUtilizados" class="text-xl font-black text-emerald-800 mt-1">0 de 0 dias</h3>
+            <p id="subDiasUtilizados" class="text-[10px] text-gray-400 font-medium mt-0.5">Disponibilidade configurada</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold">🧰</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Spawn Necessário</p>
+            <h3 id="resumoSpawn" class="text-xl font-black text-blue-800 mt-1">0 kg</h3>
+            <p id="subSpawn" class="text-[10px] text-gray-400 font-medium mt-0.5">0 sacos no período</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">🌾</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Blocos de Substrato</p>
+            <h3 id="resumoBlocos" class="text-xl font-black text-amber-800 mt-1">0 Blocos</h3>
+            <p id="subBlocos" class="text-[10px] text-gray-400 font-medium mt-0.5">0 kg de composto</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 font-bold">📦</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Manutenções & Limpeza</p>
+            <h3 id="resumoTarefasManuais" class="text-xl font-black text-purple-800 mt-1">0 Ativas</h3>
+            <p class="text-[10px] text-gray-400 font-medium mt-0.5">Recorrentes + Manuais</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold">🧹</div>
+        </div>
+      </div>
+
+      <!-- CALENDÁRIO VISUAL -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-3">
+          <div>
+            <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wider">📅 Agenda Operacional Sequencial</h3>
+            <p class="text-[11px] text-gray-500">
+              <span class="inline-block w-2.5 h-2.5 bg-gray-400 rounded-sm opacity-50 border border-dashed border-gray-800 mr-1"></span><b>Transparente:</b> Data Ideal Pura &nbsp;|&nbsp; 
+              <span class="inline-block w-2.5 h-2.5 bg-emerald-700 rounded-sm mr-1"></span><b>Sólido:</b> Execução Agendada nos seus Dias Livres
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2 text-[10px] font-bold">
+            <span class="px-2 py-1 rounded bg-emerald-800 text-white">● CL Master</span>
+            <span class="px-2 py-1 rounded bg-blue-700 text-white">● Inocular Spawn</span>
+            <span class="px-2 py-1 rounded bg-amber-700 text-white">● Inocular Blocos</span>
+            <span class="px-2 py-1 rounded bg-cyan-700 text-white">● Limpeza Pré/Pós</span>
+            <span class="px-2 py-1 rounded bg-indigo-700 text-white">● Manutenções</span>
+          </div>
+        </div>
+
+        <div id="calendar" class="min-h-[600px]"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= MODAL DE CONFIGURAÇÕES ================= -->
+  <div id="modalConfiguracoes" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-emerald-900 text-white p-4 px-6 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">⚙️</span>
+          <h3 class="font-bold text-sm uppercase tracking-wider">Configurações da Escala & Capacidade</h3>
+        </div>
+        <button onclick="fecharModalConfiguracoes()" class="text-emerald-200 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 text-xs">
+        
+        <div class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-2">
+          <label class="block font-bold text-indigo-900 uppercase tracking-wide">🔁 Modo de Produção / Planejamento</label>
+          <select id="selectTipoProducao" class="w-full border rounded-lg p-2 bg-white font-bold text-indigo-950 outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="recorrente" selected>🔄 Recorrente Mensal (Projetar próximos 12 meses)</option>
+            <option value="unico">🎯 Lote Único (Executar apenas para o mês selecionado)</option>
+          </select>
+          <p id="descTipoProducao" class="text-[10px] text-indigo-700 font-medium">A escala replicará o ciclo de colheitas e metas mensalmente para os próximos 12 meses, reajustando as datas automaticamente.</p>
+        </div>
+
+        <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 space-y-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div>
+              <h4 class="font-bold text-emerald-900 uppercase tracking-wide flex items-center gap-1.5">
+                📅 Escolha de Dias Disponíveis no Mês
+              </h4>
+              <p class="text-gray-600 text-[11px]">As alterações feitas mantêm o histórico dos meses passados intacto!</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <label class="font-bold text-gray-700 whitespace-nowrap">Mês:</label>
+                <input type="month" id="inputMesSelecionado" onchange="aoMudarMesSelecionado()" class="border rounded-lg p-1.5 font-bold bg-white text-emerald-900 outline-none">
+              </div>
+
+              <div class="flex items-center gap-1">
+                <label class="font-bold text-gray-700 whitespace-nowrap">Qtd. Dias:</label>
+                <select id="selectQtdDias" onchange="alterarQtdDiasEGerar()" class="border rounded-lg p-1.5 font-bold bg-white outline-none text-emerald-800">
+                  <option value="2">2 Dias</option>
+                  <option value="3">3 Dias</option>
+                  <option value="4">4 Dias</option>
+                  <option value="5" selected>5 Dias</option>
+                  <option value="6">6 Dias</option>
+                  <option value="8">8 Dias</option>
+                  <option value="10">10 Dias</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div id="containerDiasDisponiveis" class="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-2">
+            <label class="block font-bold text-gray-800">Estratégia de Cultura Líquida (CL)</label>
+            <select id="selectEstrategiaCL" class="w-full border rounded-lg p-2 bg-white font-semibold outline-none">
+              <option value="trimestral" selected>🔄 Lote Trimestral (1x a cada 3 meses - Vigor das Cepas)</option>
+              <option value="semestral">⚡ Super Lote Semestral (1x a cada 6 meses)</option>
+              <option value="mensal">🔄 Produzir CL Mensalmente</option>
+            </select>
+          </div>
+
+          <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-2">
+            <label class="block font-bold text-amber-900">Limpezas do Ciclo de Frutificação</label>
+            <div class="text-[11px] text-amber-800 font-medium">
+              ✅ <b>Obrigatória Antes:</b> Higienização da tenda 1 dia antes do lote entrar.<br>
+              ✅ <b>Obrigatória Após:</b> Sanitização pós-colheita/descarte do composto.
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b pb-2">
+            <h4 class="font-bold text-gray-800 uppercase tracking-wide">🍄 Capacidade e Metas de Espécies (Por Ciclo/Mês)</h4>
+            <button type="button" onclick="adicionarLinhaEspecie()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-3 py-1 rounded text-xs transition">
+              ➕ Add Espécie
+            </button>
+          </div>
+          <form id="formEscala" onsubmit="event.preventDefault();" class="space-y-2">
+            <div id="listaEspeciesContainer" class="space-y-2"></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="bg-gray-100 p-4 px-6 flex justify-end gap-3 border-t">
+        <button onclick="fecharModalConfiguracoes()" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-200 transition">Cancelar</button>
+        <button onclick="salvarEAplicarConfiguracoes()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition">
+          💾 Salvar e Recalcular Escala
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE EDIÇÃO DE TAREFA (AO CLICAR) ================= -->
+  <div id="modalEdicaoTarefa" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div class="bg-emerald-800 text-white p-4 px-6 flex justify-between items-center">
+        <h3 class="font-bold text-sm uppercase tracking-wider">✏️ Editar Tarefa da Escala</h3>
+        <button onclick="fecharModalEdicao()" class="text-emerald-200 hover:text-white font-bold text-lg">✕</button>
+      </div>
+      <form id="formEditarTarefa" onsubmit="event.preventDefault(); salvarEdicaoTarefa();" class="p-5 space-y-4 text-xs">
+        <input type="hidden" id="editEventoId">
+        
+        <div>
+          <label class="block font-bold mb-1 text-gray-700">Título da Tarefa</label>
+          <input type="text" id="editTitulo" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1 text-gray-700">Data Agendada</label>
+            <input type="date" id="editData" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500" required>
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-gray-700">Tempo Estimado</label>
+            <input type="text" id="editTempo" placeholder="Ex: 2h 30min" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1 text-gray-700">Quantidade / Meta</label>
+          <input type="text" id="editQtd" placeholder="Ex: 50 kg ou 25 blocos" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1 text-gray-700">Observações Adicionais</label>
+          <textarea id="editObs" rows="2" class="w-full border rounded-lg p-2 font-medium text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Instruções para o operador..."></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 border-t pt-3">
+          <button type="button" onclick="fecharModalEdicao()" class="px-4 py-2 rounded-lg font-bold text-gray-600 hover:bg-gray-100">Cancelar</button>
+          <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition">💾 Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAIS AUXILIARES -->
+  <div id="modalTarefas" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-blue-900 text-white p-4 px-6 flex justify-between items-center">
+        <h3 class="font-bold text-sm uppercase tracking-wider">📋 Gerenciar Manutenções & Tarefas</h3>
+        <button onclick="fecharModalTarefas()" class="text-blue-200 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 text-xs">
+        <form id="formNovaRecorrencia" onsubmit="event.preventDefault();" class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-3">
+          <h4 class="font-bold text-indigo-900 uppercase tracking-wide">🔄 Criar Manutenção Programada Recorrente</h4>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-2">
+              <label class="block font-bold mb-1 text-gray-700">Título</label>
+              <input type="text" id="inputRecorrenciaNome" placeholder="Ex: Limpeza de Filtro HEPA" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
+            </div>
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Frequência</label>
+              <select id="selectFrequencia" class="w-full border rounded-lg p-2 font-semibold bg-white outline-none">
+                <option value="7">Semanal (7 dias)</option>
+                <option value="15">Quinzenal (15 dias)</option>
+                <option value="30" selected>Mensal (30 dias)</option>
+                <option value="90">Trimestral (90 dias)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Data Inicial</label>
+              <input type="date" id="inputRecorrenciaDataInicio" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold transition">➕ Cadastrar</button>
+          </div>
+        </form>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <h4 class="font-bold text-indigo-900 uppercase tracking-wide border-b pb-1">Manutenções Recorrentes</h4>
+            <div id="containerListaRecorrentes" class="space-y-2"></div>
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-bold text-blue-900 uppercase tracking-wide border-b pb-1">Tarefas Avulsas</h4>
+            <div id="containerListaTarefas" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-100 p-4 px-6 flex justify-end border-t">
+        <button onclick="fecharModalTarefas()" class="bg-gray-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TEMPOS_ESPECIES = {
+      "Shimeji Branco": { cl: 12, spawn: 14, composto: 16, flush1: 7, flush2: 9,  rendimentoKgBloco: 0.38, pesoBloco: 2.0, tempoSpawMin: 45, tempoBlocoMin: 90 },
+      "Shimeji Preto":  { cl: 12, spawn: 14, composto: 18, flush1: 7, flush2: 10, rendimentoKgBloco: 0.40, pesoBloco: 2.0, tempoSpawMin: 45, tempoBlocoMin: 90 },
+      "Hiratake":       { cl: 10, spawn: 12, composto: 15, flush1: 6, flush2: 8,  rendimentoKgBloco: 0.42, pesoBloco: 2.0, tempoSpawMin: 40, tempoBlocoMin: 80 },
+      "Juba de Leão":   { cl: 15, spawn: 18, composto: 21, flush1: 8, flush2: 12, rendimentoKgBloco: 0.35, pesoBloco: 2.0, tempoSpawMin: 60, tempoBlocoMin: 120 },
+      "Shiitake":       { cl: 15, spawn: 20, composto: 60, flush1: 10, flush2: 14, rendimentoKgBloco: 0.45, pesoBloco: 2.5, tempoSpawMin: 60, tempoBlocoMin: 150 }
+    };
+
+    let mapaDiasDisponiveisPorMes = {};
+    let ultimoMesAberto = "";
+    let calendar = null;
+    let eventosMemoria = [];
+
+    window.onload = function() {
+      const hoje = new Date();
+      const mesStr = String(hoje.getMonth() + 1).padStart(2, '0');
+      const anoStr = hoje.getFullYear();
+      const mesChaveAtual = `${anoStr}-${mesStr}`;
+
+      ultimoMesAberto = mesChaveAtual;
+      document.getElementById('inputMesSelecionado').value = mesChaveAtual;
+
+      // Define os dias padrão pré-preenchidos se necessário
+      mapaDiasDisponiveisPorMes[mesChaveAtual] = [
+        `${anoStr}-${mesStr}-19`,
+        `${anoStr}-${mesStr}-20`,
+        `${anoStr}-${mesStr}-21`,
+        `${anoStr}-${mesStr}-22`,
+        `${anoStr}-${mesStr}-28`
+      ];
+
+      gerarCamposDiasDisponiveis();
+      inicializarCalendario();
+
+      adicionarLinhaEspecie("Shimeji Branco", 150);
+      adicionarLinhaEspecie("Juba de Leão", 50);
+      
+      calcularEGerarEscala();
+    };
+
+    function abrirModalConfiguracoes() { document.getElementById('modalConfiguracoes').classList.remove('hidden'); }
+    function fecharModalConfiguracoes() { document.getElementById('modalConfiguracoes').classList.add('hidden'); }
+    function abrirModalTarefas() { document.getElementById('modalTarefas').classList.remove('hidden'); }
+    function fecharModalTarefas() { document.getElementById('modalTarefas').classList.add('hidden'); }
+    function fecharModalEdicao() { document.getElementById('modalEdicaoTarefa').classList.add('hidden'); }
+
+    function aoMudarMesSelecionado() {
+      guardarDiasDoMesNoMapa(ultimoMesAberto);
+      const novoMes = document.getElementById('inputMesSelecionado').value;
+      ultimoMesAberto = novoMes;
+      gerarCamposDiasDisponiveis();
+    }
+
+    function guardarDiasDoMesNoMapa(mesChave) {
+      if (!mesChave) return;
+      const inputs = document.querySelectorAll('.input-dia-disponivel');
+      const datasValidas = [];
+      inputs.forEach(inp => { if (inp.value) datasValidas.push(inp.value); });
+      if (datasValidas.length > 0) mapaDiasDisponiveisPorMes[mesChave] = datasValidas;
+    }
+
+    function alterarQtdDiasEGerar() {
+      const mesChave = document.getElementById('inputMesSelecionado').value;
+      delete mapaDiasDisponiveisPorMes[mesChave];
+      gerarCamposDiasDisponiveis();
+    }
+
+    function gerarCamposDiasDisponiveis() {
+      const mesChave = document.getElementById('inputMesSelecionado').value;
+      if (!mesChave) return;
+
+      const [anoStr, mesStr] = mesChave.split('-');
+      const qtd = parseInt(document.getElementById('selectQtdDias').value);
+      const container = document.getElementById('containerDiasDisponiveis');
+      container.innerHTML = "";
+
+      const datasExistentes = mapaDiasDisponiveisPorMes[mesChave] || [];
+      const qtdFinal = datasExistentes.length > 0 ? datasExistentes.length : qtd;
+
+      for (let i = 1; i <= qtdFinal; i++) {
+        const div = document.createElement('div');
+        let valorData = datasExistentes[i - 1] || `${anoStr}-${mesStr}-${String(Math.min(i * 5, 28)).padStart(2, '0')}`;
+        div.innerHTML = `
+          <label class="block font-bold mb-1 text-gray-700">Dia ${i}</label>
+          <input type="date" class="input-dia-disponivel w-full border rounded-lg p-2 font-semibold bg-white outline-none focus:ring-2 focus:ring-emerald-500" value="${valorData}">
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function adicionarLinhaEspecie(especiePadrao = "Shimeji Branco", metaPadrao = 100) {
+      const container = document.getElementById('listaEspeciesContainer');
+      const rowId = 'especie_row_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      const div = document.createElement('div');
+      div.id = rowId;
+      div.className = "flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-lg text-xs";
+
+      let optionsHTML = "";
+      for (let esp in TEMPOS_ESPECIES) {
+        optionsHTML += `<option value="${esp}" ${esp === especiePadrao ? 'selected' : ''}>${esp}</option>`;
+      }
+
+      div.innerHTML = `
+        <div class="flex-1">
+          <label class="block font-semibold text-gray-700">Espécie</label>
+          <select class="select-especie w-full border rounded p-1.5 bg-white font-medium outline-none">${optionsHTML}</select>
+        </div>
+        <div class="w-36">
+          <label class="block font-semibold text-gray-700">Meta Mensal (kg)</label>
+          <input type="number" min="1" value="${metaPadrao}" class="input-meta-kg w-full border rounded p-1.5 font-bold text-emerald-800 outline-none">
+        </div>
+        <button type="button" onclick="removerLinhaEspecie('${rowId}')" class="bg-red-100 text-red-700 font-bold px-2.5 py-1.5 rounded transition mt-3">🗑️</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removerLinhaEspecie(rowId) {
+      if (document.getElementById('listaEspeciesContainer').children.length > 1) {
+        document.getElementById(rowId).remove();
+      }
+    }
+
+    function criarDataLocal(strData) {
+      const [ano, mes, dia] = strData.split('-').map(Number);
+      return new Date(ano, mes - 1, dia);
+    }
+
+    function formatarDataISO(data) {
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const dia = String(data.getDate()).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function somarDias(dataBase, dias) {
+      const novaData = new Date(dataBase.getTime());
+      novaData.setDate(novaData.getDate() + dias);
+      return novaData;
+    }
+
+    // Busca dinâmica de dias livres em múltiplos meses para evitar loops
+    function encontrarProximoDiaLivreValido(dataMinima) {
+      let dataTeste = new Date(dataMinima.getFullYear(), dataMinima.getMonth(), dataMinima.getDate());
+      
+      for (let i = 0; i < 365; i++) {
+        const ano = dataTeste.getFullYear();
+        const mesStr = String(dataTeste.getMonth() + 1).padStart(2, '0');
+        const mesChave = `${ano}-${mesStr}`;
+        const dataISO = formatarDataISO(dataTeste);
+        
+        let diasLivresDoMes = mapaDiasDisponiveisPorMes[mesChave];
+        
+        // Se estiver no mês ativo da tela, garante captura dos inputs atuais
+        if (mesChave === document.getElementById('inputMesSelecionado').value) {
+          const inputs = document.querySelectorAll('.input-dia-disponivel');
+          diasLivresDoMes = Array.from(inputs).map(inp => inp.value).filter(Boolean);
+        }
+
+        if (diasLivresDoMes && diasLivresDoMes.includes(dataISO)) {
+          return new Date(dataTeste);
+        }
+        
+        dataTeste.setDate(dataTeste.getDate() + 1);
+      }
+      
+      return new Date(dataMinima);
+    }
+
+    function inicializarCalendario() {
+      const calendarEl = document.getElementById('calendar');
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
+        buttonText: { today: 'Hoje', month: 'Mês', list: 'Lista' },
+        events: [],
+        
+        eventClassNames: function(arg) {
+          if (arg.event.extendedProps && arg.event.extendedProps.isIdeal) {
+            return ['evento-ideal'];
+          }
+          return [];
+        },
+
+        eventClick: function(info) {
+          abrirModalParaEditar(info.event);
+        },
+
+        eventDidMount: function(info) {
+          const props = info.event.extendedProps;
+          if (props) {
+            let htmlTooltip = `
+              <div class="p-2 space-y-1 text-xs max-w-xs">
+                <div class="font-bold border-b pb-1 text-emerald-300 flex justify-between items-center">
+                  <span>${info.event.title}</span>
+                  ${props.isIdeal ? '<span class="text-[9px] bg-amber-500/30 text-amber-200 px-1 rounded">Ideal</span>' : '<span class="text-[9px] bg-emerald-500/30 text-emerald-200 px-1 rounded">Agendado</span>'}
+                </div>
+                ${props.quantidade ? `<div>📦 <b>Quantidade:</b> ${props.quantidade}</div>` : ''}
+                ${props.tempoEstimado ? `<div>⏱️ <b>Tempo Estimado:</b> ${props.tempoEstimado}</div>` : ''}
+                ${props.detalheCiclo ? `<div class="text-[10px] text-gray-300 pt-1 border-t border-white/10">🔄 ${props.detalheCiclo}</div>` : ''}
+                ${props.obs ? `<div class="italic text-gray-300">📝 ${props.obs}</div>` : ''}
+                <div class="text-[9px] text-gray-400 pt-1 text-right">💡 Clique para editar</div>
+              </div>
+            `;
+
+            tippy(info.el, {
+              content: htmlTooltip,
+              allowHTML: true,
+              theme: 'coloniza',
+              placement: 'top',
+              interactive: true
+            });
+          }
+        }
+      });
+      calendar.render();
+    }
+
+    function abrirModalParaEditar(evento) {
+      document.getElementById('editEventoId').value = evento.id;
+      document.getElementById('editTitulo').value = evento.title;
+      document.getElementById('editData').value = evento.startStr;
+      document.getElementById('editTempo').value = evento.extendedProps.tempoEstimado || '';
+      document.getElementById('editQtd').value = evento.extendedProps.quantidade || '';
+      document.getElementById('editObs').value = evento.extendedProps.obs || '';
+
+      document.getElementById('modalEdicaoTarefa').classList.remove('hidden');
+    }
+
+    function salvarEdicaoTarefa() {
+      const id = document.getElementById('editEventoId').value;
+      const eventoObj = calendar.getEventById(id);
+
+      if (eventoObj) {
+        const novoTitulo = document.getElementById('editTitulo').value;
+        const novaData = document.getElementById('editData').value;
+        const novoTempo = document.getElementById('editTempo').value;
+        const novaQtd = document.getElementById('editQtd').value;
+        const novaObs = document.getElementById('editObs').value;
+
+        eventoObj.setProp('title', novoTitulo);
+        eventoObj.setStart(novaData);
+        eventoObj.setExtendedProp('tempoEstimado', novoTempo);
+        eventoObj.setExtendedProp('quantidade', novaQtd);
+        eventoObj.setExtendedProp('obs', novaObs);
+      }
+
+      fecharModalEdicao();
+    }
+
+    function salvarEAplicarConfiguracoes() {
+      guardarDiasDoMesNoMapa(document.getElementById('inputMesSelecionado').value);
+      fecharModalConfiguracoes();
+      calcularEGerarEscala();
+    }
+
+    function calcularEGerarEscala() {
+      const tipoProducao = document.getElementById('selectTipoProducao').value;
+      const qtdMesesProjecao = (tipoProducao === 'recorrente') ? 12 : 1;
+      const mesChaveSelecionado = document.getElementById('inputMesSelecionado').value;
+      if (!mesChaveSelecionado) return;
+
+      guardarDiasDoMesNoMapa(mesChaveSelecionado);
+
+      const [anoBaseSel, mesBaseSel] = mesChaveSelecionado.split('-').map(Number);
+
+      const linhas = document.querySelectorAll('#listaEspeciesContainer > div');
+      const listaEspecies = [];
+      linhas.forEach(linha => {
+        const esp = linha.querySelector('.select-especie').value;
+        const meta = parseFloat(linha.querySelector('.input-meta-kg').value) || 0;
+        if (meta > 0) listaEspecies.push({ especie: esp, metaMensalKg: meta });
+      });
+
+      let totalSpawnKgMes = 0;
+      let totalBlocosMes = 0;
+      let totalCompostoKgMes = 0;
+      let totalDiasAlocados = 0;
+
+      eventosMemoria = [];
+      let globalIdCounter = 1;
+
+      // Pega o primeiro dia marcado nos inputs da tela para iniciar a CL (Ex: Dia 19)
+      const inputsTela = document.querySelectorAll('.input-dia-disponivel');
+      let dataInicioGeral = inputsTela.length > 0 && inputsTela[0].value 
+        ? criarDataLocal(inputsTela[0].value) 
+        : new Date(anoBaseSel, mesBaseSel - 1, 1);
+
+      for (let mesIdx = 0; mesIdx < qtdMesesProjecao; mesIdx++) {
+        listaEspecies.forEach((item) => {
+          const t = TEMPOS_ESPECIES[item.especie];
+          const blocosLote = Math.ceil(item.metaMensalKg / t.rendimentoKgBloco);
+          const compostoKgLote = blocosLote * t.pesoBloco;
+          const spawnKgLote = compostoKgLote * 0.10;
+
+          if (mesIdx === 0) {
+            totalSpawnKgMes += spawnKgLote;
+            totalBlocosMes += blocosLote;
+            totalCompostoKgMes += compostoKgLote;
+          }
+
+          // --- 0. ETAPA DE CL MASTER ---
+          let dataIdealCL = new Date(dataInicioGeral);
+          dataIdealCL.setMonth(dataIdealCL.getMonth() + mesIdx);
+          
+          let dataRealCL = encontrarProximoDiaLivreValido(dataIdealCL);
+
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `🧫 [AGENDADO] Produção de CL: ${item.especie}`,
+            start: formatarDataISO(dataRealCL),
+            backgroundColor: '#065f46',
+            borderColor: '#065f46',
+            extendedProps: {
+              isIdeal: false,
+              quantidade: "Cultura Líquida Master",
+              tempoEstimado: "30 min",
+              detalheCiclo: `Início oficial do lote`
+            }
+          });
+
+          // --- 1. ETAPA DE SPAWN ---
+          // Calculado a partir da DATA REAL da CL + tempo de incubaçao da CL
+          const dataIdealSpawn = somarDias(dataRealCL, t.cl);
+          const dataRealSpawn = encontrarProximoDiaLivreValido(dataIdealSpawn);
+
+          // Evento IDEAL
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `🧪 [IDEAL] Inocular Spawn: ${item.especie}`,
+            start: formatarDataISO(dataIdealSpawn),
+            backgroundColor: '#2563eb',
+            borderColor: '#1d4ed8',
+            extendedProps: {
+              isIdeal: true,
+              quantidade: `${spawnKgLote.toFixed(1)} kg de Spawn`,
+              tempoEstimado: `${t.tempoSpawMin} min`,
+              detalheCiclo: `Dia ideal (${t.cl} dias pós-CL)`
+            }
+          });
+
+          // Evento REAL
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `🌾 [AGENDADO] Inocular Spawn: ${item.especie}`,
+            start: formatarDataISO(dataRealSpawn),
+            backgroundColor: '#1d4ed8',
+            borderColor: '#1d4ed8',
+            extendedProps: {
+              isIdeal: false,
+              quantidade: `${spawnKgLote.toFixed(1)} kg de Spawn`,
+              tempoEstimado: `${t.tempoSpawMin} min`,
+              detalheCiclo: `Agendado no seu dia disponível`
+            }
+          });
+
+          // --- 2. ETAPA DE SUBSTRATO / BLOCOS ---
+          // Calculado a partir da DATA REAL do Spawn + tempo de incubação do Spawn
+          const dataIdealSubstrato = somarDias(dataRealSpawn, t.spawn);
+          const dataRealSubstrato = encontrarProximoDiaLivreValido(dataIdealSubstrato);
+
+          // Evento IDEAL
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `📦 [IDEAL] Inocular Blocos: ${item.especie}`,
+            start: formatarDataISO(dataIdealSubstrato),
+            backgroundColor: '#d97706',
+            borderColor: '#b45309',
+            extendedProps: {
+              isIdeal: true,
+              quantidade: `${blocosLote} blocos (${compostoKgLote.toFixed(0)}kg)`,
+              tempoEstimado: `${t.tempoBlocoMin} min`,
+              detalheCiclo: `Dia ideal após ${t.spawn} dias de colonização do Spawn`
+            }
+          });
+
+          // Evento REAL
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `📦 [AGENDADO] Inocular Blocos: ${item.especie}`,
+            start: formatarDataISO(dataRealSubstrato),
+            backgroundColor: '#b45309',
+            borderColor: '#b45309',
+            extendedProps: {
+              isIdeal: false,
+              quantidade: `${blocosLote} blocos (${compostoKgLote.toFixed(0)}kg)`,
+              tempoEstimado: `${t.tempoBlocoMin} min`,
+              detalheCiclo: `Agendado no seu dia disponível`
+            }
+          });
+
+          // --- 3. FRUTIFICAÇÃO E COLHEITAS ---
+          const diaEntradaFrutificacao = somarDias(dataRealSubstrato, t.composto);
+          const diaColheitaF1 = somarDias(diaEntradaFrutificacao, t.flush1);
+          const diaColheitaF2 = somarDias(diaColheitaF1, t.flush2);
+
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `🍄 1º Flush: ${item.especie}`,
+            start: formatarDataISO(diaColheitaF1),
+            backgroundColor: '#6b21a8',
+            borderColor: '#6b21a8',
+            extendedProps: {
+              isIdeal: false,
+              quantidade: `~${(item.metaMensalKg * 0.6).toFixed(1)} kg estimados`,
+              tempoEstimado: "60 min (Colheita/Embalagem)",
+              detalheCiclo: `Primeira colheita (${t.composto} dias pós-substrato)`
+            }
+          });
+
+          eventosMemoria.push({
+            id: 'ev_' + (globalIdCounter++),
+            title: `🍄 2º Flush: ${item.especie}`,
+            start: formatarDataISO(diaColheitaF2),
+            backgroundColor: '#3730a3',
+            borderColor: '#3730a3',
+            extendedProps: {
+              isIdeal: false,
+              quantidade: `~${(item.metaMensalKg * 0.4).toFixed(1)} kg estimados`,
+              tempoEstimado: "45 min (Colheita/Descarte)",
+              detalheCiclo: `Segunda colheita + finalização do ciclo`
+            }
+          });
+        });
+      }
+
+      // ATUALIZAR CARDS COM VALORES CALCULADOS
+      const inputsFinais = document.querySelectorAll('.input-dia-disponivel');
+      let contadorDiasPreenchidos = 0;
+      inputsFinais.forEach(i => { if (i.value) contadorDiasPreenchidos++; });
+
+      document.getElementById('resumoDiasUtilizados').textContent = `${contadorDiasPreenchidos} Dias Definidos`;
+      document.getElementById('resumoSpawn').textContent = `${totalSpawnKgMes.toFixed(1)} kg`;
+      document.getElementById('resumoBlocos').textContent = `${totalBlocosMes} Blocos`;
+
+      // RECARREGAR EVENTOS NO FULLCALENDAR
+      if (calendar) {
+        calendar.removeAllEvents();
+        calendar.addEventSource(eventosMemoria);
+        calendar.gotoDate(`${anoBaseSel}-${String(mesBaseSel).padStart(2, '0')}-01`);
+      }
+    }
+  </script>
+</body>
+</html>
