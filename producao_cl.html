@@ -56,13 +56,13 @@
 		</a>
 		<a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Incubação</span>
+        </a>
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Frutificação</span>
         </a>
 		<a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
-		<span>Colheita e Produção</span>
+		  <span>Colheita e Produção</span>
 		</a>		
-        </a>		
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -101,7 +101,7 @@
         <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
           <span>⚙️</span> Seleção de Parâmetros de Produção
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
           <!-- Seleção da Receita -->
           <div>
             <label class="block text-xs font-semibold text-gray-700 mb-1">Selecione a Receita de CL</label>
@@ -119,11 +119,22 @@
             <label class="block text-xs font-semibold text-gray-700 mb-1">Qtd. de Potes / Frascos</label>
             <input type="number" id="inputQtdPotes" oninput="calcularProporcoes()" value="1" placeholder="Ex: 3" min="1" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
-          <!-- Matriz / Cepa de Inoculação -->
+
+          <!-- Tipo de Inóculo -->
+          <div id="containerTipoMatriz" class="hidden">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Tipo de Inóculo</label>
+            <select id="selectTipoMatriz" onchange="onTipoMatrizChange()" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option value="">-- Selecione o Tipo --</option>
+              <option value="PLACA">Placa / Petri (Matriz)</option>
+              <option value="CL">Cultura Líquida (CL)</option>
+            </select>
+          </div>
+
+          <!-- Item de Origem (Matriz ou Lote de CL) -->
           <div id="containerMatriz" class="hidden">
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Matriz de Origem para Inoculação</label>
+            <label class="block text-xs font-semibold text-gray-700 mb-1" id="labelInoculoItem">Inóculo de Origem</label>
             <select id="selectMatriz" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-              <option value="">-- Selecione a Matriz --</option>
+              <option value="">-- Selecione o Item --</option>
             </select>
           </div>
         </div>
@@ -236,29 +247,6 @@
       document.getElementById('userName').textContent = userData.nome;
     }
 
-async function carregarMeusDados() {
-  try {
-    // 1. INSIRE O FETCH EXATAMENTE AQUI, substituindo 'suaAcaoAqui' pela action do Apps Script
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getBlocosIncubacao' }) // Exemplo de action real
-    });
-    
-    const res = await response.json(); // Converte a resposta para JSON
-
-    // 2. Trata os dados recebidos
-    if (res.success) {
-      console.log("Dados recebidos com sucesso:", res);
-    } else {
-      console.error("Erro do servidor:", res.message);
-    }
-
-  } catch (err) {
-    console.error("Erro de conexão:", err);
-  }
-}
-
     function logout() {
       localStorage.removeItem('coloniza_user');
       window.location.href = "index.html";
@@ -267,6 +255,8 @@ async function carregarMeusDados() {
     let receitasCache = [];
     let estoqueCache = {};
     let matrizesCache = [];
+    let matrizesPlacaCache = [];
+    let matrizesCLCache = [];
 
     async function loadData(autoSelectTitulo = null) {
       try {
@@ -293,8 +283,10 @@ async function carregarMeusDados() {
           });
           estoqueCache = res.estoque || {};
           matrizesCache = res.matrizes || [];
+          matrizesPlacaCache = res.matrizesPlaca || res.matrizes || [];
+          matrizesCLCache = res.matrizesCL || res.lotesCL || [];
+
           populateReceitasSelect(autoSelectTitulo);
-          populateMatrizesSelect();
         } else {
           alert("Erro ao carregar dados de produção de CL: " + res.message);
         }
@@ -323,26 +315,18 @@ async function carregarMeusDados() {
       }
     }
 
-    function populateMatrizesSelect() {
-      const select = document.getElementById('selectMatriz');
-      const valAtual = select.value;
-      select.innerHTML = '<option value="">-- Selecione a Matriz --</option>';
-      matrizesCache.forEach(m => {
-        select.innerHTML += `<option value="${m.codigo}">${m.codigo} - ${m.especie} (${m.variedade})</option>`;
-      });
-      if (valAtual) select.value = valAtual;
-    }
-
     function onReceitaChange() {
       const idx = document.getElementById('selectReceita').value;
       const containerVolume = document.getElementById('containerVolume');
       const containerQtdPotes = document.getElementById('containerQtdPotes');
+      const containerTipoMatriz = document.getElementById('containerTipoMatriz');
       const containerMatriz = document.getElementById('containerMatriz');
       const painelProducao = document.getElementById('painelProducao');
       
       if (idx === "") {
         containerVolume.classList.add('hidden');
         containerQtdPotes.classList.add('hidden');
+        containerTipoMatriz.classList.add('hidden');
         containerMatriz.classList.add('hidden');
         painelProducao.classList.add('hidden');
         painelProducao.classList.remove('grid');
@@ -351,11 +335,40 @@ async function carregarMeusDados() {
       
       containerVolume.classList.remove('hidden');
       containerQtdPotes.classList.remove('hidden');
-      containerMatriz.classList.remove('hidden');
+      containerTipoMatriz.classList.remove('hidden');
       
       const receita = receitasCache[idx];
       document.getElementById('textoInstrucoes').textContent = receita.instrucoes || "Nenhuma instrução cadastrada.";
+      
+      onTipoMatrizChange();
       calcularProporcoes();
+    }
+
+    function onTipoMatrizChange() {
+      const tipo = document.getElementById('selectTipoMatriz').value;
+      const containerMatriz = document.getElementById('containerMatriz');
+      const selectMatriz = document.getElementById('selectMatriz');
+      const labelItem = document.getElementById('labelInoculoItem');
+
+      selectMatriz.innerHTML = '<option value="">-- Selecione o Item --</option>';
+
+      if (tipo === 'PLACA') {
+        containerMatriz.classList.remove('hidden');
+        labelItem.textContent = "Placa / Petri de Origem";
+        const listaPlacas = (matrizesPlacaCache && matrizesPlacaCache.length > 0) ? matrizesPlacaCache : matrizesCache;
+        listaPlacas.forEach(m => {
+          selectMatriz.innerHTML += `<option value="${m.codigo}">${m.codigo} - ${m.especie} (${m.variedade || 'Placa'})</option>`;
+        });
+      } else if (tipo === 'CL') {
+        containerMatriz.classList.remove('hidden');
+        labelItem.textContent = "Lote de CL de Origem";
+        const listaCL = (matrizesCLCache && matrizesCLCache.length > 0) ? matrizesCLCache : matrizesCache;
+        listaCL.forEach(c => {
+          selectMatriz.innerHTML += `<option value="${c.codigo}">${c.codigo} - ${c.especie} (${c.volume || 'CL'})</option>`;
+        });
+      } else {
+        containerMatriz.classList.add('hidden');
+      }
     }
 
     function calcularProporcoes() {
@@ -412,18 +425,25 @@ async function carregarMeusDados() {
       const idx = document.getElementById('selectReceita').value;
       const volPorPote = parseFloat(document.getElementById('inputVolume').value);
       const qtdPotes = parseInt(document.getElementById('inputQtdPotes').value) || 1;
+      const tipoInoculo = document.getElementById('selectTipoMatriz').value;
       const matrizCodigo = document.getElementById('selectMatriz').value;
 
-      if (idx === "" || !volPorPote || volPorPote <= 0 || qtdPotes <= 0 || matrizCodigo === "") {
-        alert("Por favor, preencha todos os campos corretamente (Receita, Volume por Pote, Qtd de Potes e Matriz).");
+      if (idx === "" || !volPorPote || volPorPote <= 0 || qtdPotes <= 0 || tipoInoculo === "" || matrizCodigo === "") {
+        alert("Por favor, preencha todos os campos corretamente (Receita, Volume por Pote, Qtd de Potes, Tipo de Inóculo e Item de Origem).");
         return;
       }
 
       const volumeTotal = volPorPote * qtdPotes;
       const receita = receitasCache[idx];
-      const matriz = matrizesCache.find(m => m.codigo === matrizCodigo);
 
-      const confirmou = confirm(`Confirmar a produção de ${qtdPotes} pote(s) de ${volPorPote} ml (Total: ${volumeTotal} ml)?\n\n- Receita: ${receita.titulo}\n- Matriz: ${matrizCodigo}\n- Serão gerados ${qtdPotes} registros individuais e o estoque será deduzido para ${volumeTotal} ml.`);
+      let itemOrigem = null;
+      if (tipoInoculo === 'PLACA') {
+        itemOrigem = matrizesPlacaCache.find(m => m.codigo === matrizCodigo);
+      } else {
+        itemOrigem = matrizesCLCache.find(c => c.codigo === matrizCodigo);
+      }
+
+      const confirmou = confirm(`Confirmar a produção de ${qtdPotes} pote(s) de ${volPorPote} ml (Total: ${volumeTotal} ml)?\n\n- Receita: ${receita.titulo}\n- Origem: [${tipoInoculo}] ${matrizCodigo}\n- Serão gerados ${qtdPotes} registros individuais e o estoque será deduzido para ${volumeTotal} ml.`);
       if (!confirmou) return;
 
       const payload = {
@@ -432,8 +452,9 @@ async function carregarMeusDados() {
         volume: volPorPote,
         quantidadePotes: qtdPotes,
         volumeTotal: volumeTotal,
+        tipoInoculo: tipoInoculo,
         matrizOrigem: matrizCodigo,
-        especie: matriz ? matriz.especie : 'Geral',
+        especie: itemOrigem ? itemOrigem.especie : 'Geral',
         ingredientesUtilizados: receita.ingredientes.map(i => ({
           nome: i.nome,
           qtdDeducao: i.quantidade * (volumeTotal / receita.volumeBase)

@@ -15,10 +15,13 @@
   <div class="bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-8 w-full max-w-md border border-emerald-900/20">
     <!-- Header do Login -->
     <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-[#1b382b] rounded-full mb-4 shadow-inner">
-        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-        </svg>
+      <!-- Container da Logo com Efeito Elegante -->
+      <div class="inline-flex items-center justify-center p-3 bg-[#1b382b]/5 rounded-2xl mb-4 border border-[#1b382b]/10 shadow-sm">
+        <img 
+          src="https://lh3.googleusercontent.com/d/1CugN1KOVDxjxmwCVb3m2EzVW8beUYfSt" 
+          alt="Logo COLONIZA" 
+          class="h-20 w-auto object-contain drop-shadow-md"
+        >
       </div>
       <h1 class="text-2xl font-bold text-[#1b382b] tracking-wide">COLONIZA</h1>
       <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
@@ -92,7 +95,7 @@
         if (result.success) {
           // Salva os dados do usuário logado na sessão local do navegador
           localStorage.setItem('coloniza_user', JSON.stringify(result.user));
-          // Redireciona para o Dashboard (que criaremos na próxima etapa)
+          // Redireciona para o Dashboard
           window.location.href = "dashboard.html";
         } else {
           alertBox.textContent = result.message || "Falha na autenticação.";

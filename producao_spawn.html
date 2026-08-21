@@ -60,9 +60,9 @@
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Frutificação</span>
         </a>
-		<a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
-		<span>Colheita e Produção</span>
-		</a>		
+        <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Colheita e Produção</span>
+        </a>		
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -81,7 +81,6 @@
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">PRODUÇÃO DE SPAWN (INÓCULO EM GRÃOS)</h2>
         <p class="text-xs text-gray-500 font-medium">PREPARAÇÃO DE GRÃOS, CORREÇÃO DE PH, ESTERILIZAÇÃO E INOCULAÇÃO</p>
       </div>
-      <!-- BOTÕES SUPERIORES DE GESTÃO DE RECEITAS -->
       <div class="flex items-center space-x-2">
         <button onclick="openModalGerenciarReceita('incluir')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
           <span>+</span> Nova Receita Spawn
@@ -96,43 +95,46 @@
     </header>
 
     <div class="p-6 space-y-6">
-      <!-- PAINEL DE SELEÇÃO E CONFIGURAÇÃO DA PRODUÇÃO -->
       <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
         <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
           <span>⚙️</span> Seleção de Parâmetros do Spawn
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Seleção da Receita -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label class="block text-xs font-semibold text-gray-700 mb-1">Selecione a Receita de Spawn</label>
             <select id="selectReceita" onchange="onReceitaChange()" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
               <option value="">-- Escolha uma Receita --</option>
             </select>
           </div>
-          <!-- Peso / Volume Desejado -->
           <div id="containerVolume" class="hidden">
             <label class="block text-xs font-semibold text-gray-700 mb-1">Quantidade de Grãos Secos (kg)</label>
             <input type="number" id="inputVolume" oninput="calcularProporcoes()" step="0.1" placeholder="Ex: 5" min="0.1" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
 		  
-          <!-- Matriz / CL de Inoculação -->
+          <div id="containerTipoMatriz" class="hidden">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Tipo de Inóculo</label>
+            <select id="selectTipoMatriz" onchange="onTipoMatrizChange()" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option value="">-- Selecione o Tipo --</option>
+              <option value="PLACA">Placa / Petri (Matriz)</option>
+              <option value="CL">Cultura Líquida (CL)</option>
+            </select>
+          </div>
+
           <div id="containerMatriz" class="hidden">
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Inóculo de Origem (CL ou Placa)</label>
+            <label class="block text-xs font-semibold text-gray-700 mb-1" id="labelInoculoItem">Inóculo de Origem</label>
             <select id="selectMatriz" class="w-full border rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-              <option value="">-- Selecione a Origem --</option>
+              <option value="">-- Selecione o Item --</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- PAINEL DUPLO: INGREDIENTES vs INSTRUÇÕES DE PREPARO -->
       <div id="painelProducao" class="hidden grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- LADO ESQUERDO: LISTA DE INGREDIENTES E ESTOQUE -->
         <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-4 border-b pb-2">
               <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
-                <span>🌾</span> Grãos, Aditivos &amp; Hidratação
+                <span>🌾</span> Grãos, Aditivos &amp; Embalagens
               </h3>
               <span id="labelBaseReceita" class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium border border-emerald-200"></span>
             </div>
@@ -140,18 +142,16 @@
               <table class="w-full text-left text-xs">
                 <thead class="bg-gray-50 text-gray-500 border-b">
                   <tr>
-                    <th class="p-2 font-semibold">INSUMO / GRÃO</th>
+                    <th class="p-2 font-semibold">INSUMO / EMBALAGEM</th>
                     <th class="p-2 font-semibold text-right">QTD. NECESSÁRIA</th>
                     <th class="p-2 font-semibold text-right">DISPONÍVEL EM ESTOQUE</th>
                   </tr>
                 </thead>
                 <tbody id="tbodyIngredientes" class="divide-y divide-gray-100">
-                  <!-- Inserido dinamicamente via JS -->
                 </tbody>
               </table>
             </div>
           </div>
-          <!-- BOTÃO DE AÇÃO CRÍTICA -->
           <div class="mt-6 pt-4 border-t flex justify-end">
             <button id="btnNovoSpawn" onclick="executarProducaoSpawn()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow transition flex items-center gap-2">
               <span>🚀</span> Produzir e Inocular Lote de Spawn
@@ -159,20 +159,18 @@
           </div>
         </div>
 
-        <!-- LADO DIREITO: INSTRUÇÕES DE PREPARO -->
         <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
           <h3 class="text-sm font-bold uppercase text-amber-800 tracking-wider flex items-center gap-2 mb-4 border-b pb-2">
             <span>📋</span> Instruções de Preparo e Esterilização
           </h3>
           <div id="textoInstrucoes" class="text-xs text-gray-700 space-y-3 leading-relaxed whitespace-pre-line">
-            <!-- Instruções da receita serão carregadas aqui -->
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- MODAL INCLUIR / EDITAR / EXCLUIR RECEITAS DE SPAWN -->
+  <!-- MODAL DE RECEITAS -->
   <div id="modalGerenciarReceita" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
       <h3 id="modalReceitaTitulo" class="text-lg font-bold text-gray-800 mb-4">Gerenciar Receita de Spawn</h3>
@@ -202,9 +200,8 @@
             </div>
           </div>
           <div class="pt-2">
-            <label class="block font-semibold mb-1">Ingredientes &amp; Aditivos (para a base acima)</label>
+            <label class="block font-semibold mb-1">Ingredientes, Aditivos &amp; Sacos (para a base acima)</label>
             <div id="listaIngredientesForm" class="space-y-2">
-              <!-- Linhas de ingredientes geradas via JS -->
             </div>
             <button type="button" onclick="adicionarLinhaIngrediente()" class="mt-2 text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1">
               + Adicionar Insumo
@@ -239,7 +236,8 @@
 
     let receitasCache = [];
     let estoqueCache = {};
-    let matrizesCache = [];
+    let matrizesPlacaCache = [];
+    let matrizesCLCache = [];
     let idReceitaEmEdicao = null;
 
     async function loadData(autoSelectTitulo = null) {
@@ -253,9 +251,9 @@
         if (res.success) {
           receitasCache = res.receitasSpawn || [];
           estoqueCache = res.estoque || {};
-          matrizesCache = res.matrizes || [];
+          matrizesPlacaCache = res.matrizesPlaca || res.matrizes || [];
+          matrizesCLCache = res.matrizesCL || res.lotesCL || [];
           populateReceitasSelect(autoSelectTitulo);
-          populateMatrizesSelect();
         } else {
           alert("Erro ao carregar dados de produção de spawn: " + res.message);
         }
@@ -281,33 +279,87 @@
       }
     }
 
-    function populateMatrizesSelect() {
-      const select = document.getElementById('selectMatriz');
-      select.innerHTML = '<option value="">-- Selecione a Origem --</option>';
-      matrizesCache.forEach(m => {
-        select.innerHTML += `<option value="${m.codigo}">${m.codigo} - ${m.especie} (${m.variedade || 'Geral'})</option>`;
-      });
-    }
-
     function onReceitaChange() {
       const idx = document.getElementById('selectReceita').value;
       const containerVolume = document.getElementById('containerVolume');
+      const containerTipoMatriz = document.getElementById('containerTipoMatriz');
       const containerMatriz = document.getElementById('containerMatriz');
       const painelProducao = document.getElementById('painelProducao');
+
       if (idx === "") {
         containerVolume.classList.add('hidden');
+        containerTipoMatriz.classList.add('hidden');
         containerMatriz.classList.add('hidden');
         painelProducao.classList.add('hidden');
         painelProducao.classList.remove('grid');
         return;
       }
       containerVolume.classList.remove('hidden');
-      containerMatriz.classList.remove('hidden');
+      containerTipoMatriz.classList.remove('hidden');
       
       const receita = receitasCache[idx];
       document.getElementById('textoInstrucoes').textContent = receita.instrucoes || "Nenhuma instrução cadastrada.";
       document.getElementById('labelBaseReceita').textContent = `Base da Receita: ${receita.volumeBase} kg de grão seco`;
+      
+      onTipoMatrizChange();
       calcularProporcoes();
+    }
+
+    function onTipoMatrizChange() {
+      const tipo = document.getElementById('selectTipoMatriz').value;
+      const containerMatriz = document.getElementById('containerMatriz');
+      const selectMatriz = document.getElementById('selectMatriz');
+      const labelItem = document.getElementById('labelInoculoItem');
+
+      selectMatriz.innerHTML = '<option value="">-- Selecione o Item --</option>';
+
+      const isAtivo = (item) => {
+        const status = String(item.status || item[5] || item[6] || '').toLowerCase();
+        return !status.includes('descartad') && !status.includes('esgotad') && !status.includes('usad');
+      };
+
+      if (tipo === 'PLACA') {
+        containerMatriz.classList.remove('hidden');
+        labelItem.textContent = "Placa / Petri de Origem";
+        const listaPlacas = (matrizesPlacaCache && matrizesPlacaCache.length > 0) 
+          ? matrizesPlacaCache 
+          : (typeof matrizesCache !== 'undefined' ? matrizesCache : []);
+
+        listaPlacas.forEach(m => {
+          const cod = m.codigo || m.codigoLote || m[0];
+          const esp = m.especie || m[2] || '';
+          if (cod && isAtivo(m)) {
+            selectMatriz.innerHTML += `<option value="${cod}">${cod} - ${esp}</option>`;
+          }
+        });
+
+      } else if (tipo === 'CL') {
+        containerMatriz.classList.remove('hidden');
+        labelItem.textContent = "Lote de CL de Origem";
+        const listaCL = (matrizesCLCache && matrizesCLCache.length > 0) 
+          ? matrizesCLCache 
+          : (typeof matrizesCache !== 'undefined' ? matrizesCache : []);
+
+        listaCL.forEach(c => {
+          const cod = c.codigo || c.codigoLote || c[0];
+          const esp = c.especie || c[2] || '';
+          if (cod && isAtivo(c)) {
+            selectMatriz.innerHTML += `<option value="${cod}">${cod} - ${esp}</option>`;
+          }
+        });
+
+      } else {
+        containerMatriz.classList.add('hidden');
+      }
+    }
+
+    function buscarSaldoEstoque(nomeInsumo) {
+      const normBusca = nomeInsumo.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      for (const [key, value] of Object.entries(estoqueCache)) {
+        const normKey = key.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (normKey === normBusca) return value;
+      }
+      return 0;
     }
 
     function calcularProporcoes() {
@@ -329,35 +381,40 @@
       tbody.innerHTML = '';
       let estoqueSuficiente = true;
 
-      // 1. Insumos e Grãos
       receita.ingredientes.forEach(ing => {
-        // Ignora caso exista algum ingrediente 'Água' cadastrado na receita base para reexibir formatado ao final
         if (ing.nome.toLowerCase().includes('água') || ing.nome.toLowerCase().includes('agua')) return;
 
         const qtdNecessaria = ing.quantidade * fator;
-        const qtdEstoque = estoqueCache[ing.nome] || 0;
-        const semEstoque = qtdEstoque < qtdNecessaria;
+        let qtdEstoqueRaw = buscarSaldoEstoque(ing.nome);
+
+        let exibeQtdNecessaria = qtdNecessaria;
+        let exibeUnidade = ing.unidade;
+        let comparaEstoque = qtdEstoqueRaw;
+
+        if (ing.unidade === 'g') {
+          exibeQtdNecessaria = qtdNecessaria;
+          comparaEstoque = qtdEstoqueRaw * 1000;
+        }
+
+        const semEstoque = comparaEstoque < exibeQtdNecessaria;
         if (semEstoque) estoqueSuficiente = false;
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
             <td class="p-2 font-medium text-gray-800">${ing.nome}</td>
-            <td class="p-2 text-right font-bold text-emerald-800">${qtdNecessaria.toFixed(2)} ${ing.unidade}</td>
+            <td class="p-2 text-right font-bold text-emerald-800">${exibeQtdNecessaria.toFixed(2)} ${exibeUnidade}</td>
             <td class="p-2 text-right font-semibold ${semEstoque ? 'text-red-600 bg-red-50' : 'text-gray-600'}">
-              ${qtdEstoque.toFixed(2)} ${ing.unidade} ${semEstoque ? '⚠️ (Insuficiente)' : ''}
+              ${ing.unidade === 'g' ? (qtdEstoqueRaw * 1000).toFixed(2) + ' g (' + qtdEstoqueRaw.toFixed(2) + ' kg)' : qtdEstoqueRaw.toFixed(2) + ' ' + exibeUnidade} ${semEstoque ? '⚠️ (Insuficiente)' : ''}
             </td>
           </tr>
         `;
       });
 
-      // 2. Cálculo e exibição padronizada da Água Purificada (Litros/kg de hidratação direta)
-      // Estimativa padrão de hidratação para grãos de hidratação comum (ex: 1kg grão seco ~ 0.8L a 1.0L de água)
       const aguaCalculadaLitros = volInput * 1.5; 
-
       tbody.innerHTML += `
         <tr class="bg-blue-50/60 font-bold">
           <td class="p-2 text-blue-900">💧 Água Purificada</td>
-          <td class="p-2 text-right text-blue-900">${aguaCalculadaLitros.toFixed(2)} Litragem (kg)</td>
+          <td class="p-2 text-right text-blue-900">${aguaCalculadaLitros.toFixed(2)} L</td>
           <td class="p-2 text-right text-gray-500">Uso direto</td>
         </tr>
       `;
@@ -375,26 +432,36 @@
     async function executarProducaoSpawn() {
       const idx = document.getElementById('selectReceita').value;
       const volInput = parseFloat(document.getElementById('inputVolume').value);
+      const tipoInoculo = document.getElementById('selectTipoMatriz').value;
       const matrizCodigo = document.getElementById('selectMatriz').value;
 
-      if (idx === "" || !volInput || matrizCodigo === "") {
-        alert("Por favor, selecione a Receita, informe a quantidade de grão (kg) e escolha a cultura de origem.");
+      if (idx === "" || !volInput || tipoInoculo === "" || matrizCodigo === "") {
+        alert("Por favor, selecione a Receita, informe a quantidade (kg), o Tipo de Inóculo e escolha o item de origem.");
         return;
       }
 
       const receita = receitasCache[idx];
-      const matriz = matrizesCache.find(m => m.codigo === matrizCodigo);
-      const confirmou = confirm(`Confirmar a produção de ${volInput} kg de Spawn?\n\n- Receita: ${receita.titulo}\n- Origem: ${matrizCodigo}\n- Os grãos e aditivos serão deduzidos do estoque e o lote será registrado no sistema.`);
+      let itemOrigem = null;
+      if (tipoInoculo === 'PLACA') {
+        itemOrigem = matrizesPlacaCache.find(m => (m.codigo || m.codigoLote || m[0]) === matrizCodigo);
+      } else {
+        itemOrigem = matrizesCLCache.find(c => (c.codigo || c.codigoLote || c[0]) === matrizCodigo);
+      }
+
+      const confirmou = confirm(`Confirmar a produção de ${volInput} kg de Spawn?\n\n- Receita: ${receita.titulo}\n- Origem: [${tipoInoculo}] ${matrizCodigo}\n- Os insumos e sacos serão deduzidos do estoque e o lote será registrado.`);
       if (!confirmou) return;
 
       const payload = {
         action: 'produzirEInocularSpawn',
         receitaTitulo: receita.titulo,
         volume: volInput + " kg",
+        tipoInoculo: tipoInoculo,
         matrizOrigem: matrizCodigo,
-        especie: matriz ? matriz.especie : 'Geral',
+        especie: itemOrigem ? (itemOrigem.especie || itemOrigem[2] || 'Geral') : 'Geral',
         ingredientesUtilizados: receita.ingredientes.map(i => ({
           nome: i.nome,
+          quantidade: i.quantidade,
+          unidade: i.unidade,
           qtdDeducao: i.quantidade * (volInput / receita.volumeBase)
         })),
         responsavel: userData.nome
@@ -408,7 +475,7 @@
         });
         const res = await response.json();
         if (res.success) {
-          alert("Lote de Spawn produzido e inoculado com sucesso!\nInsumos deduzidos do estoque.");
+          alert("Lote de Spawn produzido e inoculado com sucesso!\nVocê será redirecionado ao Banco de Culturas para gerenciar e imprimir etiquetas.");
           window.location.href = "culturas.html";
         } else {
           alert("Erro na operação: " + res.message);
@@ -483,12 +550,13 @@
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center";
       div.innerHTML = `
-        <input type="text" placeholder="Grão/Insumo (Ex: Trigo, Gesso)" value="${nome}" required class="ing-nome flex-1 border rounded-lg p-2 outline-none">
+        <input type="text" placeholder="Insumo (Ex: Sacos de Cultivo 1,5 kg, Gesso)" value="${nome}" required class="ing-nome flex-1 border rounded-lg p-2 outline-none">
         <input type="number" step="0.01" placeholder="Qtd" value="${qtd}" required class="ing-qtd w-20 border rounded-lg p-2 outline-none">
         <select class="ing-unidade border rounded-lg p-2 outline-none bg-white">
           <option value="kg" ${unidade === 'kg' ? 'selected' : ''}>kg</option>
           <option value="g" ${unidade === 'g' ? 'selected' : ''}>g</option>
           <option value="L" ${unidade === 'L' ? 'selected' : ''}>L</option>
+          <option value="un" ${unidade === 'un' || unidade === 'unidade' ? 'selected' : ''}>un</option>
         </select>
         <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
       `;
