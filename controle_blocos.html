@@ -122,6 +122,9 @@
           <button onclick="openModalInocularMassa()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
             <span>💉</span> Inocular Selecionados
           </button>
+          <button onclick="openModalExcluirMassa()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>🗑️</span> Excluir Selecionados
+          </button>
         </div>
       </div>
 
@@ -181,11 +184,11 @@
     </div>
   </div>
 
-  <!-- MODAL EXCLUIR BLOCO (DESCARTE) -->
+  <!-- MODAL EXCLUIR BLOCO (DESCARTE INDIVIDUAL OU EM MASSA) -->
   <div id="modalExcluirBloco" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-      <h3 class="text-base font-bold text-red-700 mb-2">Excluir / Descartar Bloco</h3>
-      <p class="text-xs text-gray-600 mb-1">Código: <span id="txtCodigoExcluir" class="font-bold text-gray-800">---</span></p>
+      <h3 class="text-base font-bold text-red-700 mb-2">Excluir / Descartar Bloco(s)</h3>
+      <p class="text-xs text-gray-600 mb-1">Alvo(s): <span id="txtCodigoExcluir" class="font-bold text-gray-800">---</span></p>
       <p class="text-[11px] text-gray-500 mb-4">Selecione o motivo da exclusão para registro no histórico de descarte:</p>
       
       <form onsubmit="confirmarExclusaoBloco(event)" class="space-y-4 text-xs">
@@ -331,7 +334,7 @@
               <button onclick="inocularUnico('${b.id}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1 rounded text-[11px] transition" title="Inocular e Gerar Etiqueta">
                 💉 Inocular
               </button>
-              <button onclick="abrirModalExcluir('${b.id}', '${b.codigoRastreio}')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-1 rounded text-[11px] transition" title="Excluir/Descartar Bloco">
+              <button onclick="abrirModalExcluir('${b.id}', '${b.codigoRastreio}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-2 py-1.5 rounded border border-red-200 text-[11px] transition" title="Excluir/Descartar Bloco">
                 🗑️
               </button>
             </td>
@@ -416,6 +419,16 @@
       openModal('modalInocular');
     }
 
+    function openModalExcluirMassa() {
+      if (selecionados.size === 0) { alert("Selecione pelo menos um bloco."); return; }
+      document.getElementById('idBlocoExcluir').value = Array.from(selecionados).join(',');
+      document.getElementById('txtCodigoExcluir').textContent = `${selecionados.size} bloco(s) selecionado(s)`;
+      document.getElementById('selectMotivoExclusao').value = "";
+      document.getElementById('inputOutroMotivo').value = "";
+      document.getElementById('containerOutroMotivo').classList.add('hidden');
+      openModal('modalExcluirBloco');
+    }
+
     async function executarInoculacao(e) {
       e.preventDefault();
       const spawnCodigo = document.getElementById('modalSelectSpawn').value;
@@ -479,7 +492,9 @@
 
     async function confirmarExclusaoBloco(e) {
       e.preventDefault();
-      const id = document.getElementById('idBlocoExcluir').value;
+      const rawId = document.getElementById('idBlocoExcluir').value;
+      const idsArray = rawId.includes(',') ? rawId.split(',') : [rawId];
+      
       let motivo = document.getElementById('selectMotivoExclusao').value;
       
       if (motivo === 'Outro motivo') {
@@ -492,9 +507,9 @@
       }
 
       const payload = {
-        action: 'descartarBloco',
-        id: id,
-        motivoDescarte: motivo,
+        action: 'descartar',
+        idsBlocos: idsArray,
+        motivo: motivo,
         usuario: userData ? userData.nome : 'Sistema'
       };
 
@@ -507,11 +522,13 @@
         const res = await response.json();
         
         if (res.success) {
-          exibirToast("Bloco descartado e enviado para Descartes_Blocos!");
+          exibirToast("Bloco(s) descartado(s) e enviado(s) para o registro de descartes!");
           closeModal('modalExcluirBloco');
+          selecionados.clear();
+          atualizarBarraAcao();
           loadData();
         } else {
-          alert("Erro ao descartar: " + res.message);
+          alert("Erro ao descartar: " + (res.message || "Erro desconhecido."));
         }
       } catch (err) {
         console.error(err);

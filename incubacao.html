@@ -9,7 +9,7 @@
   
   <!-- Bibliotecas para Geração de Etiquetas PDF & Código de Barras -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bwip-js@3.0.4/dist/bwip-js-min.js"></script>
 
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -73,9 +73,9 @@
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Sala de Frutificação</span>
         </a>
-		<a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
-		<span>Colheita e Produção</span>
-		</a>
+        <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Colheita e Produção</span>
+        </a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -88,20 +88,11 @@
 
   <!-- ÁREA PRINCIPAL -->
   <main class="flex-1 flex flex-col overflow-y-auto">
-    <!-- HEADER DA PÁGINA -->
+    <!-- HEADER DA PÁGINA (SEM BOTÕES SUPERIORES) -->
     <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
       <div>
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">SALA DE INCUBAÇÃO DE BLOCOS</h2>
         <p class="text-xs text-gray-500 font-medium">MONITORAMENTO DE COLONIZAÇÃO, PROGRESSO E PRAZOS POR ESPÉCIE</p>
-      </div>
-      <!-- BOTÕES DE AÇÃO RÁPIDA -->
-      <div class="flex items-center space-x-2">
-        <button onclick="imprimirSelecionadosIncubacao()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1" title="Reimprimir etiquetas dos blocos selecionados">
-          <span>🏷️</span> Reimprimir Selecionados
-        </button>
-        <button onclick="enviarSelecionadosFrutificacao()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
-          <span>🍄</span> Mover Selecionados p/ Frutificação
-        </button>
       </div>
     </header>
 
@@ -139,13 +130,7 @@
       </div>
 
       <!-- BARRA DE PESQUISA E ALTERNADOR DE LAYOUT -->
-      <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center space-x-3">
-          <label class="flex items-center space-x-2 text-xs font-semibold cursor-pointer">
-            <input type="checkbox" id="checkSelectAll" onclick="toggleSelectAll(this)" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
-            <span>Selecionar Todos</span>
-          </label>
-        </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-end gap-4">
         <div class="flex items-center space-x-4">
           <div class="w-64">
             <input type="text" id="searchIncubacao" onkeyup="renderizarInterface()" placeholder="🔍 Buscar por código ou espécie..." class="w-full border rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500">
@@ -162,13 +147,36 @@
         </div>
       </div>
 
+      <!-- BARRA DE AÇÃO EM MASSA (FRUTIFICAR, EDITAR, REIMPRIMIR E EXCLUIR SELECIONADOS) -->
+      <div id="barraAcaoMassa" class="hidden bg-emerald-900 text-white p-3 rounded-xl shadow-md items-center justify-between transition">
+        <div class="text-xs font-semibold flex items-center space-x-2">
+          <span>☑️ <span id="qtdSelecionados">0</span> bloco(s) selecionado(s)</span>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="enviarSelecionadosFrutificacao()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>🍄</span> Frutificar Selecionados
+          </button>
+          <button onclick="abrirModalEditarMassa()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>✏️</span> Editar Selecionados
+          </button>
+          <button onclick="imprimirSelecionadosIncubacao()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>🏷️</span> Reimprimir Selecionados
+          </button>
+          <button onclick="abrirModalDescarteEmMassa()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>🗑️</span> Excluir Selecionados
+          </button>
+        </div>
+      </div>
+
       <!-- VISUALIZAÇÃO 1: TABELA / LISTA -->
       <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
               <tr>
-                <th class="p-3 w-10 text-center">#</th>
+                <th class="p-3 w-10 text-center">
+                  <input type="checkbox" id="selectAllBlocos" onchange="toggleSelectAllBlocos(this)" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer">
+                </th>
                 <th class="p-3 font-semibold">CÓDIGO RASTREIO</th>
                 <th class="p-3 font-semibold">ESPÉCIE</th>
                 <th class="p-3 font-semibold">LOTE/ORIGEM</th>
@@ -191,7 +199,34 @@
     </div>
   </main>
 
-  <!-- MODAL DE EDITAR DATA DE INOCULAÇÃO -->
+  <!-- MODAL DE EDIÇÃO EM MASSA (ESPÉCIE E INOCULAÇÃO) -->
+  <div id="modalEditarMassa" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Editar Blocos Selecionados</h3>
+      <p class="text-xs text-gray-500 mb-4">Atualize a espécie e/ou a data de inoculação para os blocos selecionados:</p>
+      
+      <form onsubmit="confirmarEdicaoEmMassa(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Nova Espécie (Opcional)</label>
+          <select id="massaEspecie" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <option value="">-- Manter Atual --</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Nova Data de Inoculação (Opcional)</label>
+          <input type="date" id="massaDataInoculacao" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="fecharModalEditarMassa()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDITAR DATA DE INOCULAÇÃO INDIVIDUAL -->
   <div id="modalEditarData" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
       <h3 class="text-lg font-bold text-gray-800 mb-2">Alterar Data de Inoculação</h3>
@@ -214,7 +249,7 @@
   <div id="modalDescarte" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
       <h3 class="text-lg font-bold text-gray-800 mb-2">Descartar Bloco / Contaminação</h3>
-      <p class="text-xs text-gray-500 mb-4">Informe o motivo do descarte para o bloco <span id="codigoBlocoDescarte" class="font-mono font-bold text-gray-700">---</span>:</p>
+      <p class="text-xs text-gray-500 mb-4">Informe o motivo do descarte para o(s) bloco(s) selecionado(s):</p>
       
       <form onsubmit="confirmarDescarte(event)" class="space-y-3 text-xs">
         <div>
@@ -241,7 +276,7 @@
   </div>
 
   <!-- CANVAS OCULTO PARA IMPRESSÃO DE CÓDIGO DE BARRAS -->
-  <canvas id="barcodeCanvas" class="hidden"></canvas>
+ <canvas id="qrCanvas" class="hidden"></canvas>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
@@ -292,6 +327,10 @@
     function renderizarInterface() {
       renderizarTabela();
       renderizarCaixas();
+      
+      const selectAll = document.getElementById('selectAllBlocos');
+      if (selectAll) selectAll.checked = false;
+      atualizarVisibilidadeBotaoExcluir();
     }
 
     function processarDadosBloco(b) {
@@ -315,7 +354,6 @@
       const isPronto = diasPassados >= tempoMinimo && diasPassados <= tempoMaximo;
       const isAtrasado = diasPassados > tempoMaximo;
 
-      // Texto de status com classe azul fixada
       let badgeBg = 'bg-blue-50 text-blue-600 border-blue-200';
       let badgeText = `Dia ${diasPassados} de ${tempoMaximo} (Mín: ${tempoMinimo}d)`;
       let statusClass = 'bg-blue-600';
@@ -351,7 +389,11 @@
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
-            <td class="p-3 text-center"><input type="checkbox" value="${b.codigoRastreio}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
+            <td class="px-4 py-3 text-center">
+              <input type="checkbox" class="bloco-checkbox w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer" 
+                     value="${b.codigoRastreio || b.id}" 
+                     onchange="atualizarVisibilidadeBotaoExcluir()">
+            </td>
             <td class="p-3 font-mono font-bold text-gray-800">${b.codigoRastreio}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie}</td>
             <td class="p-3 text-gray-600">${b.receita || b.spawnOrigem || '---'}</td>
@@ -405,7 +447,7 @@
           <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between space-y-3 relative">
             <div class="flex justify-between items-start">
               <div class="flex items-start space-x-2">
-                <input type="checkbox" value="${b.codigoRastreio}" class="checkbox-bloco mt-1 rounded text-emerald-600 focus:ring-emerald-500">
+                <input type="checkbox" value="${b.codigoRastreio || b.id}" onchange="atualizarVisibilidadeBotaoExcluir()" class="bloco-checkbox mt-1 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
                 <div>
                   <h4 class="font-mono font-bold text-sm text-gray-800">${b.codigoRastreio}</h4>
                   <p class="text-xs font-semibold text-emerald-800">${b.especie}</p>
@@ -464,9 +506,144 @@
       document.getElementById('kpiAtrasados').textContent = atrasados;
     }
 
-    function toggleSelectAll(master) {
-      const checkboxes = document.querySelectorAll('.checkbox-bloco');
-      checkboxes.forEach(cb => cb.checked = master.checked);
+    /* --- CONTROLE DE SELEÇÃO E EXCLUSÃO EM MASSA --- */
+    function toggleSelectAllBlocos(masterCheckbox) {
+      const checkboxes = document.querySelectorAll('.bloco-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = masterCheckbox.checked;
+      });
+      atualizarVisibilidadeBotaoExcluir();
+    }
+
+    function atualizarVisibilidadeBotaoExcluir() {
+      const selecionados = document.querySelectorAll('.bloco-checkbox:checked');
+      const barraAcao = document.getElementById('barraAcaoMassa');
+      const contadorSpan = document.getElementById('qtdSelecionados');
+      
+      const qtd = selecionados.length;
+
+      if (qtd > 0) {
+        barraAcao.classList.remove('hidden');
+        barraAcao.classList.add('flex');
+        if (contadorSpan) contadorSpan.textContent = qtd;
+      } else {
+        barraAcao.classList.add('hidden');
+        barraAcao.classList.remove('flex');
+      }
+    }
+
+    let blocosParaDescartarEmMassa = [];
+
+    function abrirModalDescarteEmMassa() {
+      const selecionados = document.querySelectorAll('.bloco-checkbox:checked');
+      blocosParaDescartarEmMassa = Array.from(selecionados).map(cb => cb.value);
+
+      if (blocosParaDescartarEmMassa.length === 0) {
+        alert("Nenhum bloco selecionado.");
+        return;
+      }
+
+      blocoParaDescartar = 'MULTIPLO';
+      
+      const modal = document.getElementById('modalDescarte');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    /* --- EDIÇÃO EM MASSA (ESPÉCIE E INOCULAÇÃO) --- */
+    let blocosSelecionadosEdicao = [];
+
+function abrirModalEditarMassa() {
+  const selecionados = document.querySelectorAll('.bloco-checkbox:checked');
+  blocosSelecionadosEdicao = Array.from(selecionados).map(cb => cb.value);
+
+  if (blocosSelecionadosEdicao.length === 0) {
+    alert("Nenhum bloco selecionado.");
+    return;
+  }
+
+  const selectEspecie = document.getElementById('massaEspecie');
+  selectEspecie.innerHTML = '<option value="">-- Manter Atual --</option>';
+
+  // Lista de espécies cadastradas diretamente da planilha
+  let especiesLista = [];
+
+  if (Array.isArray(especiesCache)) {
+    especiesLista = especiesCache.map(e => typeof e === 'object' ? (e['Nome da Espécie'] || e.nome || e.especie) : e);
+  } else if (typeof especiesCache === 'object' && especiesCache !== null) {
+    especiesLista = Object.values(especiesCache).map(e => typeof e === 'object' ? (e['Nome da Espécie'] || e.nome || e.especie) : e);
+  }
+
+  // Remove duplicados e entradas inválidas
+  const especiesUnicas = Array.from(new Set(especiesLista)).filter(e => e && e !== 'undefined');
+
+  if (especiesUnicas.length > 0) {
+    especiesUnicas.forEach(esp => {
+      selectEspecie.innerHTML += `<option value="${esp}">${esp}</option>`;
+    });
+  } else {
+    // Caso o cache não tenha carregado, insere as 3 espécies cadastradas na planilha
+    const padroes = [
+      "Juba de Leao / Hericium erinaceus",
+      "Shimeji Branco / Pleurotus Ostreatus",
+      "Shimeji Preto / Pleurotus Ostreatus"
+    ];
+    padroes.forEach(esp => {
+      selectEspecie.innerHTML += `<option value="${esp}">${esp}</option>`;
+    });
+  }
+
+  document.getElementById('massaDataInoculacao').value = '';
+  document.getElementById('modalEditarMassa').classList.remove('hidden');
+  document.getElementById('modalEditarMassa').classList.add('flex');
+}
+
+async function confirmarEdicaoEmMassa(event) {
+  if (event) event.preventDefault();
+
+  const novaEspecie = document.getElementById('massaEspecie').value;
+  const novaDataInput = document.getElementById('massaDataInoculacao').value; // Retorna YYYY-MM-DD
+
+  if (!novaEspecie && !novaDataInput) {
+    alert("Preencha ao menos um dos campos (Espécie ou Data de Inoculação).");
+    return;
+  }
+
+  const payload = {
+    action: 'editarBlocosEmMassa',
+    codigosRastreio: blocosSelecionadosEdicao,
+    novaEspecie: novaEspecie || null,
+    novaDataInoculacao: novaDataInput || null, // Envia no formato YYYY-MM-DD
+    responsavel: userData ? userData.nome : 'Sistema'
+  };
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      alert("Blocos e datas atualizados com sucesso!");
+      fecharModalEditarMassa();
+      if (typeof loadIncubacaoData === 'function') loadIncubacaoData();
+    } else {
+      alert("Erro ao atualizar blocos: " + data.message);
+    }
+  } catch (err) {
+    alert("Erro de conexão ao salvar alterações.");
+    console.error(err);
+  }
+}
+
+    function fecharModalEditarMassa() {
+      blocosSelecionadosEdicao = [];
+      document.getElementById('modalEditarMassa').classList.add('hidden');
+      document.getElementById('modalEditarMassa').classList.remove('flex');
     }
 
     async function enviarIndividual(codigo) {
@@ -475,7 +652,7 @@
     }
 
     async function enviarSelecionadosFrutificacao() {
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      const selecionados = Array.from(document.querySelectorAll('.bloco-checkbox:checked')).map(cb => cb.value);
       
       if (selecionados.length === 0) {
         alert("Atenção: Nenhum bloco foi selecionado. Por favor, selecione ao menos um bloco antes de enviar para frutificação.");
@@ -534,7 +711,7 @@
     }
 
     function imprimirSelecionadosIncubacao() {
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      const selecionados = Array.from(document.querySelectorAll('.bloco-checkbox:checked')).map(cb => cb.value);
       
       if (selecionados.length === 0) {
         alert("Atenção: Nenhum bloco foi selecionado para reimpressão de etiquetas.");
@@ -556,88 +733,97 @@
     }
 
     function gerarPDFEtiquetasColacril(blocos, posInicial = 1) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-      // Layout Colacril CA4363 (A4 - 2 colunas x 7 linhas = 14 etiquetas)
-      const eLargura = 101.6;
-      const eAltura = 38.1;
-      const margemEsquerda = 4.8;
-      const margemTopo = 14.0;
+  const eLargura = 101.6;
+  const eAltura = 38.1;
+  const margemEsquerda = 4.8;
+  const margemTopo = 14.0;
 
-      let idxPos = posInicial - 1;
+  let idxPos = posInicial - 1;
 
-      blocos.forEach((bloco) => {
-        if (idxPos >= 14) {
-          doc.addPage();
-          idxPos = 0;
-        }
+  // Container temporário para renderizar o QR Code
+  const qrDiv = document.getElementById("qrcodeCanvas");
 
-        const col = idxPos % 2;
-        const lin = Math.floor(idxPos / 2);
-
-        const x = margemEsquerda + col * eLargura;
-        const y = margemTopo + lin * eAltura;
-
-        // Borda suave da etiqueta para pré-visualização
-        doc.setDrawColor(220, 220, 220);
-        doc.rect(x, y, eLargura, eAltura);
-
-        // Header / Marca
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(4, 120, 87);
-        doc.text("COLONIZA - CULTIVO DE COGUMELOS", x + 5, y + 5);
-
-        // Código de Rastreio (Destaque)
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`CÓD: ${bloco.codigoRastreio}`, x + 5, y + 10);
-
-        // Informações Principais
-        doc.setFontSize(7.5);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Espécie: ${bloco.especie || '---'}`, x + 5, y + 15);
-        doc.text(`Spawn Origem: ${bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
-        doc.text(`Data Inoculação: ${bloco.dataInoculacao || bloco.dataCriacao || '---'}`, x + 5, y + 23);
-        doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
-
-        // Gerar Código de Barras no Canvas e colar no PDF
-        try {
-          const canvas = document.getElementById("barcodeCanvas");
-          JsBarcode(canvas, bloco.codigoRastreio, {
-            format: "CODE128",
-            width: 1.2,
-            height: 35,
-            displayValue: false,
-            margin: 0
-          });
-
-          const imgData = canvas.toDataURL("image/png");
-          doc.addImage(imgData, "PNG", x + 58, y + 12, 38, 18);
-        } catch (e) {
-          console.error("Erro ao gerar barcode:", e);
-        }
-
-        // Rodapé da etiqueta
-        doc.setFontSize(5.5);
-        doc.setTextColor(120, 120, 120);
-        doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 33, { align: 'left' });
-
-        idxPos++;
-      });
-
-      doc.save(`Etiquetas_Incubacao_${new Date().toISOString().slice(0, 10)}.pdf`);
+  blocos.forEach((bloco) => {
+    if (idxPos >= 14) {
+      doc.addPage();
+      idxPos = 0;
     }
 
-    /* --- MODAL DE EDIÇÃO DE DATA DE INOCULAÇÃO --- */
+    const col = idxPos % 2;
+    const lin = Math.floor(idxPos / 2);
+
+    const x = margemEsquerda + col * eLargura;
+    const y = margemTopo + lin * eAltura;
+
+    // Borda da etiqueta
+    doc.setDrawColor(220, 220, 220);
+    doc.rect(x, y, eLargura, eAltura);
+
+    // Cabeçalho da etiqueta
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(4, 120, 87);
+    doc.text("COLONIZA - CULTIVO DE COGUMELOS", x + 5, y + 5);
+
+    // Informações do Bloco
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`CÓD: ${bloco.codigoRastreio}`, x + 5, y + 10);
+
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Espécie: ${bloco.especie || '---'}`, x + 5, y + 15);
+    doc.text(`Spawn Origem: ${bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
+    doc.text(`Data Inoculação: ${bloco.dataInoculacao || bloco.dataCriacao || '---'}`, x + 5, y + 23);
+    doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
+
+    // Geração do QR Code
+// Geração do QR Code com todas as informações do bloco
+try {
+  const canvas = document.getElementById("qrCanvas");
+
+  // Monta o texto completo para o QR Code
+  const textoQRCode = 
+    `CÓD: ${bloco.codigoRastreio || '---'}\n` +
+    `Espécie: ${bloco.especie || '---'}\n` +
+    `Spawn: ${bloco.spawnOrigem || 'N/A'}\n` +
+    `Data Inoc.: ${bloco.dataInoculacao || bloco.dataCriacao || '---'}\n` +
+    `Peso: ${bloco.peso || '---'} kg`;
+
+  bwipjs.toCanvas(canvas, {
+    bcid:        'qrcode',
+    text:        textoQRCode,
+    scale:       3,
+    includetext: false
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+  doc.addImage(imgData, "PNG", x + 72, y + 8, 22, 22);
+} catch (e) {
+  console.error("Erro ao gerar QR Code:", e);
+}
+
+    // Rodapé
+    doc.setFontSize(5.5);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Sistema de Rastreabilidade Coloniza", x + 63, y + 33, { align: 'left' });
+
+    idxPos++;
+  });
+
+  doc.save(`Etiquetas_Incubacao_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+    /* --- MODAL DE EDIÇÃO DE DATA DE INOCULAÇÃO INDIVIDUAL --- */
     let blocoParaEditarData = null;
 
     function abrirModalEditarData(codigoRastreio, dataAtual) {
       blocoParaEditarData = codigoRastreio;
       document.getElementById('codigoBlocoData').innerText = codigoRastreio;
 
-      // Formata a data atual para YYYY-MM-DD se vier em formato BR (DD/MM/YYYY)
       let dataFormatted = '';
       if (dataAtual) {
         const partes = dataAtual.split('/');
@@ -673,7 +859,6 @@
         return;
       }
 
-      // Formata YYYY-MM-DD para DD/MM/YYYY
       const partes = novaDataInput.split('-');
       const novaDataBR = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
@@ -722,6 +907,7 @@
 
     function fecharModalDescarte() {
       blocoParaDescartar = null;
+      blocosParaDescartarEmMassa = [];
       document.getElementById('modalDescarte').classList.add('hidden');
       document.getElementById('modalDescarte').classList.remove('flex');
     }
@@ -729,17 +915,22 @@
     async function confirmarDescarte(event) {
       if (event) event.preventDefault();
 
-      if (!blocoParaDescartar) {
+      const motivo = document.getElementById('motivoDescarte').value;
+      const observacoes = document.getElementById('obsDescarte').value;
+
+      let codigos = [];
+      if (blocoParaDescartar === 'MULTIPLO') {
+        codigos = blocosParaDescartarEmMassa;
+      } else if (blocoParaDescartar) {
+        codigos = [blocoParaDescartar];
+      } else {
         alert("Nenhum bloco selecionado para descarte.");
         return;
       }
 
-      const motivo = document.getElementById('motivoDescarte').value;
-      const observacoes = document.getElementById('obsDescarte').value;
-
       const payload = {
         action: 'descartar',
-        codigoRastreio: blocoParaDescartar,
+        codigosRastreio: codigos,
         motivo: motivo,
         observacoes: observacoes,
         responsavel: userData ? userData.nome : 'Sistema'
@@ -755,14 +946,17 @@
         const data = await res.json();
 
         if (data.success) {
-          alert(data.message || "Bloco descartado com sucesso.");
+          alert(data.message || "Bloco(s) descartado(s) com sucesso.");
           fecharModalDescarte();
-          loadIncubacaoData();
+          if (typeof loadIncubacaoData === 'function') {
+            loadIncubacaoData();
+          }
         } else {
-          alert("Erro ao descartar: " + data.message);
+          alert(data.message || "Erro ao descartar bloco(s).");
         }
       } catch (err) {
-        alert("Erro na requisição: " + err.message);
+        alert("Erro de conexão com o servidor ao excluir blocos.");
+        console.error(err);
       }
     }
 

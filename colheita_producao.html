@@ -222,6 +222,70 @@
     </div>
   </div>
 
+  <!-- MODAL: EDITAR COLHEITA (DATA E QUALIDADE) -->
+  <div id="modalEditarColheita" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-extrabold text-gray-800 mb-2">Editar Registro de Colheita</h3>
+      <p class="text-xs text-gray-500 mb-4">Lote <span id="labelLoteEdicao" class="font-mono font-bold text-emerald-800">---</span> — ajuste a data da colheita e a classificação de qualidade:</p>
+
+      <form onsubmit="salvarEdicaoColheita(event)" class="space-y-5 text-xs">
+        <input type="hidden" id="inputIdColheitaEdicao">
+        <input type="hidden" id="inputQtdColheitaEdicao">
+        <input type="hidden" id="inputCicloColheitaEdicao">
+        <input type="hidden" id="inputQualidadeEdicao" required>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Data da Colheita</label>
+          <input type="date" id="inputDataColheitaEdicao" required class="w-full border rounded-lg p-2.5 outline-none font-semibold text-gray-800 focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-2">Qualidade / Classificação</label>
+          <div class="grid grid-cols-4 gap-2" id="grupoQualidadeEdicao">
+
+            <div class="quality-tooltip-container">
+              <button type="button" data-qualidade="A+" onclick="selecionarQualidadeEdicao('A+', this)" class="opcao-qualidade-btn w-full py-2.5 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-bold text-sm transition">A+</button>
+              <div class="quality-tooltip">
+                <strong>A+ — Excelência</strong><br>
+                Formato uniforme, chapéu fechado e firme, sem manchas, deformidades ou danos. Padrão premium para venda in natura de alto valor.
+              </div>
+            </div>
+
+            <div class="quality-tooltip-container">
+              <button type="button" data-qualidade="A" onclick="selecionarQualidadeEdicao('A', this)" class="opcao-qualidade-btn w-full py-2.5 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-bold text-sm transition">A</button>
+              <div class="quality-tooltip">
+                <strong>A — Boa qualidade comercial</strong><br>
+                Leve variação de tamanho ou formato, chapéu ainda fechado, sem defeitos visíveis relevantes. Adequado para venda direta ao consumidor.
+              </div>
+            </div>
+
+            <div class="quality-tooltip-container">
+              <button type="button" data-qualidade="B" onclick="selecionarQualidadeEdicao('B', this)" class="opcao-qualidade-btn w-full py-2.5 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-bold text-sm transition">B</button>
+              <div class="quality-tooltip">
+                <strong>B — Qualidade intermediária</strong><br>
+                Pequenas imperfeições estéticas, leve abertura do chapéu ou tamanho irregular. Indicado para processamento, molho ou venda com desconto.
+              </div>
+            </div>
+
+            <div class="quality-tooltip-container">
+              <button type="button" data-qualidade="C" onclick="selecionarQualidadeEdicao('C', this)" class="opcao-qualidade-btn w-full py-2.5 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-bold text-sm transition">C</button>
+              <div class="quality-tooltip">
+                <strong>C — Qualidade inferior</strong><br>
+                Chapéu bastante aberto/passado do ponto, deformado ou danificado. Indicado para desidratação, extração ou uso interno — não recomendado para venda in natura.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 mt-2 border-t">
+          <button type="button" onclick="closeModal('modalEditarColheita')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- CANVAS OCULTOS PARA GERAR OS GRÁFICOS NO PDF -->
   <div style="position: absolute; left: -9999px; top: -9999px;">
     <canvas id="chartProducaoDiariaCanvas" width="400" height="200"></canvas>
@@ -382,7 +446,9 @@
             <td class="p-3">${c.ciclo || '1º Fluxo'}</td>
             <td class="p-3 font-bold">${parseFloat(c.quantidadeKg).toFixed(2)} kg</td>
             <td class="p-3 text-center"><span class="px-2 py-1 rounded bg-emerald-50 text-emerald-800 font-bold">${qualidadeExibir}</span></td>
-            <td class="p-3 text-center">---</td>
+            <td class="p-3 text-center">
+              <button onclick="abrirModalEditarColheita(${c.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2 py-1.5 rounded border border-blue-200 text-[11px] transition" title="Editar Data e Qualidade">✏️</button>
+            </td>
           </tr>
         `;
       });
@@ -394,6 +460,115 @@
       paginaAtual += dir;
       if (paginaAtual < 1) paginaAtual = 1;
       renderizarTabela();
+    }
+
+    // --- EDIÇÃO DE DATA E QUALIDADE DA COLHEITA ---
+    const coresQualidadeEdicao = {
+      'A+': { borda: '#047857', fundo: '#047857', texto: '#ffffff' },
+      'A':  { borda: '#2563eb', fundo: '#2563eb', texto: '#ffffff' },
+      'B':  { borda: '#d97706', fundo: '#d97706', texto: '#ffffff' },
+      'C':  { borda: '#dc2626', fundo: '#dc2626', texto: '#ffffff' }
+    };
+
+    function selecionarQualidadeEdicao(valor, btnEl) {
+      document.getElementById('inputQualidadeEdicao').value = valor;
+      document.querySelectorAll('#grupoQualidadeEdicao .opcao-qualidade-btn').forEach(b => {
+        b.style.background = '';
+        b.style.color = '';
+        b.style.borderColor = '#e5e7eb';
+      });
+      const cor = coresQualidadeEdicao[valor];
+      if (cor && btnEl) {
+        btnEl.style.background = cor.fundo;
+        btnEl.style.borderColor = cor.borda;
+        btnEl.style.color = cor.texto;
+      }
+    }
+
+    function abrirModalEditarColheita(id) {
+      const registro = colheitasData.find(c => c.id === id);
+      if (!registro) {
+        alert("Registro não encontrado.");
+        return;
+      }
+
+      document.getElementById('inputIdColheitaEdicao').value = registro.id;
+      document.getElementById('inputQtdColheitaEdicao').value = registro.quantidadeKg;
+      document.getElementById('inputCicloColheitaEdicao').value = registro.ciclo || '1º Fluxo';
+      document.getElementById('labelLoteEdicao').textContent = registro.lote || '-';
+      document.getElementById('inputDataColheitaEdicao').value = registro.dataColheitaRaw || '';
+
+      // Reseta visual das opções de qualidade
+      document.querySelectorAll('#grupoQualidadeEdicao .opcao-qualidade-btn').forEach(b => {
+        b.style.background = '';
+        b.style.color = '';
+        b.style.borderColor = '#e5e7eb';
+      });
+
+      const qualidadeAtual = (registro.qualidade && registro.qualidade !== '-') ? registro.qualidade : 'A+';
+      const btnAtivo = document.querySelector(`#grupoQualidadeEdicao .opcao-qualidade-btn[data-qualidade="${qualidadeAtual}"]`);
+      selecionarQualidadeEdicao(qualidadeAtual, btnAtivo);
+
+      openModal('modalEditarColheita');
+    }
+
+    async function salvarEdicaoColheita(e) {
+      e.preventDefault();
+      const id = document.getElementById('inputIdColheitaEdicao').value;
+      const novaData = document.getElementById('inputDataColheitaEdicao').value;
+      const qualidade = document.getElementById('inputQualidadeEdicao').value;
+      const quantidadeKg = document.getElementById('inputQtdColheitaEdicao').value;
+      const ciclo = document.getElementById('inputCicloColheitaEdicao').value;
+
+      if (!novaData) {
+        alert("Selecione uma data válida.");
+        return;
+      }
+      if (!qualidade) {
+        alert("Selecione a qualidade da colheita.");
+        return;
+      }
+
+      try {
+        const respData = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'atualizarColheitaItem',
+            id: id,
+            dataColheita: novaData,
+            quantidadeKg: quantidadeKg,
+            ciclo: ciclo
+          })
+        });
+        const resData = await respData.json();
+        if (!resData.success) {
+          alert("Erro ao atualizar data: " + resData.message);
+          return;
+        }
+
+        const respQual = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'atualizarQualidadeColheita',
+            id: id,
+            qualidade: qualidade
+          })
+        });
+        const resQual = await respQual.json();
+        if (!resQual.success) {
+          alert("Erro ao atualizar qualidade: " + resQual.message);
+          return;
+        }
+
+        alert("Registro atualizado com sucesso!");
+        closeModal('modalEditarColheita');
+        carregarDadosColheita();
+      } catch (err) {
+        console.error("Erro ao editar colheita:", err);
+        alert("Erro de conexão ao editar o registro.");
+      }
     }
 
     // --- LÓGICA DE GERAÇÃO DO RELATÓRIO PDF ESTILIZADO ---

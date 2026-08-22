@@ -71,6 +71,12 @@
         <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Colheita e Produção</span>
         </a>
+        <a href="descarte_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Descarte de Blocos</span>
+        </a>
+        <a href="pedidos_vendas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Pedidos e Vendas</span>
+        </a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -169,6 +175,21 @@
         </div>
       </div>
 
+      <!-- BARRA DE AÇÃO EM MASSA (EXIBIDA APENAS COM ITENS SELECIONADOS) -->
+      <div id="barraAcaoMassa" class="hidden bg-emerald-900 text-white p-3 rounded-xl shadow-md flex items-center justify-between transition">
+        <div class="text-xs font-semibold flex items-center space-x-2">
+          <span>☑️ <span id="qtdSelecionados">0</span> bloco(s) selecionado(s)</span>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="colherSelecionados()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>🌾</span> Colher selecionados
+          </button>
+          <button onclick="abrirModalDescartarBlocosSelecionados()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>🗑️</span> Descartar selecionados
+          </button>
+        </div>
+      </div>
+
       <!-- VISUALIZAÇÃO 1: TABELA GERAL -->
       <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
@@ -201,6 +222,27 @@
       </div>
     </div>
   </main>
+
+  <!-- MODAL: EDITAR DATA DE ENTRADA DO BLOCO -->
+  <div id="modalEditarDataBloco" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Editar Data de Entrada</h3>
+      <p class="text-xs text-gray-500 mb-4">Alterar a data de entrada do bloco <span id="labelCodigoBlocoData" class="font-mono font-bold text-emerald-800">---</span> na frutificação:</p>
+      
+      <form onsubmit="salvarDataEntradaBloco(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="inputCodigoBlocoData">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Nova Data de Entrada</label>
+          <input type="date" id="inputNovaDataEntrada" required class="w-full border rounded-lg p-2.5 outline-none font-semibold text-gray-800 focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalEditarDataBloco')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition">Salvar Alteração</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL: GERENCIAR SALAS (INCLUIR, EDITAR, EXCLUIR) -->
   <div id="modalGerenciarSala" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
@@ -308,6 +350,39 @@
     </div>
   </div>
 
+  <!-- MODAL: DESCARTAR BLOCOS SELECIONADOS -->
+  <div id="modalDescartarBlocos" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Descartar Blocos Selecionados</h3>
+      <p class="text-xs text-gray-500 mb-4">Informe o motivo do descarte para os blocos selecionados:</p>
+      
+      <form onsubmit="confirmarDescarteBlocos(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Motivo do Descarte</label>
+          <select id="selectMotivoDescarteGeral" required class="w-full border rounded-lg p-2.5 outline-none bg-white font-medium">
+            <option value="">-- Selecione o motivo --</option>
+            <option value="Contaminação">Contaminação</option>
+            <option value="Fim de Vida Útil / Esgotado">Fim de Vida Útil / Esgotado</option>
+            <option value="Malformação / Deformação">Malformação / Deformação</option>
+            <option value="Pragas / Insetos">Pragas / Insetos</option>
+            <option value="Danificado no Manuseio">Danificado no Manuseio</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Observações (Opcional)</label>
+          <textarea id="obsDescarteGeral" rows="2" placeholder="Ex: Blocos esgotados após 3º ciclo de frutificação..." class="w-full border rounded-lg p-2.5 outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalDescartarBlocos')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold">Confirmar Descarte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- SCRIPT DE CONTROLE -->
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
@@ -318,14 +393,12 @@
       document.getElementById('userName').textContent = userData.nome;
     }
 
-    // Converter strings de data (dd/MM/yyyy ou yyyy-MM-dd / ISO) em objetos Date válidos
     function parseDataBR(dataStr) {
       if (!dataStr || dataStr === '---') return null;
       if (dataStr instanceof Date) return isNaN(dataStr.getTime()) ? null : dataStr;
 
       const apenasData = String(dataStr).split('T')[0].split(' ')[0];
 
-      // Formato BR: "16/08/2026"
       if (apenasData.includes('/')) {
         const partes = apenasData.split('/');
         if (partes.length === 3) {
@@ -334,7 +407,6 @@
         }
       }
 
-      // Formato ISO: "2026-08-16"
       if (apenasData.includes('-')) {
         const partes = apenasData.split('-');
         if (partes.length === 3) {
@@ -347,7 +419,6 @@
       return isNaN(d.getTime()) ? null : d;
     }
 
-    // Função utilitária para formatar datas no padrão BR (dd/MM/yyyy)
     function formatarDataBR(dataVal) {
       if (!dataVal || dataVal === '---') return '---';
       
@@ -473,6 +544,22 @@
       return soma;
     }
 
+    function atualizarVisibilidadeBotaoExcluir() {
+      const selecionados = document.querySelectorAll('.checkbox-bloco:checked');
+      const barraAcao = document.getElementById('barraAcaoMassa');
+      const qtdEl = document.getElementById('qtdSelecionados');
+
+      if (selecionados.length > 0) {
+        barraAcao.classList.remove('hidden');
+        barraAcao.classList.add('flex');
+        if (qtdEl) qtdEl.textContent = selecionados.length;
+      } else {
+        barraAcao.classList.add('hidden');
+        barraAcao.classList.remove('flex');
+        if (qtdEl) qtdEl.textContent = "0";
+      }
+    }
+
     function renderizarInterface() {
       const salaSelecionadaId = document.getElementById('filterSala').value;
       const totalKg = obterKgColhidosFiltrados(salaSelecionadaId);
@@ -499,6 +586,7 @@
 
       renderizarTabela();
       renderizarCaixasSalas();
+      atualizarVisibilidadeBotaoExcluir();
     }
 
     function processarProgressoBloco(b) {
@@ -563,11 +651,12 @@
         const nomeSala = salaObj ? salaObj.nome : (salaIdentificador ? salaIdentificador : '<span class="text-amber-600 font-semibold">⚠️ Sem Sala</span>');
         
         const codExibir = b.codigoRastreio || b.codigo || b.id || 'Sem código';
-        const dataExibir = formatarDataBR(b.dataEntrada || b.dataAtualizacaoStatus || b.dataCriacao || b.dataInoculacao);
+        const rawDataEntrada = b.dataEntrada || b.dataAtualizacaoStatus || b.dataCriacao || b.dataInoculacao;
+        const dataExibir = formatarDataBR(rawDataEntrada);
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
-            <td class="p-3 text-center"><input type="checkbox" value="${codExibir}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
+            <td class="p-3 text-center"><input type="checkbox" value="${codExibir}" onchange="atualizarVisibilidadeBotaoExcluir()" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
             <td class="p-3 font-mono font-bold text-gray-800">${codExibir}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie || 'Não informada'}</td>
             <td class="p-3">${nomeSala}</td>
@@ -584,9 +673,14 @@
               </div>
             </td>
             <td class="p-3 text-center">
-              <button onclick="abrirModalColheitaIndividual('${codExibir}', '${b.especie || ''}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm">
-                🍄 Colher
-              </button>
+              <div class="flex justify-center items-center space-x-2">
+                <button onclick="abrirModalColheitaIndividual('${codExibir}', '${b.especie || ''}')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1.5 rounded text-[11px] transition shadow-sm">
+                  🍄 Colher
+                </button>
+                <button onclick="abrirModalEditarDataBloco('${codExibir}', '${rawDataEntrada || ''}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2 py-1.5 rounded border border-blue-200 text-[11px] transition" title="Editar Data de Entrada">
+                  ✏️
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -638,7 +732,7 @@
               <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 flex flex-col justify-between space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
-                    <input type="checkbox" value="${codExibir}" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
+                    <input type="checkbox" value="${codExibir}" onchange="atualizarVisibilidadeBotaoExcluir()" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
                     <span class="font-mono font-bold text-xs text-gray-800">${codExibir}</span>
                   </div>
                   <span class="text-[10px] font-semibold text-emerald-800">${b.especie || 'N/I'}</span>
@@ -706,6 +800,61 @@
       });
     }
 
+    function abrirModalEditarDataBloco(codigoBloco, rawDataEntrada) {
+      document.getElementById('inputCodigoBlocoData').value = codigoBloco;
+      document.getElementById('labelCodigoBlocoData').textContent = codigoBloco;
+
+      let isoDate = '';
+      if (rawDataEntrada) {
+        const dt = parseDataBR(rawDataEntrada);
+        if (dt) {
+          const ano = dt.getFullYear();
+          const mes = String(dt.getMonth() + 1).padStart(2, '0');
+          const dia = String(dt.getDate()).padStart(2, '0');
+          isoDate = `${ano}-${mes}-${dia}`;
+        }
+      }
+
+      document.getElementById('inputNovaDataEntrada').value = isoDate;
+      openModal('modalEditarDataBloco');
+    }
+
+    async function salvarDataEntradaBloco(e) {
+      e.preventDefault();
+      const codigoBloco = document.getElementById('inputCodigoBlocoData').value;
+      const novaData = document.getElementById('inputNovaDataEntrada').value;
+
+      if (!codigoBloco || !novaData) {
+        alert("Por favor, selecione uma data válida.");
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'alterarDataEntradaFrutificacao',
+            codigoRastreio: codigoBloco,
+            novaData: novaData,
+            responsavel: userData ? userData.nome : 'Sistema'
+          })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          alert(res.message || "Data de entrada atualizada com sucesso!");
+          closeModal('modalEditarDataBloco');
+          loadFrutificacaoData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        console.error("Erro ao atualizar data de entrada:", err);
+        alert("Erro de conexão ao alterar a data do bloco.");
+      }
+    }
+
     function alternarLayout() {
       const ehCaixas = document.getElementById('toggleLayout').checked;
       document.getElementById('visaoTabela').classList.toggle('hidden', ehCaixas);
@@ -715,6 +864,27 @@
     function toggleSelectAll(master) {
       const checkboxes = document.querySelectorAll('.checkbox-bloco');
       checkboxes.forEach(cb => cb.checked = master.checked);
+      atualizarVisibilidadeBotaoExcluir();
+    }
+
+    async function colherSelecionados() {
+      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      
+      if (selecionados.length === 0) {
+        alert("Atenção: Nenhum bloco foi selecionado para colheita.");
+        return;
+      }
+
+      if (selecionados.length === 1) {
+        const cod = selecionados[0];
+        const bloco = blocosFrutificacaoCache.find(b => (b.codigoRastreio || b.codigo || b.id) === cod);
+        abrirModalColheitaIndividual(cod, bloco ? bloco.especie : '');
+      } else {
+        const mensagem = `Deseja registrar a colheita para os ${selecionados.length} blocos selecionados?`;
+        if (confirm(mensagem)) {
+          abrirModalColheitaSala('Geral', `${selecionados.length} blocos selecionados`);
+        }
+      }
     }
 
     async function transferirBlocosParaSala() {
@@ -752,6 +922,56 @@
       } catch (err) {
         console.error("Erro na transferência:", err);
         alert("Erro de conexão ao transferir blocos.");
+      }
+    }
+
+    function abrirModalDescartarBlocosSelecionados() {
+      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      if (selecionados.length === 0) {
+        alert("Selecione ao menos um bloco para descartar.");
+        return;
+      }
+      document.getElementById('selectMotivoDescarteGeral').value = '';
+      document.getElementById('obsDescarteGeral').value = '';
+      openModal('modalDescartarBlocos');
+    }
+
+    async function confirmarDescarteBlocos(e) {
+      e.preventDefault();
+      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      const motivo = document.getElementById('selectMotivoDescarteGeral').value;
+      const obs = document.getElementById('obsDescarteGeral').value;
+
+      if (!motivo) {
+        alert("Selecione o motivo do descarte.");
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'descartar',
+            codigos: selecionados,
+            idsBlocos: selecionados,
+            motivo: motivo,
+            observacao: obs,
+            etapaOrigem: 'Frutificação',
+            responsavel: userData ? userData.nome : 'Sistema'
+          })
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message || "Blocos descartados com sucesso!");
+          closeModal('modalDescartarBlocos');
+          loadFrutificacaoData();
+        } else {
+          alert("Erro ao descartar blocos: " + res.message);
+        }
+      } catch (err) {
+        console.error("Erro no descarte de blocos:", err);
+        alert("Erro de conexão ao processar descarte de blocos.");
       }
     }
 
@@ -969,7 +1189,6 @@
       
       let especiesDisponiveis = new Set();
 
-      // 1. Coleta espécies dos blocos alocados na sala
       if (salaId) {
         blocosFrutificacaoCache.forEach(b => {
           const sBloco = obterSalaDoBloco(b);
@@ -979,12 +1198,10 @@
         });
       }
 
-      // 2. Se não houver blocos na sala, adiciona o mapa global de espécies
       if (especiesDisponiveis.size === 0) {
         Object.keys(especiesCache).forEach(esp => especiesDisponiveis.add(esp));
       }
 
-      // 3. Garante que a espécie pré-selecionada esteja no Set
       if (especiePreSelecionada) {
         especiesDisponiveis.add(especiePreSelecionada);
       }
@@ -1001,7 +1218,6 @@
       div.className = "item-colheita-linha flex flex-col gap-2 bg-gray-50 p-2.5 rounded-lg border";
       div.innerHTML = `
         <div class="flex items-center space-x-2">
-          <!-- SELEÇÃO DE ESPÉCIE VIA SELECT -->
           <select required class="w-1/2 border rounded p-2 outline-none especie-colheita bg-white text-xs font-semibold">
             ${optionsEspecies}
           </select>
@@ -1013,7 +1229,6 @@
           <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700 font-bold px-1">✕</button>
         </div>
         
-        <!-- OPÇÃO DE CICLO E QUALIDADE -->
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div>
             <label class="block font-semibold text-gray-600 text-[10px] uppercase">Ciclo (Flush)</label>
@@ -1037,7 +1252,6 @@
           </div>
         </div>
 
-        <!-- SELETOR DE MOTIVO DO DESCARTE (EXIBIDO APENAS SE FOR DESCARTE) -->
         <div class="container-motivo-descarte hidden">
           <label class="block font-semibold text-red-600 text-[10px] uppercase mb-0.5">Motivo do Descarte</label>
           <select class="w-full border border-red-300 rounded p-1.5 outline-none motivo-descarte-colheita bg-red-50 text-red-800 font-medium text-xs">
