@@ -816,20 +816,15 @@
         let pesoNum = parseFloat(String(pesoRaw).replace(',', '.').replace(/[^0-9.]/g, '')) || 1;
         let quantidadeEtiquetas = Math.max(1, Math.round(pesoNum));
 
-        const infoQrCode = JSON.stringify({
-          tipo: "SPAWN",
-          lote: codigo,
-          especie: especie,
-          origem: origem,
-          dataInoculacao: dataInoc,
-          pesoTotal: pesoRaw,
-          responsavel: responsavel
-        });
+        // Mesmo padrão de QR Code usado em Controle de Blocos e Sala de Incubação:
+        // aponta para uma página de rastreio escaneável, não um JSON estático.
+        const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
+        const urlRastreio = `${URL_BASE_SITE}/detalhe_spawn.html?cod=${encodeURIComponent(codigo)}`;
 
         const qrContainer = document.getElementById("qrcodeContainer");
         qrContainer.innerHTML = '';
         const qrcode = new QRCode(qrContainer, {
-          text: infoQrCode,
+          text: urlRastreio,
           width: 128,
           height: 128,
           correctLevel: QRCode.CorrectLevel.M
@@ -851,13 +846,18 @@
             const x = margemEsquerda + col * eLargura;
             const y = margemTopo + lin * eAltura;
 
-            doc.setDrawColor(220, 220, 220);
+            doc.setDrawColor(234, 179, 8);
+            doc.setLineWidth(0.6);
             doc.rect(x, y, eLargura, eAltura);
+            doc.setLineWidth(0.2);
+
+            doc.setFillColor(234, 179, 8);
+            doc.rect(x, y, eLargura, 6, 'F');
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8);
-            doc.setTextColor(4, 120, 87);
-            doc.text("COLONIZA - SPAWN / INÓCULO DE GRÃOS", x + 5, y + 5);
+            doc.setTextColor(66, 44, 0);
+            doc.text("COLONIZA - SPAWN / INÓCULO DE GRÃOS", x + 5, y + 4.3);
 
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
