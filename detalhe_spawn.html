@@ -17,10 +17,12 @@
     <div id="loading" class="p-8 text-center text-gray-500 font-medium">Buscando dados do lote...</div>
 
     <div id="conteudoSpawn" class="p-5 space-y-5 hidden">
-      <!-- Status Badge -->
+      <!-- Status Badge (clicável) -->
       <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border">
         <span class="text-xs text-gray-500 font-bold uppercase">Status</span>
-        <span id="badgeStatus" class="px-3 py-1 rounded-full text-xs font-bold uppercase">---</span>
+        <select id="badgeStatus" onchange="alterarStatusSpawnDetalhe(this.value)" class="px-3 py-1 rounded-full text-xs font-bold uppercase border-none outline-none cursor-pointer">
+          <option value="">---</option>
+        </select>
       </div>
 
       <!-- Detalhes do Lote -->
@@ -126,23 +128,63 @@
       const badge = document.getElementById('badgeStatus');
       const containerAcoes = document.getElementById('acoesContainer');
 
+      const opcoesStatus = [
+        { valor: 'Incubando / Colonizando', rotulo: '🟡 Incubando / Colonizando' },
+        { valor: 'Pronto para Inoculação', rotulo: '🟢 Pronto para Inoculação' },
+        { valor: 'Utilizado / Esgotado', rotulo: '⚪ Utilizado / Esgotado' },
+        { valor: 'Descartado / Contaminado', rotulo: '🔴 Descartado / Contaminado' }
+      ];
+
       if (status.includes('Descartado')) {
-        badge.textContent = status;
-        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-800 border border-red-300';
+        preencherSelectStatus([{ valor: status, rotulo: status }], status, 'bg-red-100 text-red-800 border border-red-300');
         containerAcoes.innerHTML = `<p class="text-center text-gray-400 italic">Este lote já foi descartado.</p>`;
       } else if (status.includes('Esgotado') || status.includes('Utilizado')) {
-        badge.textContent = status;
-        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-700';
+        preencherSelectStatus(opcoesStatus, 'Utilizado / Esgotado', 'bg-gray-100 text-gray-700');
         containerAcoes.innerHTML = `<p class="text-center text-gray-400 italic">Nenhuma ação disponível para o status atual.</p>`;
       } else {
-        badge.textContent = status.includes('Pronto') ? '🟢 ' + status : '🟡 ' + status;
-        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-100 text-amber-800 border border-amber-300';
+        const selecionado = status.includes('Pronto') ? 'Pronto para Inoculação' : 'Incubando / Colonizando';
+        preencherSelectStatus(opcoesStatus, selecionado, 'bg-amber-100 text-amber-800 border border-amber-300');
 
         containerAcoes.innerHTML = `
           <button onclick="abrirModalDescarte()" class="w-full py-3 bg-red-50 text-red-600 font-bold rounded-xl border border-red-200 transition">
             🗑️ Descartar
           </button>
         `;
+      }
+    }
+
+    // Preenche o <select> de status com as opções válidas
+    function preencherSelectStatus(opcoes, selecionado, classes) {
+      const badge = document.getElementById('badgeStatus');
+      badge.innerHTML = opcoes.map(o => `<option value="${o.valor}" ${o.valor === selecionado ? 'selected' : ''}>${o.rotulo}</option>`).join('');
+      badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase cursor-pointer outline-none border-none ' + classes;
+      badge.disabled = opcoes.length <= 1;
+    }
+
+    async function alterarStatusSpawnDetalhe(novoStatus) {
+      if (!novoStatus || novoStatus === spawnAtual.status) return;
+      if (!confirm(`Confirma alterar o status para "${novoStatus}"?`)) {
+        renderizarSpawn();
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'atualizarStatus', tipo: 'spawn', codigo: codigoRastreio, novoStatus: novoStatus })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          location.reload();
+        } else {
+          alert("Erro: " + (res.message || 'Não foi possível alterar o status.'));
+          renderizarSpawn();
+        }
+      } catch (err) {
+        alert("Erro ao enviar dados.");
+        renderizarSpawn();
       }
     }
 
