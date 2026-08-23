@@ -56,7 +56,7 @@
       <form onsubmit="confirmarDescarteComFoto(event)" class="space-y-3 text-xs">
         <div>
           <label class="block font-bold mb-1">Motivo do Descarte</label>
-          <select id="motivoDescarte" required class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+          <select id="motivoDescarte" onchange="verificarOutroMotivo()" required class="w-full border rounded-lg p-2.5 bg-white font-semibold">
             <option value="">-- Selecione o Motivo --</option>
             <option value="Contaminação por Trichoderma (Limo Verde)">Contaminação por Trichoderma (Limo Verde)</option>
             <option value="Contaminação Bacteriana">Contaminação Bacteriana</option>
@@ -64,6 +64,12 @@
             <option value="Colonização Estagnada / Falha">Colonização Estagnada / Falha</option>
             <option value="Outros Motivos">Outros Motivos</option>
           </select>
+        </div>
+
+        <!-- Campo Dinâmico de Texto para "Outros Motivos" -->
+        <div id="containerOutroMotivo" class="hidden">
+          <label class="block font-bold mb-1 text-gray-700">Descreva o Motivo *</label>
+          <input type="text" id="outroMotivoDetalhe" placeholder="Ex: Saco furado, queda, etc." class="w-full border rounded-lg p-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-500 outline-none">
         </div>
 
         <div>
@@ -165,16 +171,48 @@
       }
     }
 
-    function abrirModalDescarte() { document.getElementById('modalDescarte').classList.remove('hidden'); document.getElementById('modalDescarte').classList.add('flex'); }
-    function fecharModalDescarte() { document.getElementById('modalDescarte').classList.add('hidden'); document.getElementById('modalDescarte').classList.remove('flex'); }
+    function abrirModalDescarte() { 
+      document.getElementById('modalDescarte').classList.remove('hidden'); 
+      document.getElementById('modalDescarte').classList.add('flex'); 
+    }
+
+    function fecharModalDescarte() { 
+      document.getElementById('modalDescarte').classList.add('hidden'); 
+      document.getElementById('modalDescarte').classList.remove('flex'); 
+      // Reseta o estado do form ao fechar
+      document.getElementById('motivoDescarte').value = '';
+      verificarOutroMotivo();
+    }
+
+    // Exibe ou oculta o campo de texto extra
+    function verificarOutroMotivo() {
+      const select = document.getElementById('motivoDescarte');
+      const containerOutro = document.getElementById('containerOutroMotivo');
+      const inputOutro = document.getElementById('outroMotivoDetalhe');
+
+      if (select.value === 'Outros Motivos') {
+        containerOutro.classList.remove('hidden');
+        inputOutro.required = true;
+      } else {
+        containerOutro.classList.add('hidden');
+        inputOutro.required = false;
+        inputOutro.value = '';
+      }
+    }
 
     async function confirmarDescarteComFoto(e) {
       e.preventDefault();
+      
+      const selectMotivo = document.getElementById('motivoDescarte').value;
+      const detalheMotivo = document.getElementById('outroMotivoDetalhe').value;
+      
+      // Se for "Outros Motivos", envia o texto digitado
+      const motivoFinal = (selectMotivo === 'Outros Motivos') ? `Outros: ${detalheMotivo}` : selectMotivo;
+
       const btn = document.getElementById('btnConfirmarDescarte');
       btn.disabled = true;
       btn.textContent = "Processando e enviando foto...";
 
-      const motivo = document.getElementById('motivoDescarte').value;
       const fileInput = document.getElementById('fotoDescarte');
 
       let fotoBase64 = null;
@@ -189,7 +227,7 @@
       const payload = {
         action: 'descartarComFoto',
         codigoRastreio: codigoRastreio,
-        motivo: motivo,
+        motivo: motivoFinal,
         fotoBase64: fotoBase64,
         nomeFoto: nomeFoto,
         responsavel: 'Operador Celular'
