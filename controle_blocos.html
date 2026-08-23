@@ -6,7 +6,7 @@
   <title>COLONIZA - Controle de Blocos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bwip-js@3.0.4/dist/bwip-js-min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -221,7 +221,7 @@
   </div>
 
   <!-- CANVAS OCULTO PARA GERAR CÓDIGO DE BARRAS -->
-  <canvas id="barcodeCanvas" class="hidden"></canvas>
+  <canvas id="qrCanvas" class="hidden"></canvas>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
@@ -429,42 +429,54 @@
       openModal('modalExcluirBloco');
     }
 
-    async function executarInoculacao(e) {
-      e.preventDefault();
-      const spawnCodigo = document.getElementById('modalSelectSpawn').value;
-      const posInicio = parseInt(document.getElementById('modalPosicaoInicio').value) || 1;
-      if (!spawnCodigo) { alert("Escolha o Spawn."); return; }
+async function executarInoculacao(e) {
+  e.preventDefault();
+  const spawnCodigo = document.getElementById('modalSelectSpawn').value;
+  const posInicio = parseInt(document.getElementById('modalPosicaoInicio').value) || 1;
+  if (!spawnCodigo) { alert("Escolha o Spawn."); return; }
 
-      const idsArray = Array.from(selecionados);
-      const blocosParaProcessar = blocosCache.filter(b => idsArray.includes(b.id));
+  // Encontra o objeto do spawn selecionado para extrair a espécie exata
+  const spawnObj = spawnsCache.find(s => s.codigo === spawnCodigo);
+  const especieInoculada = spawnObj ? spawnObj.especie : "Geral";
 
-      const payload = {
-        action: 'inocularBlocosEmMassa',
-        idsBlocos: idsArray,
-        spawnOrigem: spawnCodigo,
-        responsavel: userData.nome
-      };
+  const idsArray = Array.from(selecionados);
+  
+  // Atualiza a espécie dos blocos locais antes de gerar o PDF
+  const blocosParaProcessar = blocosCache
+    .filter(b => idsArray.includes(b.id))
+    .map(b => ({
+      ...b,
+      especie: especieInoculada // Atribui a espécie do Spawn inoculado
+    }));
 
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        const res = await response.json();
-        if (res.success) {
-          alert(res.message);
-          gerarPDFEtiquetasColacril(blocosParaProcessar, spawnCodigo, posInicio);
-          closeModal('modalInocular');
-          selecionados.clear();
-          atualizarBarraAcao();
-          loadData();
-        } else {
-          alert("Erro: " + res.message);
-        }
-      } catch (err) {
-        alert("Erro ao comunicar com o servidor.");
-      }
+  const payload = {
+    action: 'inocularBlocosEmMassa',
+    idsBlocos: idsArray,
+    spawnOrigem: spawnCodigo,
+    especie: especieInoculada, // Envia também no payload caso o backend precise
+    responsavel: userData.nome
+  };
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const res = await response.json();
+    if (res.success) {
+      alert(res.message);
+      gerarPDFEtiquetasColacril(blocosParaProcessar, spawnCodigo, posInicio);
+      closeModal('modalInocular');
+      selecionados.clear();
+      atualizarBarraAcao();
+      loadData();
+    } else {
+      alert("Erro: " + res.message);
     }
+  } catch (err) {
+    alert("Erro ao comunicar com o servidor.");
+  }
+}
 
     // ==========================================
     // EXCLUSÃO / DESCARTE DE BLOCO
@@ -541,72 +553,85 @@
     // Folha A4: 14 Etiquetas (2 Colunas x 7 Linhas) | Medida: 99.1 mm x 38.1 mm
     // ==========================================
     function gerarPDFEtiquetasColacril(blocos, spawnCodigo, posicaoInicio = 1) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-      const etqLargura = 99.1;
-      const etqAltura = 38.1;
-      const margemEsquerda = 4.5;
-      const margemSuperior = 15.0;
-      const espacamentoHoriz = 3.0;
+  const eLargura = 101.6;
+  const eAltura = 38.1;
+  const margemEsquerda = 4.8;
+  const margemTopo = 14.0;
 
-      const dataHojeFormatada = new Date().toLocaleDateString('pt-BR');
+  const dataHojeFormatada = new Date().toLocaleDateString('pt-BR');
+  let idxPos = posicaoInicio - 1;
 
-      blocos.forEach((bloco, idx) => {
-        const indicePosicao = (posicaoInicio - 1) + idx;
-        const posNaPagina = indicePosicao % 14;
+  blocos.forEach((bloco) => {
+    if (idxPos >= 14) {
+      doc.addPage();
+      idxPos = 0;
+    }
 
-        if (idx > 0 && posNaPagina === 0) {
-          doc.addPage();
-        }
+    const col = idxPos % 2;
+    const lin = Math.floor(idxPos / 2);
 
-        const col = posNaPagina % 2;
-        const lin = Math.floor(posNaPagina / 2);
+    const x = margemEsquerda + col * eLargura;
+    const y = margemTopo + lin * eAltura;
 
-        const x = margemEsquerda + col * (etqLargura + espacamentoHoriz);
-        const y = margemSuperior + lin * etqAltura;
+    // Borda da etiqueta
+    doc.setDrawColor(220, 220, 220);
+    doc.rect(x, y, eLargura, eAltura);
 
-        doc.setLineWidth(0.1);
-        doc.setDrawColor(200);
-        doc.rect(x, y, etqLargura, etqAltura);
+    // Cabeçalho da etiqueta
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(4, 120, 87);
+    doc.text("COLONIZA - CULTIVO DE COGUMELOS", x + 5, y + 5);
 
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.setTextColor(4, 120, 87);
-        doc.text("COLONIZA - RASTREABILIDADE", x + 3, y + 5);
+    // Informações do Bloco
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`CÓD: ${bloco.codigoRastreio}`, x + 5, y + 10);
 
-        doc.setFontSize(7);
-        doc.setTextColor(100);
-        doc.text(`INOC: ${dataHojeFormatada}`, x + etqLargura - 25, y + 5);
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Espécie: ${bloco.especie || '---'}`, x + 5, y + 15);
+    doc.text(`Spawn Origem: ${spawnCodigo || bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
+    doc.text(`Data Inoculação: ${bloco.dataInoculacao || dataHojeFormatada}`, x + 5, y + 23);
+    doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
 
-        doc.setFontSize(8);
-        doc.setTextColor(0);
-        doc.text(`ESPÉCIE: ${bloco.especie}`, x + 3, y + 10);
+    // Geração do QR Code com todas as informações do bloco
+    try {
+      const canvas = document.getElementById("qrCanvas");
 
-        doc.setFontSize(7);
-        doc.text(`LOTE CMP: ${bloco.loteComposto}  |  SPAWN: ${spawnCodigo}`, x + 3, y + 14);
+      const textoQRCode = 
+        `CÓD: ${bloco.codigoRastreio || '---'}\n` +
+        `Espécie: ${bloco.especie || '---'}\n` +
+        `Spawn: ${spawnCodigo || bloco.spawnOrigem || 'N/A'}\n` +
+        `Data Inoc.: ${bloco.dataInoculacao || dataHojeFormatada}\n` +
+        `Peso: ${bloco.peso || '---'} kg`;
 
-        JsBarcode("#barcodeCanvas", bloco.codigoRastreio, {
-          format: "CODE128",
-          width: 2,
-          height: 35,
-          displayValue: false
-        });
-        const barcodeDataUrl = document.getElementById('barcodeCanvas').toDataURL("image/png");
-        doc.addImage(barcodeDataUrl, 'PNG', x + 3, y + 16, 45, 12);
-
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'bold');
-        doc.text(bloco.codigoRastreio, x + 50, y + 20);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.text(`PESO: ${bloco.peso} kg`, x + 50, y + 24);
-        doc.text(`RESP: ${userData.nome}`, x + 50, y + 28);
+      bwipjs.toCanvas(canvas, {
+        bcid:        'qrcode',
+        text:        textoQRCode,
+        scale:       3,
+        includetext: false
       });
 
-      doc.save(`Etiquetas_Inoculacao_${new Date().getTime()}.pdf`);
+      const imgData = canvas.toDataURL("image/png");
+      doc.addImage(imgData, "PNG", x + 72, y + 8, 22, 22);
+    } catch (e) {
+      console.error("Erro ao gerar QR Code:", e);
     }
+
+    // Rodapé
+    doc.setFontSize(5.5);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Sistema de Rastreabilidade Coloniza", x + 63, y + 33, { align: 'left' });
+
+    idxPos++;
+  });
+
+  doc.save(`Etiquetas_Inoculacao_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
 
     // ==========================================
     // TOAST NOTIFICATION LÓGICA

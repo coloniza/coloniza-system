@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastreio de Bloco - COLONIZA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4 font-sans text-gray-800">
+  <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+    <!-- Cabeçalho -->
+    <div class="bg-emerald-900 text-white p-4 text-center">
+      <h1 class="text-xs uppercase tracking-widest text-emerald-300 font-semibold">COLONIZA • RASTREABILIDADE</h1>
+      <h2 id="txtCodigo" class="text-2xl font-black font-mono mt-1">Carregando...</h2>
+    </div>
+
+    <div id="loading" class="p-8 text-center text-gray-500 font-medium">Buscando dados do bloco...</div>
+
+    <div id="conteudoBloco" class="p-5 space-y-5 hidden">
+      <!-- Status Badge -->
+      <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border">
+        <span class="text-xs text-gray-500 font-bold uppercase">Fase Atual</span>
+        <span id="badgeStatus" class="px-3 py-1 rounded-full text-xs font-bold uppercase">---</span>
+      </div>
+
+      <!-- Detalhes do Bloco -->
+      <div class="space-y-2 text-xs bg-gray-50 p-3 rounded-xl border">
+        <div class="flex justify-between"><span class="text-gray-500">Espécie:</span> <span id="txtEspecie" class="font-bold text-gray-800">---</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Spawn Origem:</span> <span id="txtSpawn" class="font-bold text-gray-800">---</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Data Inoculação:</span> <span id="txtData" class="font-bold text-gray-800">---</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Peso:</span> <span id="txtPeso" class="font-bold text-gray-800">--- kg</span></div>
+      </div>
+
+      <!-- Barra de Progresso -->
+      <div>
+        <div class="flex justify-between text-xs font-bold mb-1">
+          <span class="text-gray-600">Progresso na Fase</span>
+          <span id="txtPct" class="text-emerald-700">0%</span>
+        </div>
+        <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+          <div id="barProgresso" class="bg-emerald-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Botões de Ação Dinâmicos -->
+      <div id="acoesContainer" class="space-y-2 pt-2">
+        <!-- Renderizados dinamicamente via JS (Incubação vs Frutificação) -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Descarte com Foto -->
+  <div id="modalDescarte" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4">
+      <h3 class="text-lg font-bold text-red-700">Descartar Bloco</h3>
+      <form onsubmit="confirmarDescarteComFoto(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">Motivo do Descarte</label>
+          <select id="motivoDescarte" required class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+            <option value="">-- Selecione o Motivo --</option>
+            <option value="Contaminação por Trichoderma (Limo Verde)">Contaminação por Trichoderma (Limo Verde)</option>
+            <option value="Contaminação Bacteriana">Contaminação Bacteriana</option>
+            <option value="Contaminação por Penicillium/Mofo">Contaminação por Penicillium/Mofo</option>
+            <option value="Colonização Estagnada / Falha">Colonização Estagnada / Falha</option>
+            <option value="Outros Motivos">Outros Motivos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Foto da Contaminação / Avaria (Opcional)</label>
+          <input type="file" id="fotoDescarte" accept="image/*" capture="environment" class="w-full border rounded-lg p-2 bg-gray-50">
+          <p class="text-[10px] text-gray-400 mt-1">A imagem será salva na pasta 'Imagens/Produção/Blocos descartados' do Google Drive.</p>
+        </div>
+
+        <div class="flex space-x-2 pt-2">
+          <button type="button" onclick="fecharModalDescarte()" class="flex-1 py-2.5 bg-gray-200 font-bold rounded-lg text-gray-700">Cancelar</button>
+          <button type="submit" id="btnConfirmarDescarte" class="flex-1 py-2.5 bg-red-600 font-bold text-white rounded-lg">Confirmar Descarte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPGeWdPq5MAkm6R1oGmSdqF7t3Cl7eRC-EPF80TI81WUlRZAmvEdZcjTGjDaXL_iLE/exec";
+    
+    // Pega o código da URL: detalhe_bloco.html?cod=XYZ
+    const urlParams = new URLSearchParams(window.location.search);
+    const codigoRastreio = urlParams.get('cod');
+
+    let blocoAtual = null;
+
+    async function carregarDetalhes() {
+      if (!codigoRastreio) {
+        document.getElementById('loading').textContent = "Código de bloco inválido ou não informado.";
+        return;
+      }
+
+      document.getElementById('txtCodigo').textContent = codigoRastreio;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getDetalhesBloco', codigo: codigoRastreio })
+        });
+        const res = await response.json();
+
+        if (res.success && res.bloco) {
+          blocoAtual = res.bloco;
+          renderizarBloco();
+        } else {
+          document.getElementById('loading').textContent = "Bloco não localizado no sistema.";
+        }
+      } catch (e) {
+        document.getElementById('loading').textContent = "Erro ao conectar com o servidor.";
+      }
+    }
+
+    function renderizarBloco() {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('conteudoBloco').classList.remove('hidden');
+
+      document.getElementById('txtEspecie').textContent = blocoAtual.especie || '---';
+      document.getElementById('txtSpawn').textContent = blocoAtual.spawnOrigem || '---';
+      document.getElementById('txtData').textContent = blocoAtual.dataInoculacao || '---';
+      document.getElementById('txtPeso').textContent = (blocoAtual.peso || '---') + ' kg';
+
+      const status = blocoAtual.status || 'Em Incubação';
+      const badge = document.getElementById('badgeStatus');
+      const containerAcoes = document.getElementById('acoesContainer');
+
+      // Progresso (exemplo simples baseado na inoculação)
+      const pct = blocoAtual.progressoPct || 50;
+      document.getElementById('txtPct').textContent = pct + '%';
+      document.getElementById('barProgresso').style.width = pct + '%';
+
+      if (status.includes('Incubação')) {
+        badge.textContent = '🧪 Incubação';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-100 text-amber-800 border border-amber-300';
+        
+        containerAcoes.innerHTML = `
+          <button onclick="moverParaFrutificacao()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+            <span>🍄</span> Frutificar
+          </button>
+          <button onclick="abrirModalDescarte()" class="w-full py-3 bg-red-50 text-red-600 font-bold rounded-xl border border-red-200 transition">
+            🗑️ Descartar
+          </button>
+        `;
+      } else if (status.includes('Frutificação')) {
+        badge.textContent = '✨ Frutificação';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-800 border border-blue-300';
+
+        containerAcoes.innerHTML = `
+          <button onclick="registrarColheita()" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+            <span>🧺</span> Colher
+          </button>
+          <button onclick="abrirModalDescarte()" class="w-full py-3 bg-red-50 text-red-600 font-bold rounded-xl border border-red-200 transition">
+            🗑️ Descartar
+          </button>
+        `;
+      } else {
+        badge.textContent = status;
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-700';
+        containerAcoes.innerHTML = `<p class="text-center text-gray-400 italic">Nenhuma ação disponível para o status atual.</p>`;
+      }
+    }
+
+    function abrirModalDescarte() { document.getElementById('modalDescarte').classList.remove('hidden'); document.getElementById('modalDescarte').classList.add('flex'); }
+    function fecharModalDescarte() { document.getElementById('modalDescarte').classList.add('hidden'); document.getElementById('modalDescarte').classList.remove('flex'); }
+
+    async function confirmarDescarteComFoto(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnConfirmarDescarte');
+      btn.disabled = true;
+      btn.textContent = "Processando e enviando foto...";
+
+      const motivo = document.getElementById('motivoDescarte').value;
+      const fileInput = document.getElementById('fotoDescarte');
+
+      let fotoBase64 = null;
+      let nomeFoto = null;
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        nomeFoto = file.name;
+        fotoBase64 = await convertFileToBase64(file);
+      }
+
+      const payload = {
+        action: 'descartarComFoto',
+        codigoRastreio: codigoRastreio,
+        motivo: motivo,
+        fotoBase64: fotoBase64,
+        nomeFoto: nomeFoto,
+        responsavel: 'Operador Celular'
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          alert("Bloco descartado com sucesso!");
+          location.reload();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro ao enviar dados.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Confirmar Descarte";
+      }
+    }
+
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]); // remove header data:image/png;base64,
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    carregarDetalhes();
+  </script>
+</body>
+</html>
