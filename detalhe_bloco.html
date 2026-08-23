@@ -164,7 +164,7 @@
       document.getElementById('txtEspecie').textContent = blocoAtual.especie || '---';
       document.getElementById('txtSpawn').textContent = blocoAtual.spawnOrigem || '---';
       document.getElementById('txtData').textContent = blocoAtual.dataInoculacao || '---';
-      document.getElementById('txtPeso').textContent = (blocoAtual.peso || '---') + ' kg';
+      document.getElementById('txtPeso').textContent = blocoAtual.peso || '---';
 
       const status = blocoAtual.status || 'Em Incubação';
       const badge = document.getElementById('badgeStatus');
