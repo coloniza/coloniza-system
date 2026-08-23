@@ -75,12 +75,45 @@
         <div>
           <label class="block font-bold mb-1">Foto da Contaminação / Avaria (Opcional)</label>
           <input type="file" id="fotoDescarte" accept="image/*" capture="environment" class="w-full border rounded-lg p-2 bg-gray-50">
-          <p class="text-[10px] text-gray-400 mt-1">A imagem será salva na pasta 'Imagens/Produção/Blocos descartados' do Google Drive.</p>
+          <p class="text-[10px] text-gray-400 mt-1">A imagem será salva na pasta 'Fotos/Produção/Blocos descartados' do Google Drive.</p>
         </div>
 
         <div class="flex space-x-2 pt-2">
           <button type="button" onclick="fecharModalDescarte()" class="flex-1 py-2.5 bg-gray-200 font-bold rounded-lg text-gray-700">Cancelar</button>
           <button type="submit" id="btnConfirmarDescarte" class="flex-1 py-2.5 bg-red-600 font-bold text-white rounded-lg">Confirmar Descarte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Colheita -->
+  <div id="modalColheita" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4">
+      <h3 class="text-lg font-bold text-blue-700">Registrar Colheita</h3>
+      <form onsubmit="confirmarColheita(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">Peso Colhido (kg) *</label>
+          <input type="number" step="0.01" min="0" id="pesoColheita" required placeholder="Ex: 1.5" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Qualidade</label>
+          <select id="qualidadeColheita" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+            <option value="A+">A+ (Extra)</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="Descarte">Descarte</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1">Observações</label>
+          <input type="text" id="obsColheita" placeholder="Opcional" class="w-full border rounded-lg p-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div class="flex space-x-2 pt-2">
+          <button type="button" onclick="fecharModalColheita()" class="flex-1 py-2.5 bg-gray-200 font-bold rounded-lg text-gray-700">Cancelar</button>
+          <button type="submit" id="btnConfirmarColheita" class="flex-1 py-2.5 bg-blue-700 font-bold text-white rounded-lg">Confirmar Colheita</button>
         </div>
       </form>
     </div>
@@ -171,7 +204,89 @@
       }
     }
 
-    function abrirModalDescarte() { 
+    async function moverParaFrutificacao() {
+      if (!confirm('Confirma mover este bloco para a Frutificação?')) return;
+
+      const payload = {
+        action: 'moverParaFrutificacao',
+        idsBlocos: [codigoRastreio],
+        status: 'Em Frutificação',
+        responsavel: 'Operador Celular'
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          alert("Bloco movido para Frutificação com sucesso!");
+          location.reload();
+        } else {
+          alert("Erro: " + (res.message || 'Não foi possível mover o bloco.'));
+        }
+      } catch (err) {
+        alert("Erro ao enviar dados.");
+      }
+    }
+
+    function registrarColheita() {
+      document.getElementById('modalColheita').classList.remove('hidden');
+      document.getElementById('modalColheita').classList.add('flex');
+    }
+
+    function fecharModalColheita() {
+      document.getElementById('modalColheita').classList.add('hidden');
+      document.getElementById('modalColheita').classList.remove('flex');
+      document.getElementById('pesoColheita').value = '';
+      document.getElementById('obsColheita').value = '';
+      document.getElementById('qualidadeColheita').value = 'A+';
+    }
+
+    async function confirmarColheita(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('btnConfirmarColheita');
+      btn.disabled = true;
+      btn.textContent = "Enviando...";
+
+      const payload = {
+        action: 'registrarColheita',
+        especie: blocoAtual ? blocoAtual.especie : undefined,
+        quantidadeKg: document.getElementById('pesoColheita').value,
+        codigoRastreio: codigoRastreio,
+        qualidade: document.getElementById('qualidadeColheita').value,
+        observacao: document.getElementById('obsColheita').value,
+        responsavel: 'Operador Celular'
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          alert("Colheita registrada com sucesso!");
+          fecharModalColheita();
+          location.reload();
+        } else {
+          alert("Erro: " + (res.message || 'Não foi possível registrar a colheita.'));
+        }
+      } catch (err) {
+        alert("Erro ao enviar dados.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Confirmar Colheita";
+      }
+    }
+
+    function abrirModalDescarte() {
       document.getElementById('modalDescarte').classList.remove('hidden'); 
       document.getElementById('modalDescarte').classList.add('flex'); 
     }
