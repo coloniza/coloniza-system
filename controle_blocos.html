@@ -552,7 +552,7 @@ async function executarInoculacao(e) {
     // GERADOR DE ETIQUETA PDF - GABARITO COLACRIL CA4363
     // Folha A4: 14 Etiquetas (2 Colunas x 7 Linhas) | Medida: 99.1 mm x 38.1 mm
     // ==========================================
-    function gerarPDFEtiquetasColacril(blocos, spawnCodigo, posicaoInicio = 1) {
+ function gerarPDFEtiquetasColacril(blocos, spawnCodigo, posicaoInicio = 1) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -563,6 +563,9 @@ async function executarInoculacao(e) {
 
   const dataHojeFormatada = new Date().toLocaleDateString('pt-BR');
   let idxPos = posicaoInicio - 1;
+
+  // ⚠️ COLOQUE AQUI A URL DO SEU GITHUB PAGES (substitua pelo seu usuario e repositorio)
+  const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
 
   blocos.forEach((bloco) => {
     if (idxPos >= 14) {
@@ -586,7 +589,7 @@ async function executarInoculacao(e) {
     doc.setTextColor(4, 120, 87);
     doc.text("COLONIZA - CULTIVO DE COGUMELOS", x + 5, y + 5);
 
-    // Informações do Bloco
+    // Informações do Bloco no Texto da Etiqueta
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text(`CÓD: ${bloco.codigoRastreio}`, x + 5, y + 10);
@@ -598,20 +601,16 @@ async function executarInoculacao(e) {
     doc.text(`Data Inoculação: ${bloco.dataInoculacao || dataHojeFormatada}`, x + 5, y + 23);
     doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
 
-    // Geração do QR Code com todas as informações do bloco
+    // Geração do QR Code como Link/URL Clicável
     try {
       const canvas = document.getElementById("qrCanvas");
 
-      const textoQRCode = 
-        `CÓD: ${bloco.codigoRastreio || '---'}\n` +
-        `Espécie: ${bloco.especie || '---'}\n` +
-        `Spawn: ${spawnCodigo || bloco.spawnOrigem || 'N/A'}\n` +
-        `Data Inoc.: ${bloco.dataInoculacao || dataHojeFormatada}\n` +
-        `Peso: ${bloco.peso || '---'} kg`;
+      // Monta a URL completa para ser lida pelo celular
+      const urlRastreio = `${URL_BASE_SITE}/detalhe_bloco.html?cod=${encodeURIComponent(bloco.codigoRastreio)}`;
 
       bwipjs.toCanvas(canvas, {
         bcid:        'qrcode',
-        text:        textoQRCode,
+        text:        urlRastreio, // Transforma o QR Code em um Link acessível via câmera!
         scale:       3,
         includetext: false
       });

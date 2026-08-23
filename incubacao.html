@@ -732,7 +732,7 @@ async function confirmarEdicaoEmMassa(event) {
       gerarPDFEtiquetasColacril(blocosParaImprimir, posNum);
     }
 
-    function gerarPDFEtiquetasColacril(blocos, posInicial = 1) {
+  function gerarPDFEtiquetasColacril(blocos, spawnCodigo, posicaoInicio = 1) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -741,10 +741,11 @@ async function confirmarEdicaoEmMassa(event) {
   const margemEsquerda = 4.8;
   const margemTopo = 14.0;
 
-  let idxPos = posInicial - 1;
+  const dataHojeFormatada = new Date().toLocaleDateString('pt-BR');
+  let idxPos = posicaoInicio - 1;
 
-  // Container temporário para renderizar o QR Code
-  const qrDiv = document.getElementById("qrcodeCanvas");
+  // ⚠️ COLOQUE AQUI A URL DO SEU GITHUB PAGES (substitua pelo seu usuario e repositorio)
+  const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
 
   blocos.forEach((bloco) => {
     if (idxPos >= 14) {
@@ -768,7 +769,7 @@ async function confirmarEdicaoEmMassa(event) {
     doc.setTextColor(4, 120, 87);
     doc.text("COLONIZA - CULTIVO DE COGUMELOS", x + 5, y + 5);
 
-    // Informações do Bloco
+    // Informações do Bloco no Texto da Etiqueta
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text(`CÓD: ${bloco.codigoRastreio}`, x + 5, y + 10);
@@ -776,35 +777,29 @@ async function confirmarEdicaoEmMassa(event) {
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
     doc.text(`Espécie: ${bloco.especie || '---'}`, x + 5, y + 15);
-    doc.text(`Spawn Origem: ${bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
-    doc.text(`Data Inoculação: ${bloco.dataInoculacao || bloco.dataCriacao || '---'}`, x + 5, y + 23);
+    doc.text(`Spawn Origem: ${spawnCodigo || bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
+    doc.text(`Data Inoculação: ${bloco.dataInoculacao || dataHojeFormatada}`, x + 5, y + 23);
     doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
 
-    // Geração do QR Code
-// Geração do QR Code com todas as informações do bloco
-try {
-  const canvas = document.getElementById("qrCanvas");
+    // Geração do QR Code como Link/URL Clicável
+    try {
+      const canvas = document.getElementById("qrCanvas");
 
-  // Monta o texto completo para o QR Code
-  const textoQRCode = 
-    `CÓD: ${bloco.codigoRastreio || '---'}\n` +
-    `Espécie: ${bloco.especie || '---'}\n` +
-    `Spawn: ${bloco.spawnOrigem || 'N/A'}\n` +
-    `Data Inoc.: ${bloco.dataInoculacao || bloco.dataCriacao || '---'}\n` +
-    `Peso: ${bloco.peso || '---'} kg`;
+      // Monta a URL completa para ser lida pelo celular
+      const urlRastreio = `${URL_BASE_SITE}/detalhe_bloco.html?cod=${encodeURIComponent(bloco.codigoRastreio)}`;
 
-  bwipjs.toCanvas(canvas, {
-    bcid:        'qrcode',
-    text:        textoQRCode,
-    scale:       3,
-    includetext: false
-  });
+      bwipjs.toCanvas(canvas, {
+        bcid:        'qrcode',
+        text:        urlRastreio, // Transforma o QR Code em um Link acessível via câmera!
+        scale:       3,
+        includetext: false
+      });
 
-  const imgData = canvas.toDataURL("image/png");
-  doc.addImage(imgData, "PNG", x + 72, y + 8, 22, 22);
-} catch (e) {
-  console.error("Erro ao gerar QR Code:", e);
-}
+      const imgData = canvas.toDataURL("image/png");
+      doc.addImage(imgData, "PNG", x + 72, y + 8, 22, 22);
+    } catch (e) {
+      console.error("Erro ao gerar QR Code:", e);
+    }
 
     // Rodapé
     doc.setFontSize(5.5);
@@ -814,7 +809,7 @@ try {
     idxPos++;
   });
 
-  doc.save(`Etiquetas_Incubacao_${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`Etiquetas_Inoculacao_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
     /* --- MODAL DE EDIÇÃO DE DATA DE INOCULAÇÃO INDIVIDUAL --- */
