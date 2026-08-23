@@ -712,20 +712,15 @@
         const dataInoc = lote.data || lote.dataInoculacao || lote[4] || '---';
         const responsavel = lote.responsavel || lote[6] || userData.nome;
 
-        const infoQrCode = JSON.stringify({
-          tipo: "CL",
-          lote: codigo,
-          especie: especie,
-          matrizOrigem: origem,
-          volume: volume,
-          dataInoculacao: dataInoc,
-          responsavel: responsavel
-        });
+        // Mesmo padrão de QR Code usado em Controle de Blocos e Sala de Incubação:
+        // aponta para uma página de rastreio escaneável, não um JSON estático.
+        const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
+        const urlRastreio = `${URL_BASE_SITE}/detalhe_cl.html?cod=${encodeURIComponent(codigo)}`;
 
         const qrContainer = document.getElementById("qrcodeContainer");
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, {
-          text: infoQrCode,
+          text: urlRastreio,
           width: 128,
           height: 128,
           correctLevel: QRCode.CorrectLevel.M
@@ -745,13 +740,18 @@
           const x = margemEsquerda + col * eLargura;
           const y = margemTopo + lin * eAltura;
 
-          doc.setDrawColor(220, 220, 220);
+          doc.setDrawColor(56, 189, 248);
+          doc.setLineWidth(0.6);
           doc.rect(x, y, eLargura, eAltura);
+          doc.setLineWidth(0.2);
+
+          doc.setFillColor(56, 189, 248);
+          doc.rect(x, y, eLargura, 6, 'F');
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8);
-          doc.setTextColor(217, 119, 6);
-          doc.text("COLONIZA - CULTURA LÍQUIDA (CL)", x + 5, y + 5);
+          doc.setTextColor(7, 89, 133);
+          doc.text("COLONIZA - CULTURA LÍQUIDA (CL)", x + 5, y + 4.3);
 
           doc.setFontSize(10);
           doc.setTextColor(0, 0, 0);
