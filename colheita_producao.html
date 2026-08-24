@@ -400,9 +400,13 @@
         valorEstimadoMes += kg * precoMedio;
 
         // Somas do substrato para Eficiência Biológica
-        if (c.lote && !lotesProcessados.has(c.lote)) {
-          const infoLote = loteSubstratoMapa[c.lote] || {};
-          
+        // Usa o lote de composto resolvido pelo backend (c.loteComposto), já que
+        // c.lote guarda o código do bloco (CB-...) e loteSubstratoMapa é indexado
+        // pelo código do lote de composto (CMP-...).
+        const loteChaveEB = c.loteComposto || c.lote;
+        if (loteChaveEB && !lotesProcessados.has(loteChaveEB)) {
+          const infoLote = loteSubstratoMapa[loteChaveEB] || {};
+
           // Leitura flexível e defensiva dos campos vindos do backend
           const seco = parseFloat(infoLote.pesoSecoKg || infoLote.materiaSeca || infoLote.pesoMateriaSeca || 0);
           const umido = parseFloat(infoLote.pesoUmidoKg || infoLote.pesoUmido || infoLote.pesoSubstrato || 0);
@@ -410,7 +414,7 @@
           totalSubstratoSecoKg += seco;
           totalSubstratoUmidoKg += umido;
 
-          lotesProcessados.add(c.lote);
+          lotesProcessados.add(loteChaveEB);
         }
       });
 
