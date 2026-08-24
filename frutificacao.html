@@ -194,7 +194,15 @@
       <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
           <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800">Blocos em Frutificação</h3>
-          <span id="contadorBlocosGeral" class="text-xs font-semibold text-gray-500">Total: 0 blocos</span>
+          <div class="flex items-center gap-3">
+            <span id="contadorBlocosGeral" class="text-xs font-semibold text-gray-500">Total: 0 blocos</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="lblQtdFrutificacao" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+              <button type="button" onclick="alternarQtdLinhasFrutificacao()" title="Alternar entre 5 e 10 linhas por página" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+                <span id="bolaQtdFrutificacao" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
@@ -213,6 +221,16 @@
               <tr><td colspan="7" class="py-10 text-center text-gray-400">Carregando blocos em frutificação...</td></tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex justify-between items-center border-t p-3 text-xs text-gray-500">
+          <span id="pageInfoFrutificacao">Mostrando 0 de 0 blocos</span>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirstFrutificacao" onclick="irPrimeiraPaginaFrutificacao()" title="Primeira página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
+            <button id="btnPrevFrutificacao" onclick="mudarPaginaFrutificacao(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt; Anterior</button>
+            <span id="pageIndicatorFrutificacao" class="font-semibold text-gray-700 px-1">Página 1 de 1</span>
+            <button id="btnNextFrutificacao" onclick="mudarPaginaFrutificacao(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">Próxima &gt;</button>
+            <button id="btnLastFrutificacao" onclick="irUltimaPaginaFrutificacao()" title="Última página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
+          </div>
         </div>
       </div>
 
@@ -449,6 +467,10 @@
     let blocosFrutificacaoCache = [];
     let salasCache = [];
     let especiesCache = {};
+    let selecionadosFrutificacao = new Set();
+    let listaFiltradaFrutificacao = [];
+    let paginaAtualFrutificacao = 1;
+    let itensPorPaginaFrutificacao = 5;
     let colheitasListaCache = [];
     let colheitasPorSalaCache = {};
     let idSalaEmEdicao = null;
@@ -545,14 +567,14 @@
     }
 
     function atualizarVisibilidadeBotaoExcluir() {
-      const selecionados = document.querySelectorAll('.checkbox-bloco:checked');
       const barraAcao = document.getElementById('barraAcaoMassa');
       const qtdEl = document.getElementById('qtdSelecionados');
+      const qtd = selecionadosFrutificacao.size;
 
-      if (selecionados.length > 0) {
+      if (qtd > 0) {
         barraAcao.classList.remove('hidden');
         barraAcao.classList.add('flex');
-        if (qtdEl) qtdEl.textContent = selecionados.length;
+        if (qtdEl) qtdEl.textContent = qtd;
       } else {
         barraAcao.classList.add('hidden');
         barraAcao.classList.remove('flex');
@@ -561,6 +583,7 @@
     }
 
     function renderizarInterface() {
+      selecionadosFrutificacao.clear();
       const salaSelecionadaId = document.getElementById('filterSala').value;
       const totalKg = obterKgColhidosFiltrados(salaSelecionadaId);
       
@@ -621,12 +644,10 @@
     }
 
     function renderizarTabela() {
-      const tbody = document.getElementById('tbodyFrutificacao');
       const filtroText = document.getElementById('searchFrutificacao').value.toLowerCase();
       const filtroSalaId = document.getElementById('filterSala').value.toLowerCase();
-      tbody.innerHTML = '';
 
-      const filtrados = blocosFrutificacaoCache.filter(b => {
+      listaFiltradaFrutificacao = blocosFrutificacaoCache.filter(b => {
         const cod = String(b.codigoRastreio || b.codigo || b.id || '').toLowerCase();
         const esp = String(b.especie || '').toLowerCase();
         const salaBloco = obterSalaDoBloco(b).toLowerCase();
@@ -637,12 +658,32 @@
         return matchText && matchSala;
       });
 
-      document.getElementById('contadorBlocosGeral').textContent = `Total: ${filtrados.length} blocos`;
+      paginaAtualFrutificacao = 1;
+      renderPaginaFrutificacao();
+    }
 
-      if (filtrados.length === 0) {
+    function renderPaginaFrutificacao() {
+      const tbody = document.getElementById('tbodyFrutificacao');
+      tbody.innerHTML = '';
+
+      document.getElementById('contadorBlocosGeral').textContent = `Total: ${listaFiltradaFrutificacao.length} blocos`;
+
+      if (listaFiltradaFrutificacao.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-gray-400">Nenhum bloco encontrado na frutificação.</td></tr>';
+        document.getElementById('pageInfoFrutificacao').textContent = "Mostrando 0 de 0 blocos";
+        document.getElementById('pageIndicatorFrutificacao').textContent = "Página 0 de 0";
+        document.getElementById('btnFirstFrutificacao').disabled = true;
+        document.getElementById('btnPrevFrutificacao').disabled = true;
+        document.getElementById('btnNextFrutificacao').disabled = true;
+        document.getElementById('btnLastFrutificacao').disabled = true;
         return;
       }
+
+      const totalPaginas = Math.max(1, Math.ceil(listaFiltradaFrutificacao.length / itensPorPaginaFrutificacao));
+      if (paginaAtualFrutificacao > totalPaginas) paginaAtualFrutificacao = totalPaginas;
+      const inicio = (paginaAtualFrutificacao - 1) * itensPorPaginaFrutificacao;
+      const fim = Math.min(inicio + itensPorPaginaFrutificacao, listaFiltradaFrutificacao.length);
+      const filtrados = listaFiltradaFrutificacao.slice(inicio, fim);
 
       filtrados.forEach(b => {
         const calc = processarProgressoBloco(b);
@@ -654,9 +695,10 @@
         const rawDataEntrada = b.dataEntrada || b.dataAtualizacaoStatus || b.dataCriacao || b.dataInoculacao;
         const dataExibir = formatarDataBR(rawDataEntrada);
 
+        const isCheckedFrut = selecionadosFrutificacao.has(codExibir) ? 'checked' : '';
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
-            <td class="p-3 text-center"><input type="checkbox" value="${codExibir}" onchange="atualizarVisibilidadeBotaoExcluir()" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
+            <td class="p-3 text-center"><input type="checkbox" value="${codExibir}" ${isCheckedFrut} onchange="toggleSelecaoFrutificacao('${codExibir}', this.checked)" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"></td>
             <td class="p-3 font-mono font-bold text-gray-800">${codExibir}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie || 'Não informada'}</td>
             <td class="p-3">${nomeSala}</td>
@@ -685,6 +727,46 @@
           </tr>
         `;
       });
+
+      document.getElementById('pageInfoFrutificacao').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltradaFrutificacao.length} blocos`;
+      document.getElementById('pageIndicatorFrutificacao').textContent = `Página ${paginaAtualFrutificacao} de ${totalPaginas}`;
+      document.getElementById('btnFirstFrutificacao').disabled = (paginaAtualFrutificacao === 1);
+      document.getElementById('btnPrevFrutificacao').disabled = (paginaAtualFrutificacao === 1);
+      document.getElementById('btnNextFrutificacao').disabled = (paginaAtualFrutificacao === totalPaginas);
+      document.getElementById('btnLastFrutificacao').disabled = (paginaAtualFrutificacao === totalPaginas);
+    }
+
+    function mudarPaginaFrutificacao(delta) {
+      paginaAtualFrutificacao += delta;
+      renderPaginaFrutificacao();
+    }
+
+    function irPrimeiraPaginaFrutificacao() {
+      paginaAtualFrutificacao = 1;
+      renderPaginaFrutificacao();
+    }
+
+    function irUltimaPaginaFrutificacao() {
+      paginaAtualFrutificacao = Math.max(1, Math.ceil(listaFiltradaFrutificacao.length / itensPorPaginaFrutificacao));
+      renderPaginaFrutificacao();
+    }
+
+    function alternarQtdLinhasFrutificacao() {
+      itensPorPaginaFrutificacao = (itensPorPaginaFrutificacao === 5) ? 10 : 5;
+      paginaAtualFrutificacao = 1;
+      document.getElementById('lblQtdFrutificacao').textContent = itensPorPaginaFrutificacao + ' linhas';
+      const bola = document.getElementById('bolaQtdFrutificacao');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', itensPorPaginaFrutificacao === 10);
+      trilho.classList.toggle('bg-gray-300', itensPorPaginaFrutificacao === 5);
+      bola.style.transform = itensPorPaginaFrutificacao === 10 ? 'translateX(16px)' : 'translateX(0px)';
+      renderPaginaFrutificacao();
+    }
+
+    function toggleSelecaoFrutificacao(codigo, checked) {
+      if (checked) selecionadosFrutificacao.add(codigo);
+      else selecionadosFrutificacao.delete(codigo);
+      atualizarVisibilidadeBotaoExcluir();
     }
 
     function renderizarCaixasSalas() {
@@ -727,12 +809,13 @@
           blocosNaSala.forEach(b => {
             const calc = processarProgressoBloco(b);
             const codExibir = b.codigoRastreio || b.codigo || b.id || 'Sem código';
+            const isCheckedCard = selecionadosFrutificacao.has(codExibir) ? 'checked' : '';
 
             cardsBlocosHtml += `
               <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 flex flex-col justify-between space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
-                    <input type="checkbox" value="${codExibir}" onchange="atualizarVisibilidadeBotaoExcluir()" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
+                    <input type="checkbox" value="${codExibir}" ${isCheckedCard} onchange="toggleSelecaoFrutificacao('${codExibir}', this.checked)" class="checkbox-bloco rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
                     <span class="font-mono font-bold text-xs text-gray-800">${codExibir}</span>
                   </div>
                   <span class="text-[10px] font-semibold text-emerald-800">${b.especie || 'N/I'}</span>
@@ -862,14 +945,19 @@
     }
 
     function toggleSelectAll(master) {
-      const checkboxes = document.querySelectorAll('.checkbox-bloco');
-      checkboxes.forEach(cb => cb.checked = master.checked);
+      listaFiltradaFrutificacao.forEach(b => {
+        const codigo = b.codigoRastreio || b.codigo || b.id;
+        if (master.checked) selecionadosFrutificacao.add(codigo);
+        else selecionadosFrutificacao.delete(codigo);
+      });
+      renderPaginaFrutificacao();
+      renderizarCaixasSalas();
       atualizarVisibilidadeBotaoExcluir();
     }
 
     async function colherSelecionados() {
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
-      
+      const selecionados = Array.from(selecionadosFrutificacao);
+
       if (selecionados.length === 0) {
         alert("Atenção: Nenhum bloco foi selecionado para colheita.");
         return;
@@ -889,7 +977,7 @@
 
     async function transferirBlocosParaSala() {
       const salaId = document.getElementById('selectSalaDestino').value;
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      const selecionados = Array.from(selecionadosFrutificacao);
 
       if (!salaId) {
         alert("Selecione uma sala de destino.");
@@ -926,7 +1014,7 @@
     }
 
     function abrirModalDescartarBlocosSelecionados() {
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      const selecionados = Array.from(selecionadosFrutificacao);
       if (selecionados.length === 0) {
         alert("Selecione ao menos um bloco para descartar.");
         return;
@@ -938,7 +1026,7 @@
 
     async function confirmarDescarteBlocos(e) {
       e.preventDefault();
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-bloco:checked')).map(cb => cb.value);
+      const selecionados = Array.from(selecionadosFrutificacao);
       const motivo = document.getElementById('selectMotivoDescarteGeral').value;
       const obs = document.getElementById('obsDescarteGeral').value;
 

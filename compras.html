@@ -114,11 +114,19 @@
 
       <!-- TABELA DE HISTÓRICO DE COMPRAS -->
       <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-3">
           <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
             <span>🛒</span> Registro de Aquisições
           </h3>
-          <input type="text" id="searchCompra" onkeyup="filterTable()" placeholder="Buscar por item, fornecedor ou categoria..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-72 focus:ring-2 focus:ring-emerald-500 transition">
+          <div class="flex items-center gap-3">
+            <input type="text" id="searchCompra" onkeyup="filterTable()" placeholder="Buscar por item, fornecedor ou categoria..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-72 focus:ring-2 focus:ring-emerald-500 transition">
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="lblQtdCompras" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+              <button type="button" onclick="alternarQtdLinhasCompras()" title="Alternar entre 5 e 10 linhas por página" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+                <span id="bolaQtdCompras" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -148,14 +156,16 @@
         <!-- CONTROLES DE PAGINAÇÃO -->
         <div class="flex justify-between items-center border-t pt-3 text-xs text-gray-500">
           <span id="pageInfo">Mostrando 0 de 0 compras</span>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirst" onclick="irPrimeiraPagina()" title="Primeira página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
             <button id="btnPrev" onclick="mudarPagina(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
-              ◀ Anterior
+              &lt; Anterior
             </button>
-            <span id="pageIndicator" class="font-semibold text-gray-700">Página 1</span>
+            <span id="pageIndicator" class="font-semibold text-gray-700 px-1">Página 1</span>
             <button id="btnNext" onclick="mudarPagina(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
-              Próxima ▶
+              Próxima &gt;
             </button>
+            <button id="btnLast" onclick="irUltimaPagina()" title="Última página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
           </div>
         </div>
       </div>
@@ -278,7 +288,16 @@
     let listaComprasCache = [];
     let listaFiltrada = [];
     let paginaAtual = 1;
-    const itensPorPagina = 5;
+    let itensPorPagina = 5;
+
+    // Converte data ISO (yyyy-MM-dd) para o formato de exibição dd-mm-aaaa
+    function formatarDataBR(dataIso) {
+      if (!dataIso) return '-';
+      const partes = String(dataIso).split('-');
+      if (partes.length !== 3) return dataIso;
+      const [ano, mes, dia] = partes;
+      return `${dia}-${mes}-${ano}`;
+    }
 
     const userData = JSON.parse(localStorage.getItem('coloniza_user'));
     if (!userData) {
@@ -447,6 +466,9 @@
         });
       }
 
+      // Mais recente para a mais antiga (datas no formato ISO yyyy-MM-dd ordenam corretamente como texto)
+      listaFiltrada.sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')));
+
       renderPage();
     }
 
@@ -458,8 +480,10 @@
         tbody.innerHTML = '<tr><td colspan="12" class="py-4 text-center text-gray-400">Nenhum registro encontrado.</td></tr>';
         document.getElementById('pageInfo').textContent = "Mostrando 0 de 0 compras";
         document.getElementById('pageIndicator').textContent = "Página 0 de 0";
+        document.getElementById('btnFirst').disabled = true;
         document.getElementById('btnPrev').disabled = true;
         document.getElementById('btnNext').disabled = true;
+        document.getElementById('btnLast').disabled = true;
         return;
       }
 
@@ -477,7 +501,7 @@
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
-            <td class="p-2.5 font-medium text-gray-600">${c.data}</td>
+            <td class="p-2.5 font-medium text-gray-600">${formatarDataBR(c.data)}</td>
             <td class="p-2.5 font-medium">${c.categoria}</td>
             <td class="p-2.5 font-bold text-gray-800">${c.descricao}</td>
             <td class="p-2.5 text-gray-600">${c.fornecedor || '-'}</td>
@@ -502,12 +526,36 @@
 
       document.getElementById('pageInfo').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltrada.length} compras`;
       document.getElementById('pageIndicator').textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+      document.getElementById('btnFirst').disabled = (paginaAtual === 1);
       document.getElementById('btnPrev').disabled = (paginaAtual === 1);
       document.getElementById('btnNext').disabled = (paginaAtual === totalPaginas);
+      document.getElementById('btnLast').disabled = (paginaAtual === totalPaginas);
     }
 
     function mudarPagina(delta) {
       paginaAtual += delta;
+      renderPage();
+    }
+
+    function irPrimeiraPagina() {
+      paginaAtual = 1;
+      renderPage();
+    }
+
+    function irUltimaPagina() {
+      paginaAtual = Math.max(1, Math.ceil(listaFiltrada.length / itensPorPagina));
+      renderPage();
+    }
+
+    function alternarQtdLinhasCompras() {
+      itensPorPagina = (itensPorPagina === 5) ? 10 : 5;
+      paginaAtual = 1;
+      document.getElementById('lblQtdCompras').textContent = itensPorPagina + ' linhas';
+      const bola = document.getElementById('bolaQtdCompras');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', itensPorPagina === 10);
+      trilho.classList.toggle('bg-gray-300', itensPorPagina === 5);
+      bola.style.transform = itensPorPagina === 10 ? 'translateX(16px)' : 'translateX(0px)';
       renderPage();
     }
 

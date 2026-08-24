@@ -130,6 +130,14 @@
 
       <!-- VISUALIZAÇÃO 1: TABELA / LISTA -->
       <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-3 border-b flex justify-end items-center">
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="lblQtdBlocos" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+            <button type="button" onclick="alternarQtdLinhasBlocos()" title="Alternar entre 5 e 10 linhas por página" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+              <span id="bolaQtdBlocos" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+            </button>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
@@ -148,6 +156,16 @@
               <!-- Renderizado via JS -->
             </tbody>
           </table>
+        </div>
+        <div class="flex justify-between items-center border-t p-3 text-xs text-gray-500">
+          <span id="pageInfoBlocos">Mostrando 0 de 0 blocos</span>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirstBlocos" onclick="irPrimeiraPaginaBlocos()" title="Primeira página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
+            <button id="btnPrevBlocos" onclick="mudarPaginaBlocos(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt; Anterior</button>
+            <span id="pageIndicatorBlocos" class="font-semibold text-gray-700 px-1">Página 1 de 1</span>
+            <button id="btnNextBlocos" onclick="mudarPaginaBlocos(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">Próxima &gt;</button>
+            <button id="btnLastBlocos" onclick="irUltimaPaginaBlocos()" title="Última página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
+          </div>
         </div>
       </div>
 
@@ -256,6 +274,9 @@
     let lotesCompostoCache = [];
     let spawnsCache = [];
     let selecionados = new Set();
+    let listaFiltradaBlocos = [];
+    let paginaAtualBlocos = 1;
+    let itensPorPaginaBlocos = 5;
 
     async function loadData() {
       try {
@@ -311,13 +332,31 @@
     }
 
     function renderizarTabela(lista) {
+      listaFiltradaBlocos = lista;
+      paginaAtualBlocos = 1;
+      renderPaginaBlocos();
+    }
+
+    function renderPaginaBlocos() {
       const tbody = document.getElementById('tbodyBlocos');
       tbody.innerHTML = '';
 
-      if (lista.length === 0) {
+      if (listaFiltradaBlocos.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-400">Nenhum bloco não inoculado encontrado.</td></tr>`;
+        document.getElementById('pageInfoBlocos').textContent = "Mostrando 0 de 0 blocos";
+        document.getElementById('pageIndicatorBlocos').textContent = "Página 0 de 0";
+        document.getElementById('btnFirstBlocos').disabled = true;
+        document.getElementById('btnPrevBlocos').disabled = true;
+        document.getElementById('btnNextBlocos').disabled = true;
+        document.getElementById('btnLastBlocos').disabled = true;
         return;
       }
+
+      const totalPaginas = Math.max(1, Math.ceil(listaFiltradaBlocos.length / itensPorPaginaBlocos));
+      if (paginaAtualBlocos > totalPaginas) paginaAtualBlocos = totalPaginas;
+      const inicio = (paginaAtualBlocos - 1) * itensPorPaginaBlocos;
+      const fim = Math.min(inicio + itensPorPaginaBlocos, listaFiltradaBlocos.length);
+      const lista = listaFiltradaBlocos.slice(inicio, fim);
 
       lista.forEach(b => {
         const isChecked = selecionados.has(b.id) ? 'checked' : '';
@@ -341,6 +380,40 @@
           </tr>
         `;
       });
+
+      document.getElementById('pageInfoBlocos').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltradaBlocos.length} blocos`;
+      document.getElementById('pageIndicatorBlocos').textContent = `Página ${paginaAtualBlocos} de ${totalPaginas}`;
+      document.getElementById('btnFirstBlocos').disabled = (paginaAtualBlocos === 1);
+      document.getElementById('btnPrevBlocos').disabled = (paginaAtualBlocos === 1);
+      document.getElementById('btnNextBlocos').disabled = (paginaAtualBlocos === totalPaginas);
+      document.getElementById('btnLastBlocos').disabled = (paginaAtualBlocos === totalPaginas);
+    }
+
+    function mudarPaginaBlocos(delta) {
+      paginaAtualBlocos += delta;
+      renderPaginaBlocos();
+    }
+
+    function irPrimeiraPaginaBlocos() {
+      paginaAtualBlocos = 1;
+      renderPaginaBlocos();
+    }
+
+    function irUltimaPaginaBlocos() {
+      paginaAtualBlocos = Math.max(1, Math.ceil(listaFiltradaBlocos.length / itensPorPaginaBlocos));
+      renderPaginaBlocos();
+    }
+
+    function alternarQtdLinhasBlocos() {
+      itensPorPaginaBlocos = (itensPorPaginaBlocos === 5) ? 10 : 5;
+      paginaAtualBlocos = 1;
+      document.getElementById('lblQtdBlocos').textContent = itensPorPaginaBlocos + ' linhas';
+      const bola = document.getElementById('bolaQtdBlocos');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', itensPorPaginaBlocos === 10);
+      trilho.classList.toggle('bg-gray-300', itensPorPaginaBlocos === 5);
+      bola.style.transform = itensPorPaginaBlocos === 10 ? 'translateX(16px)' : 'translateX(0px)';
+      renderPaginaBlocos();
     }
 
     function renderizarCaixas(lista) {
@@ -386,11 +459,14 @@
     }
 
     function selecionarTodos(chk) {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"][value]');
-      checkboxes.forEach(c => {
+      // Aplica sobre TODOS os blocos filtrados (não só os da página atual), para não perder o
+      // comportamento de seleção em massa com a paginação ativa.
+      listaFiltradaBlocos.forEach(b => {
+        if (chk.checked) selecionados.add(b.id);
+        else selecionados.delete(b.id);
+      });
+      document.querySelectorAll('input[type="checkbox"][value]').forEach(c => {
         c.checked = chk.checked;
-        if (chk.checked) selecionados.add(c.value);
-        else selecionados.delete(c.value);
       });
       atualizarBarraAcao();
     }

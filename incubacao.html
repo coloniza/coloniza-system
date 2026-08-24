@@ -170,6 +170,14 @@
 
       <!-- VISUALIZAÇÃO 1: TABELA / LISTA -->
       <div id="visaoTabela" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-3 border-b flex justify-end items-center">
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="lblQtdIncubacao" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+            <button type="button" onclick="alternarQtdLinhasIncubacao()" title="Alternar entre 5 e 10 linhas por página" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+              <span id="bolaQtdIncubacao" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+            </button>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
@@ -189,6 +197,16 @@
               <tr><td colspan="7" class="py-10 text-center text-gray-400">Carregando blocos em incubação...</td></tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex justify-between items-center border-t p-3 text-xs text-gray-500">
+          <span id="pageInfoIncubacao">Mostrando 0 de 0 blocos</span>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirstIncubacao" onclick="irPrimeiraPaginaIncubacao()" title="Primeira página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
+            <button id="btnPrevIncubacao" onclick="mudarPaginaIncubacao(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt; Anterior</button>
+            <span id="pageIndicatorIncubacao" class="font-semibold text-gray-700 px-1">Página 1 de 1</span>
+            <button id="btnNextIncubacao" onclick="mudarPaginaIncubacao(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">Próxima &gt;</button>
+            <button id="btnLastIncubacao" onclick="irUltimaPaginaIncubacao()" title="Última página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
+          </div>
         </div>
       </div>
 
@@ -303,6 +321,10 @@
 
     let blocosCache = [];
     let especiesCache = {};
+    let selecionadosIncubacao = new Set();
+    let listaFiltradaIncubacao = [];
+    let paginaAtualIncubacao = 1;
+    let itensPorPaginaIncubacao = 5;
 
     async function loadIncubacaoData() {
       try {
@@ -325,9 +347,10 @@
     }
 
     function renderizarInterface() {
+      selecionadosIncubacao.clear();
       renderizarTabela();
       renderizarCaixas();
-      
+
       const selectAll = document.getElementById('selectAllBlocos');
       if (selectAll) selectAll.checked = false;
       atualizarVisibilidadeBotaoExcluir();
@@ -362,37 +385,59 @@
     }
 
     function renderizarTabela() {
-      const tbody = document.getElementById('tbodyIncubacao');
       const filtro = document.getElementById('searchIncubacao').value.toLowerCase();
+      listaFiltradaIncubacao = blocosCache.filter(b =>
+        String(b.codigoRastreio).toLowerCase().includes(filtro) ||
+        String(b.especie).toLowerCase().includes(filtro)
+      );
+      paginaAtualIncubacao = 1;
+      renderPaginaIncubacao();
+    }
+
+    function renderPaginaIncubacao() {
+      const tbody = document.getElementById('tbodyIncubacao');
       tbody.innerHTML = '';
 
-      let total = blocosCache.length;
+      const total = blocosCache.length;
       let prontos = 0;
       let andamento = 0;
       let atrasados = 0;
 
-      const blocosFiltrados = blocosCache.filter(b => 
-        String(b.codigoRastreio).toLowerCase().includes(filtro) || 
-        String(b.especie).toLowerCase().includes(filtro)
-      );
-
-      if (blocosFiltrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-gray-400">Nenhum bloco encontrado na sala de incubação.</td></tr>';
-        atualizarKPIs(0, 0, 0, 0);
-        return;
-      }
-
-      blocosFiltrados.forEach(b => {
+      listaFiltradaIncubacao.forEach(b => {
         const calc = processarDadosBloco(b);
         if (calc.isPronto) prontos++; else andamento++;
         if (calc.isAtrasado) atrasados++;
+      });
+
+      if (listaFiltradaIncubacao.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-gray-400">Nenhum bloco encontrado na sala de incubação.</td></tr>';
+        atualizarKPIs(0, 0, 0, 0);
+        document.getElementById('pageInfoIncubacao').textContent = "Mostrando 0 de 0 blocos";
+        document.getElementById('pageIndicatorIncubacao').textContent = "Página 0 de 0";
+        document.getElementById('btnFirstIncubacao').disabled = true;
+        document.getElementById('btnPrevIncubacao').disabled = true;
+        document.getElementById('btnNextIncubacao').disabled = true;
+        document.getElementById('btnLastIncubacao').disabled = true;
+        return;
+      }
+
+      const totalPaginas = Math.max(1, Math.ceil(listaFiltradaIncubacao.length / itensPorPaginaIncubacao));
+      if (paginaAtualIncubacao > totalPaginas) paginaAtualIncubacao = totalPaginas;
+      const inicio = (paginaAtualIncubacao - 1) * itensPorPaginaIncubacao;
+      const fim = Math.min(inicio + itensPorPaginaIncubacao, listaFiltradaIncubacao.length);
+      const pageItens = listaFiltradaIncubacao.slice(inicio, fim);
+
+      pageItens.forEach(b => {
+        const calc = processarDadosBloco(b);
+        const codigoSel = b.codigoRastreio || b.id;
+        const isChecked = selecionadosIncubacao.has(codigoSel) ? 'checked' : '';
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50 transition">
             <td class="px-4 py-3 text-center">
-              <input type="checkbox" class="bloco-checkbox w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer" 
-                     value="${b.codigoRastreio || b.id}" 
-                     onchange="atualizarVisibilidadeBotaoExcluir()">
+              <input type="checkbox" class="bloco-checkbox w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                     value="${codigoSel}" ${isChecked}
+                     onchange="toggleSelecaoIncubacao('${codigoSel}', this.checked)">
             </td>
             <td class="p-3 font-mono font-bold text-gray-800">${b.codigoRastreio}</td>
             <td class="p-3 font-semibold text-emerald-800">${b.especie}</td>
@@ -428,6 +473,46 @@
       });
 
       atualizarKPIs(total, prontos, andamento, atrasados);
+
+      document.getElementById('pageInfoIncubacao').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltradaIncubacao.length} blocos`;
+      document.getElementById('pageIndicatorIncubacao').textContent = `Página ${paginaAtualIncubacao} de ${totalPaginas}`;
+      document.getElementById('btnFirstIncubacao').disabled = (paginaAtualIncubacao === 1);
+      document.getElementById('btnPrevIncubacao').disabled = (paginaAtualIncubacao === 1);
+      document.getElementById('btnNextIncubacao').disabled = (paginaAtualIncubacao === totalPaginas);
+      document.getElementById('btnLastIncubacao').disabled = (paginaAtualIncubacao === totalPaginas);
+    }
+
+    function mudarPaginaIncubacao(delta) {
+      paginaAtualIncubacao += delta;
+      renderPaginaIncubacao();
+    }
+
+    function irPrimeiraPaginaIncubacao() {
+      paginaAtualIncubacao = 1;
+      renderPaginaIncubacao();
+    }
+
+    function irUltimaPaginaIncubacao() {
+      paginaAtualIncubacao = Math.max(1, Math.ceil(listaFiltradaIncubacao.length / itensPorPaginaIncubacao));
+      renderPaginaIncubacao();
+    }
+
+    function alternarQtdLinhasIncubacao() {
+      itensPorPaginaIncubacao = (itensPorPaginaIncubacao === 5) ? 10 : 5;
+      paginaAtualIncubacao = 1;
+      document.getElementById('lblQtdIncubacao').textContent = itensPorPaginaIncubacao + ' linhas';
+      const bola = document.getElementById('bolaQtdIncubacao');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', itensPorPaginaIncubacao === 10);
+      trilho.classList.toggle('bg-gray-300', itensPorPaginaIncubacao === 5);
+      bola.style.transform = itensPorPaginaIncubacao === 10 ? 'translateX(16px)' : 'translateX(0px)';
+      renderPaginaIncubacao();
+    }
+
+    function toggleSelecaoIncubacao(codigo, checked) {
+      if (checked) selecionadosIncubacao.add(codigo);
+      else selecionadosIncubacao.delete(codigo);
+      atualizarVisibilidadeBotaoExcluir();
     }
 
     function renderizarCaixas() {
@@ -435,19 +520,21 @@
       const filtro = document.getElementById('searchIncubacao').value.toLowerCase();
       grid.innerHTML = '';
 
-      const blocosFiltrados = blocosCache.filter(b => 
-        String(b.codigoRastreio).toLowerCase().includes(filtro) || 
+      const blocosFiltrados = blocosCache.filter(b =>
+        String(b.codigoRastreio).toLowerCase().includes(filtro) ||
         String(b.especie).toLowerCase().includes(filtro)
       );
 
       blocosFiltrados.forEach(b => {
         const calc = processarDadosBloco(b);
+        const codigoSel = b.codigoRastreio || b.id;
+        const isChecked = selecionadosIncubacao.has(codigoSel) ? 'checked' : '';
 
         grid.innerHTML += `
           <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between space-y-3 relative">
             <div class="flex justify-between items-start">
               <div class="flex items-start space-x-2">
-                <input type="checkbox" value="${b.codigoRastreio || b.id}" onchange="atualizarVisibilidadeBotaoExcluir()" class="bloco-checkbox mt-1 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                <input type="checkbox" value="${codigoSel}" ${isChecked} onchange="toggleSelecaoIncubacao('${codigoSel}', this.checked)" class="bloco-checkbox mt-1 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
                 <div>
                   <h4 class="font-mono font-bold text-sm text-gray-800">${b.codigoRastreio}</h4>
                   <p class="text-xs font-semibold text-emerald-800">${b.especie}</p>
@@ -508,19 +595,22 @@
 
     /* --- CONTROLE DE SELEÇÃO E EXCLUSÃO EM MASSA --- */
     function toggleSelectAllBlocos(masterCheckbox) {
-      const checkboxes = document.querySelectorAll('.bloco-checkbox');
-      checkboxes.forEach(cb => {
-        cb.checked = masterCheckbox.checked;
+      // Aplica sobre TODOS os blocos filtrados (não só os da página atual)
+      listaFiltradaIncubacao.forEach(b => {
+        const codigoSel = b.codigoRastreio || b.id;
+        if (masterCheckbox.checked) selecionadosIncubacao.add(codigoSel);
+        else selecionadosIncubacao.delete(codigoSel);
       });
+      renderPaginaIncubacao();
+      renderizarCaixas();
       atualizarVisibilidadeBotaoExcluir();
     }
 
     function atualizarVisibilidadeBotaoExcluir() {
-      const selecionados = document.querySelectorAll('.bloco-checkbox:checked');
       const barraAcao = document.getElementById('barraAcaoMassa');
       const contadorSpan = document.getElementById('qtdSelecionados');
-      
-      const qtd = selecionados.length;
+
+      const qtd = selecionadosIncubacao.size;
 
       if (qtd > 0) {
         barraAcao.classList.remove('hidden');
@@ -535,8 +625,7 @@
     let blocosParaDescartarEmMassa = [];
 
     function abrirModalDescarteEmMassa() {
-      const selecionados = document.querySelectorAll('.bloco-checkbox:checked');
-      blocosParaDescartarEmMassa = Array.from(selecionados).map(cb => cb.value);
+      blocosParaDescartarEmMassa = Array.from(selecionadosIncubacao);
 
       if (blocosParaDescartarEmMassa.length === 0) {
         alert("Nenhum bloco selecionado.");
@@ -556,8 +645,7 @@
     let blocosSelecionadosEdicao = [];
 
 function abrirModalEditarMassa() {
-  const selecionados = document.querySelectorAll('.bloco-checkbox:checked');
-  blocosSelecionadosEdicao = Array.from(selecionados).map(cb => cb.value);
+  blocosSelecionadosEdicao = Array.from(selecionadosIncubacao);
 
   if (blocosSelecionadosEdicao.length === 0) {
     alert("Nenhum bloco selecionado.");
@@ -652,8 +740,8 @@ async function confirmarEdicaoEmMassa(event) {
     }
 
     async function enviarSelecionadosFrutificacao() {
-      const selecionados = Array.from(document.querySelectorAll('.bloco-checkbox:checked')).map(cb => cb.value);
-      
+      const selecionados = Array.from(selecionadosIncubacao);
+
       if (selecionados.length === 0) {
         alert("Atenção: Nenhum bloco foi selecionado. Por favor, selecione ao menos um bloco antes de enviar para frutificação.");
         return;
@@ -711,8 +799,8 @@ async function confirmarEdicaoEmMassa(event) {
     }
 
     function imprimirSelecionadosIncubacao() {
-      const selecionados = Array.from(document.querySelectorAll('.bloco-checkbox:checked')).map(cb => cb.value);
-      
+      const selecionados = Array.from(selecionadosIncubacao);
+
       if (selecionados.length === 0) {
         alert("Atenção: Nenhum bloco foi selecionado para reimpressão de etiquetas.");
         return;

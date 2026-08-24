@@ -139,11 +139,19 @@
 
       <!-- TABELA DE INSUMOS -->
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="p-4 border-b flex justify-between items-center">
+        <div class="p-4 border-b flex justify-between items-center gap-3">
           <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-2">
             <span>🧪</span> Catálogo de Insumos e Saldos
           </h3>
-          <button onclick="loadEstoque()" class="text-xs text-gray-500 hover:text-emerald-700 font-medium">🔄 Atualizar</button>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="lblQtdEstoque" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+              <button type="button" onclick="alternarQtdLinhasEstoque()" title="Alternar entre 5 e 10 linhas por página" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+                <span id="bolaQtdEstoque" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+              </button>
+            </div>
+            <button onclick="loadEstoque()" class="text-xs text-gray-500 hover:text-emerald-700 font-medium">🔄 Atualizar</button>
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -165,6 +173,18 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- CONTROLES DE PAGINAÇÃO -->
+        <div class="flex justify-between items-center border-t p-3 text-xs text-gray-500">
+          <span id="pageInfoEstoque">Mostrando 0 de 0 insumos</span>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirstEstoque" onclick="irPrimeiraPaginaEstoque()" title="Primeira página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
+            <button id="btnPrevEstoque" onclick="mudarPaginaEstoque(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt; Anterior</button>
+            <span id="pageIndicatorEstoque" class="font-semibold text-gray-700 px-1">Página 1 de 1</span>
+            <button id="btnNextEstoque" onclick="mudarPaginaEstoque(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">Próxima &gt;</button>
+            <button id="btnLastEstoque" onclick="irUltimaPaginaEstoque()" title="Última página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
+          </div>
         </div>
       </div>
 
@@ -323,6 +343,9 @@
     }
 
     let estoqueCache = [];
+    let listaFiltradaEstoque = [];
+    let paginaAtualEstoque = 1;
+    let itensPorPaginaEstoque = 5;
 
     async function loadEstoque() {
       try {
@@ -348,13 +371,31 @@
     }
 
     function renderTabela(lista) {
+      listaFiltradaEstoque = lista;
+      paginaAtualEstoque = 1;
+      renderPaginaEstoque();
+    }
+
+    function renderPaginaEstoque() {
       const tbody = document.getElementById('tbodyEstoque');
       tbody.innerHTML = '';
 
-      if (lista.length === 0) {
+      if (listaFiltradaEstoque.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Nenhum insumo encontrado.</td></tr>`;
+        document.getElementById('pageInfoEstoque').textContent = "Mostrando 0 de 0 insumos";
+        document.getElementById('pageIndicatorEstoque').textContent = "Página 0 de 0";
+        document.getElementById('btnFirstEstoque').disabled = true;
+        document.getElementById('btnPrevEstoque').disabled = true;
+        document.getElementById('btnNextEstoque').disabled = true;
+        document.getElementById('btnLastEstoque').disabled = true;
         return;
       }
+
+      const totalPaginas = Math.max(1, Math.ceil(listaFiltradaEstoque.length / itensPorPaginaEstoque));
+      if (paginaAtualEstoque > totalPaginas) paginaAtualEstoque = totalPaginas;
+      const inicio = (paginaAtualEstoque - 1) * itensPorPaginaEstoque;
+      const fim = Math.min(inicio + itensPorPaginaEstoque, listaFiltradaEstoque.length);
+      const lista = listaFiltradaEstoque.slice(inicio, fim);
 
       lista.forEach(ins => {
         const abaixoDoMinimo = ins.qtdAtual <= ins.estoqueMinimo;
@@ -389,6 +430,40 @@
           </tr>
         `;
       });
+
+      document.getElementById('pageInfoEstoque').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltradaEstoque.length} insumos`;
+      document.getElementById('pageIndicatorEstoque').textContent = `Página ${paginaAtualEstoque} de ${totalPaginas}`;
+      document.getElementById('btnFirstEstoque').disabled = (paginaAtualEstoque === 1);
+      document.getElementById('btnPrevEstoque').disabled = (paginaAtualEstoque === 1);
+      document.getElementById('btnNextEstoque').disabled = (paginaAtualEstoque === totalPaginas);
+      document.getElementById('btnLastEstoque').disabled = (paginaAtualEstoque === totalPaginas);
+    }
+
+    function mudarPaginaEstoque(delta) {
+      paginaAtualEstoque += delta;
+      renderPaginaEstoque();
+    }
+
+    function irPrimeiraPaginaEstoque() {
+      paginaAtualEstoque = 1;
+      renderPaginaEstoque();
+    }
+
+    function irUltimaPaginaEstoque() {
+      paginaAtualEstoque = Math.max(1, Math.ceil(listaFiltradaEstoque.length / itensPorPaginaEstoque));
+      renderPaginaEstoque();
+    }
+
+    function alternarQtdLinhasEstoque() {
+      itensPorPaginaEstoque = (itensPorPaginaEstoque === 5) ? 10 : 5;
+      paginaAtualEstoque = 1;
+      document.getElementById('lblQtdEstoque').textContent = itensPorPaginaEstoque + ' linhas';
+      const bola = document.getElementById('bolaQtdEstoque');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', itensPorPaginaEstoque === 10);
+      trilho.classList.toggle('bg-gray-300', itensPorPaginaEstoque === 5);
+      bola.style.transform = itensPorPaginaEstoque === 10 ? 'translateX(16px)' : 'translateX(0px)';
+      renderPaginaEstoque();
     }
 
     async function excluirInsumo(id, nome) {

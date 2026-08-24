@@ -78,16 +78,6 @@
         <p class="text-xs text-gray-500 font-medium">HISTÓRICO DE COLHEITAS, QUALIDADE E VALOR ESTIMADO</p>
       </div>
       <div class="flex items-center space-x-4">
-        <!-- ALTERNADOR DE VISUALIZAÇÃO DE LINHAS -->
-        <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 text-xs">
-          <span class="font-bold text-gray-600">5 Linhas</span>
-          <label class="switch">
-            <input type="checkbox" id="togglePaginacao" onchange="alternarPaginacao(this.checked)">
-            <span class="slider"></span>
-          </label>
-          <span class="font-bold text-gray-600">10 Linhas</span>
-        </div>
-
         <button onclick="openModal('modalOpcoesRelatorio')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-2">
           <span>📄</span> Exportar Relatório PDF
         </button>
@@ -135,12 +125,12 @@
       <!-- FILTROS NA TELA -->
       <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
         <div class="flex items-center space-x-3 w-full md:w-auto">
-          <input type="date" id="filterDataIni" onchange="renderizarTabela()" class="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="date" id="filterDataIni" onchange="filtrarColheita()" class="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
           <span class="text-gray-400">até</span>
-          <input type="date" id="filterDataFim" onchange="renderizarTabela()" class="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="date" id="filterDataFim" onchange="filtrarColheita()" class="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
         <div class="w-full md:w-64">
-          <input type="text" id="searchColheita" onkeyup="renderizarTabela()" placeholder="🔍 Buscar por lote ou espécie..." class="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="text" id="searchColheita" onkeyup="filtrarColheita()" placeholder="🔍 Buscar por lote ou espécie..." class="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
       </div>
 
@@ -148,7 +138,15 @@
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
           <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800">Registros de Colheita</h3>
-          <span id="contadorRegistros" class="text-xs font-semibold text-gray-500">Total: 0</span>
+          <div class="flex items-center gap-3">
+            <span id="contadorRegistros" class="text-xs font-semibold text-gray-500">Total: 0</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="lblQtdColheita" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+              <button type="button" onclick="alternarQtdLinhasColheita()" title="Alternar entre 5 e 10 linhas por página" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+                <span id="bolaQtdColheita" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
@@ -173,9 +171,12 @@
         <!-- PAGINAÇÃO -->
         <div class="p-4 border-t flex justify-between items-center text-xs text-gray-500">
           <span id="infoPaginacao">Exibindo 0 de 0</span>
-          <div class="flex space-x-2">
-            <button onclick="mudarPagina(-1)" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition">Anterior</button>
-            <button onclick="mudarPagina(1)" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition">Próximo</button>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirstColheita" onclick="irPrimeiraPaginaColheita()" title="Primeira página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
+            <button id="btnPrevColheita" onclick="mudarPagina(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt; Anterior</button>
+            <span id="pageIndicatorColheita" class="font-semibold text-gray-700 px-1">Página 1 de 1</span>
+            <button id="btnNextColheita" onclick="mudarPagina(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">Próxima &gt;</button>
+            <button id="btnLastColheita" onclick="irUltimaPaginaColheita()" title="Última página" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
           </div>
         </div>
       </div>
@@ -339,6 +340,27 @@
       renderizarTabela();
     }
 
+    function alternarQtdLinhasColheita() {
+      const novoValor = (linhasPorPagina === 5) ? 10 : 5;
+      document.getElementById('lblQtdColheita').textContent = novoValor + ' linhas';
+      const bola = document.getElementById('bolaQtdColheita');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', novoValor === 10);
+      trilho.classList.toggle('bg-gray-300', novoValor === 5);
+      bola.style.transform = novoValor === 10 ? 'translateX(16px)' : 'translateX(0px)';
+      alternarPaginacao(novoValor === 10);
+    }
+
+    function irPrimeiraPaginaColheita() {
+      paginaAtual = 1;
+      renderizarTabela();
+    }
+
+    function irUltimaPaginaColheita() {
+      paginaAtual = 999999; // renderizarTabela() já limita ao total de páginas
+      renderizarTabela();
+    }
+
     async function carregarDadosColheita() {
       try {
         const resp = await fetch(API_URL, {
@@ -407,6 +429,11 @@
       document.getElementById('kpiSubstratoUmido').textContent = `Substrato Úmido: ${rendUmidoPercentual.toFixed(1)}%`;
     }
 
+    function filtrarColheita() {
+      paginaAtual = 1;
+      renderizarTabela();
+    }
+
     function renderizarTabela() {
       const tbody = document.getElementById('tbodyColheita');
       const search = document.getElementById('searchColheita').value.toLowerCase();
@@ -432,6 +459,12 @@
       tbody.innerHTML = '';
       if (paginados.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-gray-400">Nenhum registro encontrado.</td></tr>';
+        document.getElementById('infoPaginacao').textContent = "Exibindo 0 de 0";
+        document.getElementById('pageIndicatorColheita').textContent = "Página 0 de 0";
+        document.getElementById('btnFirstColheita').disabled = true;
+        document.getElementById('btnPrevColheita').disabled = true;
+        document.getElementById('btnNextColheita').disabled = true;
+        document.getElementById('btnLastColheita').disabled = true;
         return;
       }
 
@@ -454,6 +487,11 @@
       });
 
       document.getElementById('infoPaginacao').textContent = `Exibindo ${inicio + 1} a ${Math.min(inicio + linhasPorPagina, filtrados.length)} de ${filtrados.length}`;
+      document.getElementById('pageIndicatorColheita').textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+      document.getElementById('btnFirstColheita').disabled = (paginaAtual === 1);
+      document.getElementById('btnPrevColheita').disabled = (paginaAtual === 1);
+      document.getElementById('btnNextColheita').disabled = (paginaAtual === totalPaginas);
+      document.getElementById('btnLastColheita').disabled = (paginaAtual === totalPaginas);
     }
 
     function mudarPagina(dir) {
