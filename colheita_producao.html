@@ -361,15 +361,30 @@
       renderizarTabela();
     }
 
-    // Busca o preço médio de venda de uma espécie no pmdvMapa vindo do backend, tolerando
-    // diferenças de espaços/maiúsculas entre o nome cadastrado em Banco de Culturas e o
-    // nome gravado no registro de colheita (evita retornar 0 por um mismatch de string).
+    // Nomes de espécie divergem entre telas na prática (ex: "Juba de Leao / Hericium
+    // erinaceus" no cadastro vs "Juba de Leão — Hericium erinaceus" na colheita: acento
+    // e separador diferentes). Normaliza removendo acentos e unificando separadores
+    // (/, -, –, —) para casar os dois lados de forma confiável.
+    function normalizarNomeEspecie(s) {
+      return String(s || '')
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[\/\-–—]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    let pmdvMapaNormalizado = null;
+
     function obterPrecoMedioEspecie(nomeEspecie) {
       if (!nomeEspecie) return 0;
       if (pmdvMapa[nomeEspecie] !== undefined) return parseFloat(pmdvMapa[nomeEspecie]) || 0;
-      const alvo = String(nomeEspecie).trim().toLowerCase();
-      const chave = Object.keys(pmdvMapa).find(k => String(k).trim().toLowerCase() === alvo);
-      return chave ? (parseFloat(pmdvMapa[chave]) || 0) : 0;
+      if (!pmdvMapaNormalizado) {
+        pmdvMapaNormalizado = {};
+        Object.keys(pmdvMapa).forEach(k => { pmdvMapaNormalizado[normalizarNomeEspecie(k)] = pmdvMapa[k]; });
+      }
+      const chave = normalizarNomeEspecie(nomeEspecie);
+      return pmdvMapaNormalizado[chave] !== undefined ? (parseFloat(pmdvMapaNormalizado[chave]) || 0) : 0;
     }
 
     async function carregarDadosColheita() {
@@ -384,6 +399,7 @@
           colheitasData = res.colheitas || [];
           loteSubstratoMapa = res.loteSubstratoMapa || {};
           pmdvMapa = res.pmdvMapa || {};
+          pmdvMapaNormalizado = null;
           infoEmpresa = res.infoEmpresa || {};
           calcularKPIs();
           renderizarTabela();
