@@ -98,14 +98,27 @@
           <input type="number" step="0.01" min="0" id="pesoColheita" required placeholder="Ex: 1.5" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
         </div>
 
-        <div>
-          <label class="block font-bold mb-1">Qualidade</label>
-          <select id="qualidadeColheita" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
-            <option value="A+">A+ (Extra)</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="Descarte">Descarte</option>
-          </select>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold mb-1">Ciclo (Flush)</label>
+            <select id="cicloColheita" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+              <option value="1º Ciclo">1º Ciclo</option>
+              <option value="2º Ciclo">2º Ciclo</option>
+              <option value="3º Ciclo">3º Ciclo</option>
+              <option value="4º Ciclo">4º Ciclo</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Qualidade / Classificação</label>
+            <select id="qualidadeColheita" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+              <option value="A+">A+ (Extra)</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="Descarte">Descarte</option>
+            </select>
+          </div>
         </div>
 
         <div>
@@ -281,6 +294,7 @@
     }
 
     function registrarColheita() {
+      document.getElementById('obsColheita').value = `Colheita direta do bloco ${codigoRastreio}`;
       document.getElementById('modalColheita').classList.remove('hidden');
       document.getElementById('modalColheita').classList.add('flex');
     }
@@ -291,6 +305,7 @@
       document.getElementById('pesoColheita').value = '';
       document.getElementById('obsColheita').value = '';
       document.getElementById('qualidadeColheita').value = 'A+';
+      document.getElementById('cicloColheita').value = '1º Ciclo';
     }
 
     async function confirmarColheita(e) {
@@ -305,8 +320,10 @@
         especie: blocoAtual ? blocoAtual.especie : undefined,
         quantidadeKg: document.getElementById('pesoColheita').value,
         codigoRastreio: codigoRastreio,
+        ciclo: document.getElementById('cicloColheita').value,
         qualidade: document.getElementById('qualidadeColheita').value,
         observacao: document.getElementById('obsColheita').value,
+        salaId: blocoAtual ? (blocoAtual.salaNome || blocoAtual.salaId || 'Geral') : 'Geral',
         responsavel: 'Operador Celular'
       };
 

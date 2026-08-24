@@ -517,12 +517,16 @@ async function executarInoculacao(e) {
 
   const idsArray = Array.from(selecionados);
   
-  // Atualiza a espécie dos blocos locais antes de gerar o PDF
+  // Atualiza a espécie e a data de inoculação dos blocos locais antes de gerar o PDF
+  // (no cadastro os blocos aguardando inoculação vêm com "-" no campo de data, que é
+  // truthy e por isso não caía no fallback de data de hoje da etiqueta)
+  const dataInoculacaoHoje = new Date().toLocaleDateString('pt-BR');
   const blocosParaProcessar = blocosCache
     .filter(b => idsArray.includes(b.id))
     .map(b => ({
       ...b,
-      especie: especieInoculada // Atribui a espécie do Spawn inoculado
+      especie: especieInoculada, // Atribui a espécie do Spawn inoculado
+      dataInoculacao: dataInoculacaoHoje
     }));
 
   const payload = {
@@ -674,7 +678,8 @@ async function executarInoculacao(e) {
     doc.setFont("helvetica", "normal");
     doc.text(`Espécie: ${bloco.especie || '---'}`, x + 5, y + 15);
     doc.text(`Spawn Origem: ${spawnCodigo || bloco.spawnOrigem || 'N/A'}`, x + 5, y + 19);
-    doc.text(`Data Inoculação: ${bloco.dataInoculacao || dataHojeFormatada}`, x + 5, y + 23);
+    const dataInocEtiqueta = (bloco.dataInoculacao && bloco.dataInoculacao !== '-') ? bloco.dataInoculacao : dataHojeFormatada;
+    doc.text(`Data Inoculação: ${dataInocEtiqueta}`, x + 5, y + 23);
     doc.text(`Peso: ${bloco.peso || '---'} kg`, x + 5, y + 27);
 
     // Geração do QR Code como Link/URL Clicável
