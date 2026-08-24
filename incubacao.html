@@ -367,8 +367,9 @@
       let diasPassados = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
       if (diasPassados < 0) diasPassados = 0;
 
-      const tempoMinimo = 14; 
-      const tempoMaximo = 21; 
+      const infoEsp = especiesCache[b.especie] || {};
+      const tempoMinimo = infoEsp.incubDiasMin || 14;
+      const tempoMaximo = infoEsp.incubDiasMax || 21;
 
       let pct = Math.round((diasPassados / tempoMaximo) * 100);
       if (pct > 100) pct = 100;

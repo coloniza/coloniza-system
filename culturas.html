@@ -358,48 +358,112 @@
           </select>
         </div>
 
-        <div id="camposFormularioEspecie" class="space-y-3">
+        <div id="camposFormularioEspecie" class="space-y-4">
           <div>
             <label class="block font-semibold mb-1">Espécie / Genética</label>
             <input type="text" id="espNome" required placeholder="Ex: Hericium erinaceus (Juba de Leão)" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
-          
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold mb-1">Dias Mín. (Incubação)</label>
-              <input type="number" id="espDiasMin" required placeholder="Ex: 14" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+
+          <!-- FASE: INCUBAÇÃO -->
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-3">
+            <h4 class="text-[11px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
+              <span>🧪</span> Fase de Incubação
+            </h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">Dias Mín. (Incubação)</label>
+                <input type="number" id="espIncubDiasMin" required placeholder="Ex: 14" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Dias Máx. (Incubação)</label>
+                <input type="number" id="espIncubDiasMax" required placeholder="Ex: 21" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">Temp. Mín. (°C)</label>
+                <input type="number" step="0.1" id="espIncubTempMin" placeholder="Ex: 18" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Temp. Máx. (°C)</label>
+                <input type="number" step="0.1" id="espIncubTempMax" placeholder="Ex: 21" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">Umidade Mín. (%)</label>
+                <input type="number" id="espIncubUmiMin" placeholder="Ex: 90" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Umidade Máx. (%)</label>
+                <input type="number" id="espIncubUmiMax" placeholder="Ex: 95" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">CO² Mín. (ppm)</label>
+                <input type="number" id="espIncubCO2Min" placeholder="Ex: 5000" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">CO² Máx. (ppm)</label>
+                <input type="number" id="espIncubCO2Max" placeholder="Ex: 15000" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500">
+              </div>
             </div>
             <div>
-              <label class="block font-semibold mb-1">Dias Máx. (Incubação)</label>
-              <input type="number" id="espDiasMax" required placeholder="Ex: 21" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+              <label class="block font-semibold mb-1">Observações de Manejo</label>
+              <textarea id="espIncubObs" rows="2" placeholder="Ex: Sensível a CO2 elevado, exige choque térmico..." class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-indigo-500"></textarea>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold mb-1">Temp. Mín. (°C)</label>
-              <input type="number" step="0.1" id="espTempMin" placeholder="Ex: 18" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+          <!-- FASE: FRUTIFICAÇÃO -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-3">
+            <h4 class="text-[11px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+              <span>🍄</span> Fase de Frutificação
+            </h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">Dias Mín. (Frutificação)</label>
+                <input type="number" id="espFrutDiasMin" placeholder="Ex: 7" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Dias Máx. (Frutificação)</label>
+                <input type="number" id="espFrutDiasMax" placeholder="Ex: 25" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">Temp. Mín. (°C)</label>
+                <input type="number" step="0.1" id="espFrutTempMin" placeholder="Ex: 16" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Temp. Máx. (°C)</label>
+                <input type="number" step="0.1" id="espFrutTempMax" placeholder="Ex: 20" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">Umidade Mín. (%)</label>
+                <input type="number" id="espFrutUmiMin" placeholder="Ex: 85" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Umidade Máx. (%)</label>
+                <input type="number" id="espFrutUmiMax" placeholder="Ex: 95" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1">CO² Mín. (ppm)</label>
+                <input type="number" id="espFrutCO2Min" placeholder="Ex: 400" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">CO² Máx. (ppm)</label>
+                <input type="number" id="espFrutCO2Max" placeholder="Ex: 800" class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500">
+              </div>
             </div>
             <div>
-              <label class="block font-semibold mb-1">Temp. Máx. (°C)</label>
-              <input type="number" step="0.1" id="espTempMax" placeholder="Ex: 21" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+              <label class="block font-semibold mb-1">Observações de Manejo</label>
+              <textarea id="espFrutObs" rows="2" placeholder="Ex: Precisa de choque de luz e ar fresco constante..." class="w-full border rounded-lg p-2.5 outline-none bg-white focus:ring-2 focus:ring-emerald-500"></textarea>
             </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold mb-1">Umidade Mín. (%)</label>
-              <input type="number" id="espUmiMin" placeholder="Ex: 90" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block font-semibold mb-1">Umidade Máx. (%)</label>
-              <input type="number" id="espUmiMax" placeholder="Ex: 95" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1 mt-2">Observações de Manejo</label>
-            <textarea id="espObs" rows="3" placeholder="Ex: Sensível a CO2 elevado, exige choque térmico..." class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
           </div>
         </div>
 
@@ -702,13 +766,26 @@
       
       document.getElementById('idEspecieEmEdicao').value = esp.nome;
       document.getElementById('espNome').value = esp.nome || '';
-      document.getElementById('espDiasMin').value = esp.diasMin || '';
-      document.getElementById('espDiasMax').value = esp.diasMax || '';
-      document.getElementById('espTempMin').value = esp.tempMin || '';
-      document.getElementById('espTempMax').value = esp.tempMax || '';
-      document.getElementById('espUmiMin').value = esp.umiMin || '';
-      document.getElementById('espUmiMax').value = esp.umiMax || '';
-      document.getElementById('espObs').value = esp.observacoes || '';
+
+      document.getElementById('espIncubDiasMin').value = esp.incubDiasMin || '';
+      document.getElementById('espIncubDiasMax').value = esp.incubDiasMax || '';
+      document.getElementById('espIncubTempMin').value = esp.incubTempMin || '';
+      document.getElementById('espIncubTempMax').value = esp.incubTempMax || '';
+      document.getElementById('espIncubUmiMin').value = esp.incubUmiMin || '';
+      document.getElementById('espIncubUmiMax').value = esp.incubUmiMax || '';
+      document.getElementById('espIncubCO2Min').value = esp.incubCO2Min || '';
+      document.getElementById('espIncubCO2Max').value = esp.incubCO2Max || '';
+      document.getElementById('espIncubObs').value = esp.incubObs || '';
+
+      document.getElementById('espFrutDiasMin').value = esp.frutDiasMin || '';
+      document.getElementById('espFrutDiasMax').value = esp.frutDiasMax || '';
+      document.getElementById('espFrutTempMin').value = esp.frutTempMin || '';
+      document.getElementById('espFrutTempMax').value = esp.frutTempMax || '';
+      document.getElementById('espFrutUmiMin').value = esp.frutUmiMin || '';
+      document.getElementById('espFrutUmiMax').value = esp.frutUmiMax || '';
+      document.getElementById('espFrutCO2Min').value = esp.frutCO2Min || '';
+      document.getElementById('espFrutCO2Max').value = esp.frutCO2Max || '';
+      document.getElementById('espFrutObs').value = esp.frutObs || '';
     }
 
     async function salvarEspecie(e) {
@@ -726,13 +803,27 @@
           action: modo === 'editar' ? 'editarEspecie' : 'cadastrarEspecie',
           idAtual: document.getElementById('idEspecieEmEdicao').value,
           nome: document.getElementById('espNome').value.trim(),
-          diasMin: document.getElementById('espDiasMin').value.trim(),
-          diasMax: document.getElementById('espDiasMax').value.trim(),
-          tempMin: document.getElementById('espTempMin').value.trim(),
-          tempMax: document.getElementById('espTempMax').value.trim(),
-          umiMin: document.getElementById('espUmiMin').value.trim(),
-          umiMax: document.getElementById('espUmiMax').value.trim(),
-          observacoes: document.getElementById('espObs').value.trim(),
+
+          incubDiasMin: document.getElementById('espIncubDiasMin').value.trim(),
+          incubDiasMax: document.getElementById('espIncubDiasMax').value.trim(),
+          incubTempMin: document.getElementById('espIncubTempMin').value.trim(),
+          incubTempMax: document.getElementById('espIncubTempMax').value.trim(),
+          incubUmiMin: document.getElementById('espIncubUmiMin').value.trim(),
+          incubUmiMax: document.getElementById('espIncubUmiMax').value.trim(),
+          incubCO2Min: document.getElementById('espIncubCO2Min').value.trim(),
+          incubCO2Max: document.getElementById('espIncubCO2Max').value.trim(),
+          incubObs: document.getElementById('espIncubObs').value.trim(),
+
+          frutDiasMin: document.getElementById('espFrutDiasMin').value.trim(),
+          frutDiasMax: document.getElementById('espFrutDiasMax').value.trim(),
+          frutTempMin: document.getElementById('espFrutTempMin').value.trim(),
+          frutTempMax: document.getElementById('espFrutTempMax').value.trim(),
+          frutUmiMin: document.getElementById('espFrutUmiMin').value.trim(),
+          frutUmiMax: document.getElementById('espFrutUmiMax').value.trim(),
+          frutCO2Min: document.getElementById('espFrutCO2Min').value.trim(),
+          frutCO2Max: document.getElementById('espFrutCO2Max').value.trim(),
+          frutObs: document.getElementById('espFrutObs').value.trim(),
+
           responsavel: userData.nome
         };
       }

@@ -36,7 +36,7 @@
       <!-- Barra de Progresso -->
       <div>
         <div class="flex justify-between text-xs font-bold mb-1">
-          <span class="text-gray-600">Progresso na Fase</span>
+          <span class="text-gray-600">Progresso na Fase <span id="txtDiasCiclo" class="text-gray-400 font-normal"></span></span>
           <span id="txtPct" class="text-emerald-700">0%</span>
         </div>
         <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
@@ -170,10 +170,17 @@
       const badge = document.getElementById('badgeStatus');
       const containerAcoes = document.getElementById('acoesContainer');
 
-      // Progresso (exemplo simples baseado na inoculação)
-      const pct = blocoAtual.progressoPct || 50;
+      // Progresso calculado no backend com base na fase atual e no ciclo cadastrado da espécie
+      const pct = (typeof blocoAtual.progressoPct === 'number') ? blocoAtual.progressoPct : 50;
       document.getElementById('txtPct').textContent = pct + '%';
       document.getElementById('barProgresso').style.width = pct + '%';
+
+      const txtDiasCiclo = document.getElementById('txtDiasCiclo');
+      if (typeof blocoAtual.diasDecorridos === 'number' && typeof blocoAtual.diasCiclo === 'number') {
+        txtDiasCiclo.textContent = `(Dia ${blocoAtual.diasDecorridos} de ${blocoAtual.diasCiclo}d)`;
+      } else {
+        txtDiasCiclo.textContent = '';
+      }
 
       if (status.includes('Incubação')) {
         preencherSelectStatus([

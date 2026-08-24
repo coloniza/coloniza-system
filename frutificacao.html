@@ -623,8 +623,8 @@
       const diffTime = hoje.getTime() - dataEntrada.getTime();
       const diasDecorridos = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
 
-      const infoEsp = especiesCache[b.especie] || { cicloFrutificacao: 25 };
-      const cicloTotal = parseFloat(infoEsp.cicloFrutificacao) || 25;
+      const infoEsp = especiesCache[b.especie] || {};
+      const cicloTotal = parseFloat(infoEsp.frutDiasMax) || 25;
 
       let pct = Math.round((diasDecorridos / cicloTotal) * 100);
       if (pct > 100) pct = 100;
