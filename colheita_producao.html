@@ -658,11 +658,14 @@
         const val = kg * preco;
         valorEstimadoTotal += val;
 
-        if (c.lote && !lotesRelatorio.has(c.lote)) {
-          const infoLote = loteSubstratoMapa[c.lote] || {};
+        // c.loteComposto é o código do lote de composto (CMP-...), que é a chave
+        // usada em loteSubstratoMapa; c.lote guarda o código do bloco (CB-...).
+        const loteChaveRelatorio = c.loteComposto || c.lote;
+        if (loteChaveRelatorio && !lotesRelatorio.has(loteChaveRelatorio)) {
+          const infoLote = loteSubstratoMapa[loteChaveRelatorio] || {};
           const seco = parseFloat(infoLote.pesoSecoKg || infoLote.materiaSeca || infoLote.pesoMateriaSeca || 0);
           totalSubstratoSecoKg += seco;
-          lotesRelatorio.add(c.lote);
+          lotesRelatorio.add(loteChaveRelatorio);
         }
 
         // Agrupamento por Espécie
