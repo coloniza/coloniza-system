@@ -361,6 +361,17 @@
       renderizarTabela();
     }
 
+    // Busca o preço médio de venda de uma espécie no pmdvMapa vindo do backend, tolerando
+    // diferenças de espaços/maiúsculas entre o nome cadastrado em Banco de Culturas e o
+    // nome gravado no registro de colheita (evita retornar 0 por um mismatch de string).
+    function obterPrecoMedioEspecie(nomeEspecie) {
+      if (!nomeEspecie) return 0;
+      if (pmdvMapa[nomeEspecie] !== undefined) return parseFloat(pmdvMapa[nomeEspecie]) || 0;
+      const alvo = String(nomeEspecie).trim().toLowerCase();
+      const chave = Object.keys(pmdvMapa).find(k => String(k).trim().toLowerCase() === alvo);
+      return chave ? (parseFloat(pmdvMapa[chave]) || 0) : 0;
+    }
+
     async function carregarDadosColheita() {
       try {
         const resp = await fetch(API_URL, {
@@ -383,21 +394,34 @@
     }
 
     function calcularKPIs() {
+      let totalKgGeral = 0;
       let totalKgMes = 0;
       let valorEstimadoMes = 0;
       let totalSubstratoSecoKg = 0;
       let totalSubstratoUmidoKg = 0;
-      
+
+      // "Total Colhido (Mês)" e "Valor Estimado Mês" consideram só o mês/ano corrente;
+      // Média por Colheita e Eficiência Biológica continuam sendo métricas históricas.
+      const agora = new Date();
+      const mesAtual = agora.getMonth();
+      const anoAtual = agora.getFullYear();
+
       const lotesProcessados = new Set();
       const qtdColheitas = colheitasData.length;
 
       colheitasData.forEach(c => {
         const kg = parseFloat(c.quantidadeKg) || 0;
-        totalKgMes += kg;
+        totalKgGeral += kg;
 
-        // Valor estimado via PMdV
-        const precoMedio = parseFloat(pmdvMapa[c.especie]) || 0;
-        valorEstimadoMes += kg * precoMedio;
+        const dataColheita = c.dataColheita ? new Date(c.dataColheita) : null;
+        const isMesAtual = dataColheita && dataColheita.getMonth() === mesAtual && dataColheita.getFullYear() === anoAtual;
+        if (isMesAtual) {
+          totalKgMes += kg;
+
+          // Valor estimado via PMdV
+          const precoMedio = obterPrecoMedioEspecie(c.especie);
+          valorEstimadoMes += kg * precoMedio;
+        }
 
         // Somas do substrato para Eficiência Biológica
         // Usa o lote de composto resolvido pelo backend (c.loteComposto), já que
@@ -418,11 +442,11 @@
         }
       });
 
-      const mediaPorColheita = qtdColheitas > 0 ? (totalKgMes / qtdColheitas) : 0;
+      const mediaPorColheita = qtdColheitas > 0 ? (totalKgGeral / qtdColheitas) : 0;
 
-      // Cálculos de Rendimento
-      const ebPercentual = totalSubstratoSecoKg > 0 ? ((totalKgMes / totalSubstratoSecoKg) * 100) : 0;
-      const rendUmidoPercentual = totalSubstratoUmidoKg > 0 ? ((totalKgMes / totalSubstratoUmidoKg) * 100) : 0;
+      // Cálculos de Rendimento (histórico completo, não só o mês)
+      const ebPercentual = totalSubstratoSecoKg > 0 ? ((totalKgGeral / totalSubstratoSecoKg) * 100) : 0;
+      const rendUmidoPercentual = totalSubstratoUmidoKg > 0 ? ((totalKgGeral / totalSubstratoUmidoKg) * 100) : 0;
 
       // Atualização dos Cards
       document.getElementById('kpiKgMes').textContent = `${totalKgMes.toFixed(2)} kg`;
@@ -654,7 +678,7 @@
         const kg = parseFloat(c.quantidadeKg) || 0;
         pesoTotal += kg;
         
-        const preco = parseFloat(pmdvMapa[c.especie]) || 0;
+        const preco = obterPrecoMedioEspecie(c.especie);
         const val = kg * preco;
         valorEstimadoTotal += val;
 
