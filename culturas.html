@@ -161,10 +161,30 @@
             </div>
           </div>
         </div>
+
+        <!-- BARRA DE AÇÃO EM MASSA (CL) -->
+        <div id="barraAcaoMassa_cl" class="hidden bg-amber-800 text-white px-4 py-2.5 items-center justify-between transition">
+          <div class="text-xs font-semibold flex items-center space-x-2">
+            <span>☑️ <span id="qtdSelecionados_cl">0</span> lote(s) de CL selecionado(s)</span>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="abrirModalEditarMassa('cl')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+              <span>✏️</span> Editar Selecionados
+            </button>
+            <button onclick="reimprimirSelecionados('cl')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+              <span>🏷️</span> Reimprimir Etiquetas
+            </button>
+            <button onclick="excluirSelecionados('cl')" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+              <span>🗑️</span> Excluir Selecionados
+            </button>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table id="tablaCL" class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
               <tr>
+                <th class="p-2.5 w-10 text-center"><input type="checkbox" onchange="toggleSelecionarTodos('cl', this)"></th>
                 <th class="p-2.5 font-semibold">CÓDIGO LOTE</th>
                 <th class="p-2.5 font-semibold">MATRIZ ORIGEM</th>
                 <th class="p-2.5 font-semibold">ESPÉCIE</th>
@@ -176,7 +196,7 @@
               </tr>
             </thead>
             <tbody id="clBody" class="divide-y divide-gray-100">
-              <tr><td colspan="8" class="py-4 text-center text-gray-400">Carregando lotes de CL...</td></tr>
+              <tr><td colspan="9" class="py-4 text-center text-gray-400">Carregando lotes de CL...</td></tr>
             </tbody>
           </table>
         </div>
@@ -208,10 +228,30 @@
             </div>
           </div>
         </div>
+
+        <!-- BARRA DE AÇÃO EM MASSA (SPAWN) -->
+        <div id="barraAcaoMassa_spawn" class="hidden bg-amber-800 text-white px-4 py-2.5 items-center justify-between transition">
+          <div class="text-xs font-semibold flex items-center space-x-2">
+            <span>☑️ <span id="qtdSelecionados_spawn">0</span> lote(s) de Spawn selecionado(s)</span>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="abrirModalEditarMassa('spawn')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+              <span>✏️</span> Editar Selecionados
+            </button>
+            <button onclick="reimprimirSelecionados('spawn')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+              <span>🏷️</span> Reimprimir Etiquetas
+            </button>
+            <button onclick="excluirSelecionados('spawn')" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+              <span>🗑️</span> Excluir Selecionados
+            </button>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table id="tablaSpawn" class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 border-b">
               <tr>
+                <th class="p-2.5 w-10 text-center"><input type="checkbox" onchange="toggleSelecionarTodos('spawn', this)"></th>
                 <th class="p-2.5 font-semibold">CÓDIGO LOTE</th>
                 <th class="p-2.5 font-semibold">INÓCULO ORIGEM</th>
                 <th class="p-2.5 font-semibold">ESPÉCIE</th>
@@ -223,7 +263,7 @@
               </tr>
             </thead>
             <tbody id="spawnBody" class="divide-y divide-gray-100">
-              <tr><td colspan="8" class="py-4 text-center text-gray-400">Carregando lotes de spawn...</td></tr>
+              <tr><td colspan="9" class="py-4 text-center text-gray-400">Carregando lotes de spawn...</td></tr>
             </tbody>
           </table>
         </div>
@@ -328,6 +368,29 @@
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeModal('modalEditarSpawn')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
           <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR EM MASSA (CL / SPAWN) -->
+  <div id="modalEditarMassaCultura" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+      <h3 id="tituloEditarMassaCultura" class="text-base font-bold text-gray-800 mb-1">Editar Selecionados</h3>
+      <p class="text-[11px] text-gray-500 mb-4"><span id="qtdEditarMassaCultura">0</span> item(ns) selecionado(s). Deixe em branco o que não quiser alterar.</p>
+      <form onsubmit="confirmarEdicaoMassaCultura(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="tipoEditarMassaCultura" value="">
+        <div>
+          <label id="labelValorMassaCultura" class="block font-semibold mb-1">Peso/Volume</label>
+          <input type="text" id="valorEditarMassaCultura" placeholder="Manter atual" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Data de Inoculação</label>
+          <input type="date" id="dataEditarMassaCultura" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalEditarMassaCultura')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">Salvar Alterações</button>
         </div>
       </form>
     </div>
@@ -1085,7 +1148,7 @@
 
         const isHistorico = statusStr.includes('Utilizada') || statusStr.includes('Descartada') || statusStr.includes('Esgotada');
         if (isHistorico) {
-          historicoRows.push({ texto: `${codigo} ${especie} ${variedade} matriz`.toLowerCase(), html: `
+          historicoRows.push({ codigo: codigo, texto: `${codigo} ${especie} ${variedade} matriz`.toLowerCase(), html: `
             <tr class="hover:bg-gray-200/50 transition">
               <td class="p-2.5 font-medium text-emerald-800">🧬 Matriz</td>
               <td class="p-2.5 font-mono font-bold">${codigo}</td>
@@ -1108,7 +1171,7 @@
             </tr>
           ` });
         } else {
-          culturasRows.push({ texto: `${codigo} ${especie} ${variedade} ${meio}`.toLowerCase(), html: `
+          culturasRows.push({ codigo: codigo, texto: `${codigo} ${especie} ${variedade} ${meio}`.toLowerCase(), html: `
             <tr class="hover:bg-gray-50 transition">
               <td class="p-2.5 font-mono font-bold text-gray-700">${codigo}</td>
               <td class="p-2.5 font-medium">${especie}</td>
@@ -1146,7 +1209,7 @@
 
         const isHistorico = statusStr.includes('Esgotada') || statusStr.includes('Utilizada') || statusStr.includes('Descartada');
         if (isHistorico) {
-          historicoRows.push({ texto: `${codigo} ${especie} ${matriz} lote cl`.toLowerCase(), html: `
+          historicoRows.push({ codigo: codigo, texto: `${codigo} ${especie} ${matriz} lote cl`.toLowerCase(), html: `
             <tr class="hover:bg-gray-200/50 transition">
               <td class="p-2.5 font-medium text-amber-800">🧪 Lote CL</td>
               <td class="p-2.5 font-mono font-bold">${codigo}</td>
@@ -1168,8 +1231,9 @@
             </tr>
           ` });
         } else {
-          clRows.push({ texto: `${codigo} ${especie} ${matriz} ${responsavel}`.toLowerCase(), html: `
+          clRows.push({ codigo: codigo, texto: `${codigo} ${especie} ${matriz} ${responsavel}`.toLowerCase(), html: `
             <tr class="hover:bg-gray-50 transition">
+              <td class="p-2.5 text-center"><input type="checkbox" class="checkbox-linha" value="${codigo}" onchange="toggleSelecaoLinha('cl', '${codigo}', this.checked)"></td>
               <td class="p-2.5 font-mono font-bold text-amber-700">${codigo}</td>
               <td class="p-2.5 font-mono text-gray-600">${matriz}</td>
               <td class="p-2.5 font-medium">${especie}</td>
@@ -1211,7 +1275,7 @@
 
         const isHistorico = statusStr.includes('Esgotado') || statusStr.includes('Utilizado') || statusStr.includes('Descartado');
         if (isHistorico) {
-          historicoRows.push({ texto: `${codigo} ${especie} ${matriz} spawn`.toLowerCase(), html: `
+          historicoRows.push({ codigo: codigo, texto: `${codigo} ${especie} ${matriz} spawn`.toLowerCase(), html: `
             <tr class="hover:bg-gray-200/50 transition">
               <td class="p-2.5 font-medium text-amber-900">🌾 Spawn</td>
               <td class="p-2.5 font-mono font-bold">${codigo}</td>
@@ -1233,8 +1297,9 @@
             </tr>
           ` });
         } else {
-          spawnRows.push({ texto: `${codigo} ${especie} ${matriz} ${responsavel}`.toLowerCase(), html: `
+          spawnRows.push({ codigo: codigo, texto: `${codigo} ${especie} ${matriz} ${responsavel}`.toLowerCase(), html: `
             <tr class="hover:bg-gray-50 transition">
+              <td class="p-2.5 text-center"><input type="checkbox" class="checkbox-linha" value="${codigo}" onchange="toggleSelecaoLinha('spawn', '${codigo}', this.checked)"></td>
               <td class="p-2.5 font-mono font-bold text-amber-900">${codigo}</td>
               <td class="p-2.5 font-mono text-gray-600">${matriz}</td>
               <td class="p-2.5 font-medium">${especie}</td>
@@ -1356,7 +1421,7 @@
     const paginadores = {};
 
     function registrarTabela(chave, tbodyId, vazioHtml) {
-      paginadores[chave] = { todos: [], filtrados: [], pagina: 1, porPagina: 5, tbodyId, vazioHtml };
+      paginadores[chave] = { todos: [], filtrados: [], pagina: 1, porPagina: 5, tbodyId, vazioHtml, selecionados: new Set() };
     }
 
     function definirDadosTabela(chave, linhas) {
@@ -1386,6 +1451,13 @@
       const itensPagina = p.filtrados.slice(inicio, fim);
 
       tbody.innerHTML = itensPagina.length > 0 ? itensPagina.map(l => l.html).join('') : p.vazioHtml;
+
+      // Restaura o estado dos checkboxes de seleção após reconstruir a página
+      if (p.selecionados) {
+        tbody.querySelectorAll('input.checkbox-linha').forEach(chk => {
+          chk.checked = p.selecionados.has(chk.value);
+        });
+      }
 
       const info = document.getElementById('pageInfo_' + chave);
       if (info) info.textContent = total === 0 ? 'Mostrando 0 de 0' : `Mostrando ${inicio + 1}-${fim} de ${total}`;
@@ -1432,9 +1504,143 @@
       renderizarPagina(chave);
     }
 
+    // ==========================================
+    // SELEÇÃO MÚLTIPLA E AÇÕES EM MASSA (CL / SPAWN)
+    // ==========================================
+    function toggleSelecaoLinha(chave, codigo, checked) {
+      const p = paginadores[chave];
+      if (checked) p.selecionados.add(codigo);
+      else p.selecionados.delete(codigo);
+      atualizarBarraAcaoMassa(chave);
+    }
+
+    function toggleSelecionarTodos(chave, masterCheckbox) {
+      const p = paginadores[chave];
+      p.filtrados.forEach(item => {
+        if (masterCheckbox.checked) p.selecionados.add(item.codigo);
+        else p.selecionados.delete(item.codigo);
+      });
+      renderizarPagina(chave);
+      atualizarBarraAcaoMassa(chave);
+    }
+
+    function atualizarBarraAcaoMassa(chave) {
+      const p = paginadores[chave];
+      const barra = document.getElementById('barraAcaoMassa_' + chave);
+      const qtdEl = document.getElementById('qtdSelecionados_' + chave);
+      if (!barra) return;
+      const qtd = p.selecionados.size;
+      if (qtd > 0) {
+        barra.classList.remove('hidden');
+        barra.classList.add('flex');
+        if (qtdEl) qtdEl.textContent = qtd;
+      } else {
+        barra.classList.add('hidden');
+        barra.classList.remove('flex');
+      }
+    }
+
+    function abrirModalEditarMassa(tipo) {
+      const p = paginadores[tipo];
+      const qtd = p.selecionados.size;
+      if (qtd === 0) { alert("Selecione ao menos um item."); return; }
+
+      document.getElementById('tipoEditarMassaCultura').value = tipo;
+      document.getElementById('qtdEditarMassaCultura').textContent = qtd;
+      document.getElementById('tituloEditarMassaCultura').textContent = tipo === 'cl' ? 'Editar Lotes de CL Selecionados' : 'Editar Lotes de Spawn Selecionados';
+      document.getElementById('labelValorMassaCultura').textContent = tipo === 'cl' ? 'Volume (ml)' : 'Peso (kg)';
+      document.getElementById('valorEditarMassaCultura').value = '';
+      document.getElementById('dataEditarMassaCultura').value = '';
+      openModal('modalEditarMassaCultura');
+    }
+
+    async function confirmarEdicaoMassaCultura(e) {
+      e.preventDefault();
+      const tipo = document.getElementById('tipoEditarMassaCultura').value;
+      const p = paginadores[tipo];
+      const codigos = Array.from(p.selecionados);
+      const valor = document.getElementById('valorEditarMassaCultura').value.trim();
+      const dataInoc = document.getElementById('dataEditarMassaCultura').value;
+
+      if (!valor && !dataInoc) {
+        alert("Preencha ao menos um dos campos (Peso/Volume ou Data). Deixe em branco o que não quiser alterar.");
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'editarItensEmMassa',
+            tipo: tipo,
+            codigos: codigos,
+            valor: valor,
+            dataInoculacao: dataInoc
+          })
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message);
+          closeModal('modalEditarMassaCultura');
+          p.selecionados.clear();
+          loadData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro ao comunicar com o servidor.");
+      }
+    }
+
+    function reimprimirSelecionados(tipo) {
+      const p = paginadores[tipo];
+      const codigos = Array.from(p.selecionados);
+      if (codigos.length === 0) { alert("Selecione ao menos um item."); return; }
+
+      const posInicio = prompt("Informe a posição inicial na folha Colacril A4 (1 a 14):", "1");
+      if (posInicio === null) return;
+      const posNum = parseInt(posInicio) || 1;
+
+      if (tipo === 'cl') {
+        const lotes = lotesCLCache.filter(l => codigos.includes(String(l.codigo || l.codigoLote || l[0])));
+        gerarPDFEtiquetasCL(lotes, posNum);
+      } else {
+        const lotes = lotesSpawnCache.filter(s => codigos.includes(String(s.codigo || s.codigoLote || s[0])));
+        gerarPDFEtiquetasSpawn(lotes, posNum);
+      }
+    }
+
+    async function excluirSelecionados(tipo) {
+      const p = paginadores[tipo];
+      const codigos = Array.from(p.selecionados);
+      if (codigos.length === 0) { alert("Selecione ao menos um item."); return; }
+
+      const label = tipo === 'cl' ? 'lote(s) de Cultura Líquida' : 'lote(s) de Spawn';
+      if (!confirm(`Tem certeza que deseja excluir ${codigos.length} ${label} selecionado(s)?\n\nEsta ação não pode ser desfeita.`)) return;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'excluirItensEmMassa', tipo: tipo, codigos: codigos })
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message);
+          p.selecionados.clear();
+          loadData();
+        } else {
+          alert("Erro: " + res.message);
+        }
+      } catch (err) {
+        alert("Erro ao comunicar com o servidor.");
+      }
+    }
+
     registrarTabela('culturas', 'culturasBody', '<tr><td colspan="8" class="py-4 text-center text-gray-400">Nenhuma matriz ativa no momento.</td></tr>');
-    registrarTabela('cl', 'clBody', '<tr><td colspan="8" class="py-4 text-center text-gray-400">Nenhum lote de CL ativo no momento.</td></tr>');
-    registrarTabela('spawn', 'spawnBody', '<tr><td colspan="8" class="py-4 text-center text-gray-400">Nenhum lote de Spawn ativo no momento.</td></tr>');
+    registrarTabela('cl', 'clBody', '<tr><td colspan="9" class="py-4 text-center text-gray-400">Nenhum lote de CL ativo no momento.</td></tr>');
+    registrarTabela('spawn', 'spawnBody', '<tr><td colspan="9" class="py-4 text-center text-gray-400">Nenhum lote de Spawn ativo no momento.</td></tr>');
     registrarTabela('historico', 'historicoBody', '<tr><td colspan="6" class="py-4 text-center text-gray-400">Nenhum item finalizado ou descartado.</td></tr>');
 
     loadData();
