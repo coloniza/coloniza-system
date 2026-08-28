@@ -1063,11 +1063,8 @@
         const especie = lote.especie || lote[2] || 'Geral';
         const origem = lote.matriz || lote.inoculoOrigem || lote[1] || 'N/A';
         const dataInoc = lote.data || lote.dataInoculacao || lote[4] || '---';
-        const pesoRaw = lote.peso || lote.volume || lote[3] || '1';
+        const peso = lote.peso || lote.volume || lote[3] || '---';
         const responsavel = lote.responsavel || lote[6] || userData.nome;
-
-        let pesoNum = parseFloat(String(pesoRaw).replace(',', '.').replace(/[^0-9.]/g, '')) || 1;
-        let quantidadeEtiquetas = Math.max(1, Math.round(pesoNum));
 
         const urlRastreio = `${URL_BASE_SITE}/detalhe_spawn.html?cod=${encodeURIComponent(codigo)}`;
 
@@ -1081,54 +1078,54 @@
         const qrCanvas = qrContainer.querySelector('canvas');
         const imgData = qrCanvas ? qrCanvas.toDataURL("image/png") : qrContainer.querySelector('img').src;
 
-        for (let i = 1; i <= quantidadeEtiquetas; i++) {
-          if (idxPos >= 14) {
-            doc.addPage();
-            idxPos = 0;
-          }
-
-          const col = idxPos % 2;
-          const lin = Math.floor(idxPos / 2);
-
-          const x = margemEsquerda + col * eLargura;
-          const y = margemTopo + lin * eAltura;
-
-          doc.setDrawColor(234, 179, 8);
-          doc.setLineWidth(0.6);
-          doc.rect(x, y, eLargura, eAltura);
-          doc.setLineWidth(0.2);
-
-          doc.setFillColor(234, 179, 8);
-          doc.rect(x, y, eLargura, 6, 'F');
-
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.setTextColor(66, 44, 0);
-          doc.text("COLONIZA - SPAWN / INÓCULO DE GRÃOS", x + 5, y + 4.3);
-
-          doc.setFontSize(10);
-          doc.setTextColor(0, 0, 0);
-          doc.text(`LOTE: ${codigo}`, x + 5, y + 10);
-
-          doc.setFontSize(7.5);
-          doc.setFont("helvetica", "normal");
-          doc.text(`Espécie: ${especie}`, x + 5, y + 15);
-          doc.text(`Inóculo Origem: ${origem}`, x + 5, y + 19);
-          doc.text(`Data Inoculação: ${dataInoc}`, x + 5, y + 23);
-          doc.text(`Pacote: ${i} de ${quantidadeEtiquetas} (1 kg)`, x + 5, y + 27);
-
-          try {
-            doc.addImage(imgData, "PNG", x + 70, y + 7, 24, 24);
-          } catch (e) {
-            console.error("Erro ao adicionar QR Code ao PDF:", e);
-          }
-
-          doc.setFontSize(5.5);
-          doc.setTextColor(120, 120, 120);
-          doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 34, { align: 'left' });
-
-          idxPos++;
+        // Cada lote já é um pacote físico individual com código próprio
+        // (gerado assim desde a produção) — uma etiqueta por lote, sem multiplicar.
+        if (idxPos >= 14) {
+          doc.addPage();
+          idxPos = 0;
         }
+
+        const col = idxPos % 2;
+        const lin = Math.floor(idxPos / 2);
+
+        const x = margemEsquerda + col * eLargura;
+        const y = margemTopo + lin * eAltura;
+
+        doc.setDrawColor(234, 179, 8);
+        doc.setLineWidth(0.6);
+        doc.rect(x, y, eLargura, eAltura);
+        doc.setLineWidth(0.2);
+
+        doc.setFillColor(234, 179, 8);
+        doc.rect(x, y, eLargura, 6, 'F');
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(66, 44, 0);
+        doc.text("COLONIZA - SPAWN / INÓCULO DE GRÃOS", x + 5, y + 4.3);
+
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`LOTE: ${codigo}`, x + 5, y + 10);
+
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Espécie: ${especie}`, x + 5, y + 15);
+        doc.text(`Inóculo Origem: ${origem}`, x + 5, y + 19);
+        doc.text(`Data Inoculação: ${dataInoc}`, x + 5, y + 23);
+        doc.text(`Peso: ${peso}`, x + 5, y + 27);
+
+        try {
+          doc.addImage(imgData, "PNG", x + 70, y + 7, 24, 24);
+        } catch (e) {
+          console.error("Erro ao adicionar QR Code ao PDF:", e);
+        }
+
+        doc.setFontSize(5.5);
+        doc.setTextColor(120, 120, 120);
+        doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 34, { align: 'left' });
+
+        idxPos++;
       });
 
       const primeiroCodigoSpawn = lotes.length > 0 ? (lotes[0].codigo || lotes[0].codigoLote || lotes[0][0]) : 'lote';
