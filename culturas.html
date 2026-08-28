@@ -943,7 +943,14 @@
       const margemEsquerda = 4.8;
       const margemTopo = 14.0;
       let idxPos = posInicial - 1;
+      const qrContainer = document.getElementById("qrcodeContainer");
+      // Mesmo padrão de QR Code usado em Controle de Blocos e Sala de Incubação:
+      // aponta para uma página de rastreio escaneável, não um JSON estático.
+      const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
 
+      // Processado de forma síncrona (a biblioteca de QR Code já desenha no canvas
+      // imediatamente) para não sobrescrever o QR compartilhado entre itens e para
+      // só salvar o PDF uma vez no final, com todas as etiquetas já incluídas.
       lotes.forEach((lote) => {
         const codigo = lote.codigo || lote.codigoLote || lote[0] || '';
         const origem = lote.matriz || lote.matrizOrigem || lote[1] || 'N/A';
@@ -952,12 +959,8 @@
         const dataInoc = lote.data || lote.dataInoculacao || lote[4] || '---';
         const responsavel = lote.responsavel || lote[6] || userData.nome;
 
-        // Mesmo padrão de QR Code usado em Controle de Blocos e Sala de Incubação:
-        // aponta para uma página de rastreio escaneável, não um JSON estático.
-        const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
         const urlRastreio = `${URL_BASE_SITE}/detalhe_cl.html?cod=${encodeURIComponent(codigo)}`;
 
-        const qrContainer = document.getElementById("qrcodeContainer");
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, {
           text: urlRastreio,
@@ -965,58 +968,61 @@
           height: 128,
           correctLevel: QRCode.CorrectLevel.M
         });
+        const qrCanvas = qrContainer.querySelector('canvas');
+        const imgData = qrCanvas ? qrCanvas.toDataURL("image/png") : qrContainer.querySelector('img').src;
 
-        setTimeout(() => {
-          const qrCanvas = qrContainer.querySelector('canvas');
-          const imgData = qrCanvas ? qrCanvas.toDataURL("image/png") : qrContainer.querySelector('img').src;
+        if (idxPos >= 14) {
+          doc.addPage();
+          idxPos = 0;
+        }
 
-          if (idxPos >= 14) {
-            doc.addPage();
-            idxPos = 0;
-          }
+        const col = idxPos % 2;
+        const lin = Math.floor(idxPos / 2);
+        const x = margemEsquerda + col * eLargura;
+        const y = margemTopo + lin * eAltura;
 
-          const col = idxPos % 2;
-          const lin = Math.floor(idxPos / 2);
-          const x = margemEsquerda + col * eLargura;
-          const y = margemTopo + lin * eAltura;
+        doc.setDrawColor(56, 189, 248);
+        doc.setLineWidth(0.6);
+        doc.rect(x, y, eLargura, eAltura);
+        doc.setLineWidth(0.2);
 
-          doc.setDrawColor(56, 189, 248);
-          doc.setLineWidth(0.6);
-          doc.rect(x, y, eLargura, eAltura);
-          doc.setLineWidth(0.2);
+        doc.setFillColor(56, 189, 248);
+        doc.rect(x, y, eLargura, 6, 'F');
 
-          doc.setFillColor(56, 189, 248);
-          doc.rect(x, y, eLargura, 6, 'F');
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(7, 89, 133);
+        doc.text("COLONIZA - CULTURA LÍQUIDA (CL)", x + 5, y + 4.3);
 
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.setTextColor(7, 89, 133);
-          doc.text("COLONIZA - CULTURA LÍQUIDA (CL)", x + 5, y + 4.3);
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`LOTE: ${codigo}`, x + 5, y + 10);
 
-          doc.setFontSize(10);
-          doc.setTextColor(0, 0, 0);
-          doc.text(`LOTE: ${codigo}`, x + 5, y + 10);
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Espécie: ${especie}`, x + 5, y + 15);
+        doc.text(`Matriz Origem: ${origem}`, x + 5, y + 19);
+        doc.text(`Data Inoculação: ${dataInoc}`, x + 5, y + 23);
+        doc.text(`Volume: ${volume}`, x + 5, y + 27);
 
-          doc.setFontSize(7.5);
-          doc.setFont("helvetica", "normal");
-          doc.text(`Espécie: ${especie}`, x + 5, y + 15);
-          doc.text(`Matriz Origem: ${origem}`, x + 5, y + 19);
-          doc.text(`Data Inoculação: ${dataInoc}`, x + 5, y + 23);
-          doc.text(`Volume: ${volume}`, x + 5, y + 27);
+        try {
+          doc.addImage(imgData, "PNG", x + 70, y + 7, 24, 24);
+        } catch (e) {
+          console.error("Erro ao adicionar QR Code ao PDF:", e);
+        }
 
-          try {
-            doc.addImage(imgData, "PNG", x + 70, y + 7, 24, 24);
-          } catch (e) {
-            console.error("Erro ao adicionar QR Code ao PDF:", e);
-          }
+        doc.setFontSize(5.5);
+        doc.setTextColor(120, 120, 120);
+        doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 34, { align: 'left' });
 
-          doc.setFontSize(5.5);
-          doc.setTextColor(120, 120, 120);
-          doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 34, { align: 'left' });
-
-          doc.save(`Etiquetas_CL_${codigo}_${new Date().toISOString().slice(0, 10)}.pdf`);
-        }, 150);
+        idxPos++;
       });
+
+      const primeiroCodigo = lotes.length > 0 ? (lotes[0].codigo || lotes[0].codigoLote || lotes[0][0]) : 'lote';
+      const nomeArquivo = lotes.length === 1
+        ? `Etiquetas_CL_${primeiroCodigo}_${new Date().toISOString().slice(0, 10)}.pdf`
+        : `Etiquetas_CL_${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(nomeArquivo);
     }
 
     function reimprimirEtiquetaSpawn(codigoLote) {
@@ -1044,7 +1050,14 @@
       const margemTopo = 14.0;
 
       let idxPos = posInicial - 1;
+      const qrContainer = document.getElementById("qrcodeContainer");
+      // Mesmo padrão de QR Code usado em Controle de Blocos e Sala de Incubação:
+      // aponta para uma página de rastreio escaneável, não um JSON estático.
+      const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
 
+      // Processado de forma síncrona (a biblioteca de QR Code já desenha no canvas
+      // imediatamente) para não sobrescrever o QR compartilhado entre itens e para
+      // só salvar o PDF uma vez no final, com todas as etiquetas já incluídas.
       lotes.forEach((lote) => {
         const codigo = lote.codigo || lote.codigoLote || lote[0] || '';
         const especie = lote.especie || lote[2] || 'Geral';
@@ -1056,76 +1069,73 @@
         let pesoNum = parseFloat(String(pesoRaw).replace(',', '.').replace(/[^0-9.]/g, '')) || 1;
         let quantidadeEtiquetas = Math.max(1, Math.round(pesoNum));
 
-        // Mesmo padrão de QR Code usado em Controle de Blocos e Sala de Incubação:
-        // aponta para uma página de rastreio escaneável, não um JSON estático.
-        const URL_BASE_SITE = "https://coloniza.github.io/coloniza-system/";
         const urlRastreio = `${URL_BASE_SITE}/detalhe_spawn.html?cod=${encodeURIComponent(codigo)}`;
 
-        const qrContainer = document.getElementById("qrcodeContainer");
         qrContainer.innerHTML = '';
-        const qrcode = new QRCode(qrContainer, {
+        new QRCode(qrContainer, {
           text: urlRastreio,
           width: 128,
           height: 128,
           correctLevel: QRCode.CorrectLevel.M
         });
+        const qrCanvas = qrContainer.querySelector('canvas');
+        const imgData = qrCanvas ? qrCanvas.toDataURL("image/png") : qrContainer.querySelector('img').src;
 
-        setTimeout(() => {
-          const qrCanvas = qrContainer.querySelector('canvas');
-          const imgData = qrCanvas ? qrCanvas.toDataURL("image/png") : qrContainer.querySelector('img').src;
-
-          for (let i = 1; i <= quantidadeEtiquetas; i++) {
-            if (idxPos >= 14) {
-              doc.addPage();
-              idxPos = 0;
-            }
-
-            const col = idxPos % 2;
-            const lin = Math.floor(idxPos / 2);
-
-            const x = margemEsquerda + col * eLargura;
-            const y = margemTopo + lin * eAltura;
-
-            doc.setDrawColor(234, 179, 8);
-            doc.setLineWidth(0.6);
-            doc.rect(x, y, eLargura, eAltura);
-            doc.setLineWidth(0.2);
-
-            doc.setFillColor(234, 179, 8);
-            doc.rect(x, y, eLargura, 6, 'F');
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(8);
-            doc.setTextColor(66, 44, 0);
-            doc.text("COLONIZA - SPAWN / INÓCULO DE GRÃOS", x + 5, y + 4.3);
-
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`LOTE: ${codigo}`, x + 5, y + 10);
-
-            doc.setFontSize(7.5);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Espécie: ${especie}`, x + 5, y + 15);
-            doc.text(`Inóculo Origem: ${origem}`, x + 5, y + 19);
-            doc.text(`Data Inoculação: ${dataInoc}`, x + 5, y + 23);
-            doc.text(`Pacote: ${i} de ${quantidadeEtiquetas} (1 kg)`, x + 5, y + 27);
-
-            try {
-              doc.addImage(imgData, "PNG", x + 70, y + 7, 24, 24);
-            } catch (e) {
-              console.error("Erro ao adicionar QR Code ao PDF:", e);
-            }
-
-            doc.setFontSize(5.5);
-            doc.setTextColor(120, 120, 120);
-            doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 34, { align: 'left' });
-
-            idxPos++;
+        for (let i = 1; i <= quantidadeEtiquetas; i++) {
+          if (idxPos >= 14) {
+            doc.addPage();
+            idxPos = 0;
           }
 
-          doc.save(`Etiquetas_Spawn_${codigo}_${new Date().toISOString().slice(0, 10)}.pdf`);
-        }, 150);
+          const col = idxPos % 2;
+          const lin = Math.floor(idxPos / 2);
+
+          const x = margemEsquerda + col * eLargura;
+          const y = margemTopo + lin * eAltura;
+
+          doc.setDrawColor(234, 179, 8);
+          doc.setLineWidth(0.6);
+          doc.rect(x, y, eLargura, eAltura);
+          doc.setLineWidth(0.2);
+
+          doc.setFillColor(234, 179, 8);
+          doc.rect(x, y, eLargura, 6, 'F');
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(66, 44, 0);
+          doc.text("COLONIZA - SPAWN / INÓCULO DE GRÃOS", x + 5, y + 4.3);
+
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          doc.text(`LOTE: ${codigo}`, x + 5, y + 10);
+
+          doc.setFontSize(7.5);
+          doc.setFont("helvetica", "normal");
+          doc.text(`Espécie: ${especie}`, x + 5, y + 15);
+          doc.text(`Inóculo Origem: ${origem}`, x + 5, y + 19);
+          doc.text(`Data Inoculação: ${dataInoc}`, x + 5, y + 23);
+          doc.text(`Pacote: ${i} de ${quantidadeEtiquetas} (1 kg)`, x + 5, y + 27);
+
+          try {
+            doc.addImage(imgData, "PNG", x + 70, y + 7, 24, 24);
+          } catch (e) {
+            console.error("Erro ao adicionar QR Code ao PDF:", e);
+          }
+
+          doc.setFontSize(5.5);
+          doc.setTextColor(120, 120, 120);
+          doc.text("Sistema de Rastreabilidade Coloniza", x + 58, y + 34, { align: 'left' });
+
+          idxPos++;
+        }
       });
+
+      const primeiroCodigoSpawn = lotes.length > 0 ? (lotes[0].codigo || lotes[0].codigoLote || lotes[0][0]) : 'lote';
+      const nomeArquivoSpawn = lotes.length === 1
+        ? `Etiquetas_Spawn_${primeiroCodigoSpawn}_${new Date().toISOString().slice(0, 10)}.pdf`
+        : `Etiquetas_Spawn_${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(nomeArquivoSpawn);
     }
 
     function renderTables(culturas, lotesCL, lotesSpawn) {
