@@ -95,8 +95,18 @@
         if (result.success) {
           // Salva os dados do usuário logado na sessão local do navegador
           localStorage.setItem('coloniza_user', JSON.stringify(result.user));
-          // Redireciona para o Dashboard
-          window.location.href = "dashboard.html";
+          localStorage.setItem('coloniza_login_ts', Date.now().toString());
+          // Se veio de uma página protegida (ex: QR code de um bloco), volta pra ela. Senão, vai pro Dashboard.
+          const params = new URLSearchParams(window.location.search);
+          const redirectTo = params.get('redirect');
+          let destino = "dashboard.html";
+          if (redirectTo) {
+            try {
+              const urlDestino = new URL(redirectTo, window.location.origin);
+              if (urlDestino.origin === window.location.origin) destino = urlDestino.href;
+            } catch (e) { /* redirect inválido, ignora e usa o padrão */ }
+          }
+          window.location.href = destino;
         } else {
           alertBox.textContent = result.message || "Falha na autenticação.";
           alertBox.classList.remove('hidden');
