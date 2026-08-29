@@ -123,7 +123,7 @@
           <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">📦</div>
           <div>
             <div id="kpi_blocos" class="text-xl font-bold text-gray-800">---</div>
-            <div class="text-[11px] text-gray-500 font-medium">Blocos em Produção</div>
+            <div class="text-[11px] text-gray-500 font-medium">Blocos em Frutificação</div>
             <div id="sub_blocos" class="text-[10px] text-emerald-600 font-medium">--</div>
           </div>
         </div>
@@ -177,7 +177,7 @@
       <!-- LINHA 2: FUNIL E GRÁFICOS -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-          <h3 class="text-xs font-bold uppercase text-gray-700 mb-4 tracking-wider">Produção em Andamento</h3>
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-4 tracking-wider">Produção</h3>
           <div id="funilContainer" class="space-y-2 text-xs">
             <div class="text-center py-8 text-gray-400">Carregando funil...</div>
           </div>
@@ -193,10 +193,10 @@
           <div class="mt-4 pt-3 border-t">
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-gray-500 uppercase">Meta Semanal</span>
-              <span class="text-gray-800">1.500 kg <span class="text-gray-400 font-normal">(32%)</span></span>
+              <span id="metaSemanalTexto" class="text-gray-800">-- kg <span class="text-gray-400 font-normal">(--%)</span></span>
             </div>
             <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div class="bg-emerald-600 h-full rounded-full" style="width: 32%"></div>
+              <div id="metaSemanalBarra" class="bg-emerald-600 h-full rounded-full" style="width: 0%"></div>
             </div>
           </div>
         </div>
@@ -224,36 +224,16 @@
                 <th class="pb-2 font-medium text-right">DETALHES</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr>
-                <td class="py-2.5 font-medium">Produção de CL</td>
-                <td><span class="inline-flex items-center text-amber-600"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>Em andamento</span></td>
-                <td class="text-right text-gray-500">12 lotes &gt;</td>
-              </tr>
-              <tr>
-                <td class="py-2.5 font-medium">Produção de Spawn</td>
-                <td><span class="inline-flex items-center text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Dentro do esperado</span></td>
-                <td class="text-right text-gray-500">28 lotes &gt;</td>
-              </tr>
-              <tr>
-                <td class="py-2.5 font-medium">Frutificação</td>
-                <td><span class="inline-flex items-center text-amber-600"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>Atenção</span></td>
-                <td class="text-right text-gray-500">UR alta em 2 salas &gt;</td>
-              </tr>
+            <tbody id="statusProducaoBody" class="divide-y divide-gray-100">
+              <tr><td colspan="3" class="py-4 text-center text-gray-400">Carregando...</td></tr>
             </tbody>
           </table>
         </div>
 
         <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
           <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Alertas e Atenções</h3>
-          <div class="space-y-3 text-xs">
-            <div class="flex items-start space-x-3 p-2 bg-amber-50 rounded-lg border border-amber-100">
-              <div class="text-amber-600 font-bold">⚠️</div>
-              <div class="flex-1">
-                <div class="font-bold text-gray-800">Umidade acima do ideal na Sala 2</div>
-                <div class="text-gray-500 text-[11px]">Atual: 95% | Ideal: 85-90%</div>
-              </div>
-            </div>
+          <div id="alertasContainer" class="space-y-3 text-xs">
+            <div class="text-center py-8 text-gray-400">Carregando alertas...</div>
           </div>
         </div>
 
@@ -468,19 +448,31 @@ async function carregarMeusDados() {
         if (res.success) {
           renderKPIs(res.data.kpis);
           renderFunil(res.data.funil);
+          renderStatusProducao(res.data.statusProducao);
+          renderAlertas(res.data.alertas);
           renderEspecies(res.data.especies);
           renderTopCulturas(res.data.topCulturas);
-          renderBarChart();
+          renderBarChart(res.data.barChart);
+          renderMetaSemanal(res.data.metaSemanal);
         }
       } catch (e) {
         console.error("Erro ao carregar dados:", e);
       }
     }
 
+    function aplicarCorTendencia(elId, subtexto) {
+      const el = document.getElementById(elId);
+      el.textContent = subtexto;
+      el.classList.remove('text-emerald-600', 'text-red-600', 'text-gray-400');
+      if (subtexto.indexOf('↑') !== -1) el.classList.add('text-emerald-600');
+      else if (subtexto.indexOf('↓') !== -1) el.classList.add('text-red-600');
+      else el.classList.add('text-gray-400');
+    }
+
     function renderKPIs(kpis) {
-      if (kpis.blocos_producao) {
-        document.getElementById('kpi_blocos').textContent = kpis.blocos_producao.valor;
-        document.getElementById('sub_blocos').textContent = kpis.blocos_producao.subtexto;
+      if (kpis.blocos_frutificacao) {
+        document.getElementById('kpi_blocos').textContent = kpis.blocos_frutificacao.valor;
+        document.getElementById('sub_blocos').textContent = kpis.blocos_frutificacao.subtexto;
       }
       if (kpis.temp_media) {
         document.getElementById('kpi_temp').textContent = kpis.temp_media.valor;
@@ -491,16 +483,66 @@ async function carregarMeusDados() {
         document.getElementById('sub_umidade').textContent = kpis.umidade_media.subtexto;
       }
       if (kpis.prod_semanal) {
-        document.getElementById('kpi_prod').textContent = kpis.prod_semanal.valor;
-        document.getElementById('sub_prod').textContent = kpis.prod_semanal.subtexto;
+        document.getElementById('kpi_prod').textContent = Number(kpis.prod_semanal.valor).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' kg';
+        aplicarCorTendencia('sub_prod', kpis.prod_semanal.subtexto);
       }
       if (kpis.faturamento) {
-        document.getElementById('kpi_fat').textContent = kpis.faturamento.valor;
-        document.getElementById('sub_fat').textContent = kpis.faturamento.subtexto;
+        document.getElementById('kpi_fat').textContent = Number(kpis.faturamento.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        aplicarCorTendencia('sub_fat', kpis.faturamento.subtexto);
       }
       if (kpis.tarefas_pendentes) {
         document.getElementById('kpi_tarefas').textContent = kpis.tarefas_pendentes.valor;
       }
+    }
+
+    function renderMetaSemanal(meta) {
+      if (!meta) return;
+      document.getElementById('metaSemanalTexto').innerHTML =
+        meta.atual.toLocaleString('pt-BR') + ' / ' + meta.meta.toLocaleString('pt-BR') + ' kg ' +
+        '<span class="text-gray-400 font-normal">(' + meta.pct + '%)</span>';
+      document.getElementById('metaSemanalBarra').style.width = meta.pct + '%';
+    }
+
+    function renderStatusProducao(lista) {
+      const tbody = document.getElementById('statusProducaoBody');
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-400">Sem dados de produção.</td></tr>';
+        return;
+      }
+      const corMap = { emerald: ['text-emerald-600', 'bg-emerald-500'], amber: ['text-amber-600', 'bg-amber-500'], gray: ['text-gray-500', 'bg-gray-400'] };
+      tbody.innerHTML = lista.map(function (item) {
+        const cores = corMap[item.cor] || corMap.gray;
+        return `
+          <tr>
+            <td class="py-2.5 font-medium">${item.etapa}</td>
+            <td><span class="inline-flex items-center ${cores[0]}"><span class="w-1.5 h-1.5 rounded-full ${cores[1]} mr-1.5"></span>${item.status}</span></td>
+            <td class="text-right"><a href="${item.link}" class="text-gray-500 hover:text-emerald-700 hover:underline">${item.detalhe} &gt;</a></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAlertas(lista) {
+      const container = document.getElementById('alertasContainer');
+      if (!lista || lista.length === 0) {
+        container.innerHTML = `
+          <div class="flex items-center space-x-2 p-3 bg-emerald-50 rounded-lg border border-emerald-100 text-emerald-700">
+            <span>✅</span><span class="font-semibold">Nenhum alerta no momento</span>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = lista.map(function (a) {
+        return `
+          <div class="flex items-start space-x-3 p-2 bg-amber-50 rounded-lg border border-amber-100">
+            <div class="text-amber-600 font-bold">⚠️</div>
+            <div class="flex-1">
+              <div class="font-bold text-gray-800">${a.titulo}</div>
+              <div class="text-gray-500 text-[11px]">${a.detalhe}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderFunil(funil) {
@@ -512,10 +554,10 @@ async function carregarMeusDados() {
         const color = colors[index % colors.length];
         const widthPct = 100 - (index * 8);
         container.innerHTML += `
-          <div class="mx-auto flex justify-between items-center p-2 rounded-lg font-semibold ${color}" style="width: ${widthPct}%;">
+          <a href="${item.link || '#'}" class="mx-auto flex justify-between items-center p-2 rounded-lg font-semibold ${color} hover:opacity-80 transition" style="width: ${widthPct}%;">
             <span>${item.etapa}</span>
             <span class="bg-white px-2 py-0.5 rounded text-gray-800 shadow-sm">${item.qtd}</span>
-          </div>
+          </a>
         `;
       });
     }
@@ -525,7 +567,7 @@ async function carregarMeusDados() {
       legend.innerHTML = '';
       const labels = [];
       const data = [];
-      const bgColors = ['#2e7d32', '#374151', '#8d6e63', '#d7ccc8'];
+      const bgColors = ['#2e7d32', '#374151', '#8d6e63', '#d7ccc8', '#9ca3af'];
 
       especies.forEach((item, index) => {
         labels.push(item.nome);
@@ -542,7 +584,8 @@ async function carregarMeusDados() {
       });
 
       const ctx = document.getElementById('doughnutChart').getContext('2d');
-      new Chart(ctx, {
+      if (window._doughnutChartInstance) window._doughnutChartInstance.destroy();
+      window._doughnutChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: { labels: labels, datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }] },
         options: { cutout: '70%', plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
@@ -563,13 +606,14 @@ async function carregarMeusDados() {
       });
     }
 
-    function renderBarChart() {
+    function renderBarChart(barChart) {
       const ctx = document.getElementById('barChart').getContext('2d');
-      new Chart(ctx, {
+      if (window._barChartInstance) window._barChartInstance.destroy();
+      window._barChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['02/08', '03/08', '04/08', '05/08', '06/08', '07/08', '08/08'],
-          datasets: [{ data: [412, 438, 501, 465, 478, 455, 482], backgroundColor: '#a7f3d0', hoverBackgroundColor: '#059669', borderRadius: 4 }]
+          labels: (barChart && barChart.labels) || [],
+          datasets: [{ data: (barChart && barChart.data) || [], backgroundColor: '#a7f3d0', hoverBackgroundColor: '#059669', borderRadius: 4 }]
         },
         options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } }, responsive: true, maintainAspectRatio: false }
       });
