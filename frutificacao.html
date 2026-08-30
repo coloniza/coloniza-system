@@ -181,6 +181,9 @@
           <span>☑️ <span id="qtdSelecionados">0</span> bloco(s) selecionado(s)</span>
         </div>
         <div class="flex space-x-2">
+          <button onclick="editarSelecionados()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
+            <span>✏️</span> Editar selecionados
+          </button>
           <button onclick="colherSelecionados()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition flex items-center gap-1">
             <span>🌾</span> Colher selecionados
           </button>
@@ -245,10 +248,9 @@
   <div id="modalEditarDataBloco" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
       <h3 class="text-lg font-bold text-gray-800 mb-2">Editar Data de Entrada</h3>
-      <p class="text-xs text-gray-500 mb-4">Alterar a data de entrada do bloco <span id="labelCodigoBlocoData" class="font-mono font-bold text-emerald-800">---</span> na frutificação:</p>
+      <p class="text-xs text-gray-500 mb-4">Alterar a data de entrada de <span id="labelCodigoBlocoData" class="font-mono font-bold text-emerald-800">---</span> na frutificação:</p>
       
       <form onsubmit="salvarDataEntradaBloco(event)" class="space-y-4 text-xs">
-        <input type="hidden" id="inputCodigoBlocoData">
         <div>
           <label class="block font-semibold text-gray-700 mb-1">Nova Data de Entrada</label>
           <input type="date" id="inputNovaDataEntrada" required class="w-full border rounded-lg p-2.5 outline-none font-semibold text-gray-800 focus:ring-2 focus:ring-emerald-500">
@@ -883,8 +885,10 @@
       });
     }
 
+    let codigosEditandoDataEntrada = [];
+
     function abrirModalEditarDataBloco(codigoBloco, rawDataEntrada) {
-      document.getElementById('inputCodigoBlocoData').value = codigoBloco;
+      codigosEditandoDataEntrada = [codigoBloco];
       document.getElementById('labelCodigoBlocoData').textContent = codigoBloco;
 
       let isoDate = '';
@@ -902,12 +906,32 @@
       openModal('modalEditarDataBloco');
     }
 
+    function editarSelecionados() {
+      const selecionados = Array.from(selecionadosFrutificacao);
+
+      if (selecionados.length === 0) {
+        alert("Atenção: Nenhum bloco foi selecionado para editar.");
+        return;
+      }
+
+      if (selecionados.length === 1) {
+        const cod = selecionados[0];
+        const bloco = blocosFrutificacaoCache.find(b => (b.codigoRastreio || b.codigo || b.id) === cod);
+        abrirModalEditarDataBloco(cod, bloco ? (bloco.dataEntrada || bloco.dataInoculacao || bloco.dataCriacao) : '');
+        return;
+      }
+
+      codigosEditandoDataEntrada = selecionados;
+      document.getElementById('labelCodigoBlocoData').textContent = `${selecionados.length} blocos selecionados`;
+      document.getElementById('inputNovaDataEntrada').value = '';
+      openModal('modalEditarDataBloco');
+    }
+
     async function salvarDataEntradaBloco(e) {
       e.preventDefault();
-      const codigoBloco = document.getElementById('inputCodigoBlocoData').value;
       const novaData = document.getElementById('inputNovaDataEntrada').value;
 
-      if (!codigoBloco || !novaData) {
+      if (codigosEditandoDataEntrada.length === 0 || !novaData) {
         alert("Por favor, selecione uma data válida.");
         return;
       }
@@ -918,7 +942,7 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'alterarDataEntradaFrutificacao',
-            codigoRastreio: codigoBloco,
+            codigosRastreio: codigosEditandoDataEntrada,
             novaData: novaData,
             responsavel: userData ? userData.nome : 'Sistema'
           })
@@ -1358,7 +1382,9 @@
 
     async function confirmarColheitaSala(e) {
       e.preventDefault();
-      const salaId = document.getElementById('inputSalaIdColheita').value;
+      const salaIdBruto = document.getElementById('inputSalaIdColheita').value;
+      const salaObjEnvio = salasCache.find(s => String(s.id) === String(salaIdBruto) || String(s.nome) === String(salaIdBruto));
+      const salaId = salaObjEnvio ? salaObjEnvio.nome : salaIdBruto; // Envia o nome da sala em vez do código para exibição legível
       const obs = document.getElementById('obsColheita').value;
       
       const linhas = document.querySelectorAll('#listaColheitasForm > div');
