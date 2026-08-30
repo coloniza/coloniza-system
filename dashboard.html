@@ -9,6 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Chart.js para Gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- HLS.js para reprodução do streaming das câmeras Tuya -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
     .sidebar { background-color: #11261d; }
@@ -165,11 +168,10 @@
         </div>
 
         <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold">📋</div>
+          <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold">📹</div>
           <div>
-            <div id="kpi_tarefas" class="text-xl font-bold text-gray-800">---</div>
-            <div class="text-[11px] text-gray-500 font-medium">Tarefas Pendentes</div>
-            <div id="sub_tarefas" class="text-[10px] text-amber-600 font-medium underline cursor-pointer">Verificar</div>
+            <div class="text-xl font-bold text-gray-800">Câmeras</div>
+            <div onclick="abrirModalCameras()" class="text-[10px] text-amber-600 font-medium underline cursor-pointer">Visualizar</div>
           </div>
         </div>
       </div>
@@ -359,6 +361,58 @@
     </div>
   </div>
 
+  <!-- Modal Câmeras -->
+  <div id="modalCameras" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-800">Câmeras</h3>
+        <button onclick="abrirFormAdicionarCamera()" class="text-xs font-bold text-emerald-700 hover:text-emerald-800">+ Adicionar Câmera</button>
+      </div>
+      <div id="listaCameras" class="space-y-2 text-xs max-h-80 overflow-y-auto">
+        <div class="text-center py-8 text-gray-400">Carregando...</div>
+      </div>
+      <div class="flex justify-end pt-4">
+        <button type="button" onclick="closeModal('modalCameras')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Adicionar Câmera -->
+  <div id="modalAdicionarCamera" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Adicionar Câmera</h3>
+      <form onsubmit="salvarNovaCamera(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Nome da Câmera</label>
+          <input type="text" name="nome" required placeholder="Ex: Câmera da sala de frutificação" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Device ID (iot.tuya.com)</label>
+          <input type="text" name="deviceId" required placeholder="Ex: eb8d9caa1573b26653usga" class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <p class="text-[10px] text-gray-400">O Device ID é encontrado no projeto Tuya IoT (iot.tuya.com), na página de detalhes do dispositivo.</p>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalAdicionarCamera')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Player de Câmera -->
+  <div id="modalPlayerCamera" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-black rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
+      <div class="flex items-center justify-between p-3 bg-gray-900">
+        <h3 id="playerCameraTitulo" class="text-sm font-bold text-white">Câmera</h3>
+        <button type="button" onclick="fecharPlayerCamera()" class="text-white text-xs font-bold px-3 py-1 bg-gray-700 rounded-lg hover:bg-gray-600">Fechar</button>
+      </div>
+      <div class="relative bg-black aspect-video flex items-center justify-center">
+        <video id="playerCameraVideo" class="w-full h-full" controls autoplay muted playsinline></video>
+        <div id="playerCameraStatus" class="absolute text-white text-xs">Conectando...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- JS CONTROLE -->
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzn3J-hHcyoBMkENETimsBx4Dw9XbvcIAsVjWytSNfWQgCe-u_KcUTlDThdrCt8dJM/exec";
@@ -490,9 +544,6 @@ async function carregarMeusDados() {
         document.getElementById('kpi_fat').textContent = Number(kpis.faturamento.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         aplicarCorTendencia('sub_fat', kpis.faturamento.subtexto);
       }
-      if (kpis.tarefas_pendentes) {
-        document.getElementById('kpi_tarefas').textContent = kpis.tarefas_pendentes.valor;
-      }
     }
 
     function renderMetaSemanal(meta) {
@@ -617,6 +668,158 @@ async function carregarMeusDados() {
         },
         options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } }, responsive: true, maintainAspectRatio: false }
       });
+    }
+
+    let camerasCache = [];
+
+    async function abrirModalCameras() {
+      openModal('modalCameras');
+      const lista = document.getElementById('listaCameras');
+      lista.innerHTML = '<div class="text-center py-8 text-gray-400">Carregando...</div>';
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'listarCameras' })
+        });
+        const res = await response.json();
+        camerasCache = (res.success && res.cameras) ? res.cameras : [];
+        renderListaCameras();
+      } catch (err) {
+        lista.innerHTML = '<div class="text-center py-8 text-red-500">Erro ao carregar câmeras.</div>';
+      }
+    }
+
+    function renderListaCameras() {
+      const lista = document.getElementById('listaCameras');
+      if (camerasCache.length === 0) {
+        lista.innerHTML = '<div class="text-center py-8 text-gray-400">Nenhuma câmera cadastrada.</div>';
+        return;
+      }
+      lista.innerHTML = camerasCache.map(function (cam, i) {
+        return `
+          <div class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg p-3">
+            <span class="font-medium text-gray-700">${cam.nome}</span>
+            <div class="flex items-center gap-2">
+              <button onclick="abrirPlayerCamera(${i})" class="bg-slate-800 hover:bg-slate-900 text-white text-[11px] px-3 py-1.5 rounded-lg font-bold">Visualizar</button>
+              <button onclick="excluirCamera(${i})" title="Excluir câmera" class="bg-red-50 hover:bg-red-100 text-red-600 text-[11px] px-2.5 py-1.5 rounded-lg font-bold">🗑</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function excluirCamera(indice) {
+      const cam = camerasCache[indice];
+      if (!cam) return;
+      if (!confirm('Remover a câmera "' + cam.nome + '"?')) return;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'excluirCamera', deviceId: cam.deviceId })
+        });
+        const res = await response.json();
+        if (res.success) {
+          abrirModalCameras();
+        } else {
+          alert('Erro ao remover câmera: ' + res.message);
+        }
+      } catch (err) {
+        alert('Erro de conexão ao remover a câmera.');
+      }
+    }
+
+    function abrirFormAdicionarCamera() {
+      closeModal('modalCameras');
+      openModal('modalAdicionarCamera');
+    }
+
+    async function salvarNovaCamera(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = { action: 'adicionarCamera' };
+      formData.forEach((value, key) => data[key] = value);
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(data)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(res.message);
+          form.reset();
+          closeModal('modalAdicionarCamera');
+          abrirModalCameras();
+        } else {
+          alert('Erro ao adicionar câmera: ' + res.message);
+        }
+      } catch (err) {
+        alert('Erro de conexão ao adicionar a câmera.');
+      }
+    }
+
+    let hlsInstanceCamera = null;
+
+    async function abrirPlayerCamera(indice) {
+      const cam = camerasCache[indice];
+      if (!cam) return;
+      closeModal('modalCameras');
+      openModal('modalPlayerCamera');
+      document.getElementById('playerCameraTitulo').textContent = cam.nome;
+      const status = document.getElementById('playerCameraStatus');
+      const video = document.getElementById('playerCameraVideo');
+      status.textContent = 'Conectando...';
+      status.classList.remove('hidden');
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'obterStreamCamera', deviceId: cam.deviceId })
+        });
+        const res = await response.json();
+        if (!res.success) {
+          status.textContent = 'Erro: ' + res.message;
+          return;
+        }
+        if (window.Hls && Hls.isSupported()) {
+          if (hlsInstanceCamera) hlsInstanceCamera.destroy();
+          hlsInstanceCamera = new Hls();
+          hlsInstanceCamera.loadSource(res.url);
+          hlsInstanceCamera.attachMedia(video);
+          hlsInstanceCamera.on(Hls.Events.ERROR, function (evt, data) {
+            if (data.fatal) status.textContent = 'Erro ao reproduzir o stream da câmera.';
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = res.url;
+        } else {
+          status.textContent = 'Seu navegador não suporta este stream.';
+          return;
+        }
+        status.classList.add('hidden');
+      } catch (err) {
+        status.textContent = 'Erro de conexão com a câmera.';
+      }
+    }
+
+    function fecharPlayerCamera() {
+      const video = document.getElementById('playerCameraVideo');
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      if (hlsInstanceCamera) {
+        hlsInstanceCamera.destroy();
+        hlsInstanceCamera = null;
+      }
+      closeModal('modalPlayerCamera');
     }
 
     fetchDashboardData();
