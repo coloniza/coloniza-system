@@ -18,6 +18,14 @@
     .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
     .custom-scroll::-webkit-scrollbar { width: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+
+    .ticker-wrap { overflow: hidden; -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent); mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent); }
+    .ticker-track { display: inline-flex; align-items: center; animation: ticker-scroll 32s linear infinite; }
+    .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+    @keyframes ticker-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
   </style>
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
@@ -96,24 +104,18 @@
   <!-- ================= ÁREA PRINCIPAL ================= -->
   <main class="flex-1 flex flex-col overflow-y-auto">
 
-    <!-- Topbar Header com Ações Rápidas -->
-    <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
-      <div>
+    <!-- Topbar Header com Letreiro de Alertas -->
+    <header class="bg-white border-b px-6 py-4 flex items-center gap-6 shadow-sm sticky top-0 z-10">
+      <div class="flex-shrink-0">
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">DASHBOARD GERAL</h2>
         <p class="text-xs text-gray-500 font-medium">VISÃO GERAL DA PRODUÇÃO</p>
       </div>
 
-      <!-- BOTÕES DE AÇÃO RÁPIDA -->
-      <div class="flex items-center space-x-3">
-        <button onclick="openModal('modalColheita')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
-          <span>+ Colheita</span>
-        </button>
-        <button onclick="openModal('modalClima')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
-          <span>+ Clima</span>
-        </button>
-        <button onclick="openModal('modalLote')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
-          <span>+ Novo Lote</span>
-        </button>
+      <!-- LETREIRO ELETRÔNICO: Alertas e Status da Produção -->
+      <div class="ticker-wrap flex-1 min-w-0 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center">
+        <div id="tickerTrack" class="ticker-track text-xs font-medium text-gray-600 whitespace-nowrap">
+          <span class="px-4 text-gray-400">Carregando informações...</span>
+        </div>
       </div>
     </header>
 
@@ -261,106 +263,6 @@
 
   <!-- ================= MODAIS DE CADASTRO ================= -->
 
-  <!-- Modal Colheita -->
-  <div id="modalColheita" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Nova Colheita</h3>
-      <form onsubmit="submitForm(event, 'registrarColheita')" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold mb-1">Espécie</label>
-          <select name="especie" required class="w-full border rounded-lg p-2.5 outline-none">
-            <option value="Shimeji Branco">Shimeji Branco</option>
-            <option value="Shimeji Preto">Shimeji Preto</option>
-            <option value="Shiitake">Shiitake</option>
-            <option value="Juba de Leão">Juba de Leão</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Quantidade Colhida (kg)</label>
-          <input type="number" step="0.1" name="quantidade" required placeholder="Ex: 12.5" class="w-full border rounded-lg p-2.5 outline-none">
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Código do Lote (Opcional)</label>
-          <input type="text" name="lote" placeholder="Ex: FRUT-SHB-001" class="w-full border rounded-lg p-2.5 outline-none">
-        </div>
-        <div class="flex justify-end space-x-2 pt-2">
-          <button type="button" onclick="closeModal('modalColheita')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold">Salvar Colheita</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Clima -->
-  <div id="modalClima" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Leitura Ambiental</h3>
-      <form onsubmit="submitForm(event, 'registrarClima')" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold mb-1">Ambiente / Sala</label>
-          <select name="ambiente" required class="w-full border rounded-lg p-2.5 outline-none">
-            <option value="Sala de Frutificação 1">Sala de Frutificação 1</option>
-            <option value="Sala de Frutificação 2">Sala de Frutificação 2</option>
-            <option value="Sala de Incubação">Sala de Incubação</option>
-            <option value="Laboratório">Laboratório</option>
-          </select>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-semibold mb-1">Temperatura (°C)</label>
-            <input type="number" step="0.1" name="temperatura" required placeholder="Ex: 24.5" class="w-full border rounded-lg p-2.5 outline-none">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Umidade (%)</label>
-            <input type="number" name="umidade" required placeholder="Ex: 88" class="w-full border rounded-lg p-2.5 outline-none">
-          </div>
-        </div>
-        <div class="flex justify-end space-x-2 pt-2">
-          <button type="button" onclick="closeModal('modalClima')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">Salvar Leitura</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Lote -->
-  <div id="modalLote" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Registrar Novo Lote</h3>
-      <form onsubmit="submitForm(event, 'registrarLote')" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold mb-1">Tipo de Lote</label>
-          <select name="tipo" required class="w-full border rounded-lg p-2.5 outline-none">
-            <option value="Cultura Líquida (CL)">Cultura Líquida (CL)</option>
-            <option value="Spawn (Semente)">Spawn (Semente)</option>
-            <option value="Bloco de Composto">Bloco de Composto</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Código do Lote</label>
-          <input type="text" name="codigo" required placeholder="Ex: CL-SHB-260809-001" class="w-full border rounded-lg p-2.5 outline-none">
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Espécie</label>
-          <select name="especie" required class="w-full border rounded-lg p-2.5 outline-none">
-            <option value="Shimeji Branco">Shimeji Branco</option>
-            <option value="Shimeji Preto">Shimeji Preto</option>
-            <option value="Shiitake">Shiitake</option>
-            <option value="Juba de Leão">Juba de Leão</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Volume / Quantidade</label>
-          <input type="text" name="volume" required placeholder="Ex: 300 ml ou 10 pacotes" class="w-full border rounded-lg p-2.5 outline-none">
-        </div>
-        <div class="flex justify-end space-x-2 pt-2">
-          <button type="button" onclick="closeModal('modalLote')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold">Salvar Lote</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Modal Câmeras -->
   <div id="modalCameras" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
@@ -462,34 +364,6 @@ async function carregarMeusDados() {
       document.getElementById(id).classList.remove('flex');
     }
 
-    async function submitForm(e, action) {
-      e.preventDefault();
-      const form = e.target;
-      const formData = new FormData(form);
-      const data = { action: action, responsavel: userData.nome };
-
-      formData.forEach((value, key) => data[key] = value);
-
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(data)
-        });
-        const res = await response.json();
-        if (res.success) {
-          alert(res.message);
-          form.reset();
-          closeModal(form.closest('.fixed').id);
-          fetchDashboardData(); // Recarrega os dados do Dashboard na hora!
-        } else {
-          alert('Erro ao salvar: ' + res.message);
-        }
-      } catch (err) {
-        alert('Erro de conexão ao salvar os dados.');
-      }
-    }
-
     async function fetchDashboardData() {
       try {
         const response = await fetch(API_URL, {
@@ -504,6 +378,7 @@ async function carregarMeusDados() {
           renderFunil(res.data.funil);
           renderStatusProducao(res.data.statusProducao);
           renderAlertas(res.data.alertas);
+          renderTicker(res.data.alertas, res.data.statusProducao);
           renderEspecies(res.data.especies);
           renderTopCulturas(res.data.topCulturas);
           renderBarChart(res.data.barChart);
@@ -594,6 +469,31 @@ async function carregarMeusDados() {
           </div>
         `;
       }).join('');
+    }
+
+    function renderTicker(alertas, statusProducao) {
+      const track = document.getElementById('tickerTrack');
+      const corMap = { emerald: '#10b981', amber: '#f59e0b', gray: '#9ca3af' };
+
+      const itensAlertas = (alertas || []).map(function (a) {
+        return '<span class="inline-flex items-center px-4"><span class="mr-2">⚠️</span><span class="font-bold text-amber-700 mr-1">' + a.titulo + '</span><span class="text-gray-500">' + a.detalhe + '</span></span>';
+      });
+
+      const itensStatus = (statusProducao || []).map(function (item) {
+        const cor = corMap[item.cor] || corMap.gray;
+        return '<span class="inline-flex items-center px-4"><span class="w-1.5 h-1.5 rounded-full mr-2" style="background:' + cor + '"></span><span class="font-bold text-gray-700 mr-1">' + item.etapa + ':</span><span class="text-gray-500">' + item.status + ' · ' + item.detalhe + '</span></span>';
+      });
+
+      const itens = itensAlertas.concat(itensStatus);
+      if (itens.length === 0) {
+        track.innerHTML = '<span class="px-4 text-gray-400">Nenhum alerta ou pendência no momento ✅</span>';
+        track.style.animation = 'none';
+        return;
+      }
+
+      const conteudo = itens.join('<span class="text-gray-300 px-1">•</span>');
+      track.innerHTML = conteudo + '<span class="text-gray-300 px-1">•</span>' + conteudo + '<span class="text-gray-300 px-1">•</span>';
+      track.style.animation = '';
     }
 
     function renderFunil(funil) {
