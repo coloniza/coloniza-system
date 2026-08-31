@@ -6,10 +6,10 @@
   <title>COLONIZA - Escala Inteligente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
+
   <!-- FullCalendar JS & CSS -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  
+
   <!-- Tippy.js para Tooltips -->
   <script src="https://unpkg.com/@popperjs/core@2"></script>
   <script src="https://unpkg.com/tippy.js@6"></script>
@@ -19,6 +19,8 @@
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
     .sidebar { background-color: #11261d; }
     .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
 
     .fc { font-family: 'Inter', sans-serif; font-size: 11px; }
     .fc-header-toolbar { padding: 12px; background-color: #ffffff; border-radius: 8px; margin-bottom: 12px !important; }
@@ -27,29 +29,18 @@
     .fc-button-primary:hover { background-color: #065f46 !important; }
     .fc-daygrid-day-number { font-weight: 600; color: #374151; font-size: 11px; }
     .fc-event { border-radius: 4px; padding: 2px 4px; font-weight: 600; font-size: 10px; cursor: pointer; border: none; }
-    
-    /* Estilo para eventos Ideais (Transparencia + Borda) */
-    .evento-ideal {
-      opacity: 0.45 !important;
-      border: 1px dashed rgba(0, 0, 0, 0.4) !important;
-    }
-    
-    .modal-backdrop { background-color: rgba(17, 38, 29, 0.6); backdrop-filter: blur(4px); }
 
-    .fc-event-img-container {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      overflow: hidden;
-    }
-    .fc-event-thumb {
-      width: 18px;
-      height: 18px;
-      object-fit: cover;
-      border-radius: 3px;
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      flex-shrink: 0;
-    }
+    /* Evento Ideal (data teórica pura, sem ajuste de folga) */
+    .evento-ideal { opacity: 0.4 !important; border: 1px dashed rgba(0, 0, 0, 0.45) !important; cursor: default !important; }
+    /* Evento com Buffer de Geladeira (agendado, mas fora da janela benevolente) */
+    .evento-buffer { outline: 2px dashed #0891b2; outline-offset: 1px; }
+    /* Tarefa editada manualmente pelo operador */
+    .evento-editado { box-shadow: inset 0 0 0 1.5px #fff; }
+    /* Dia com carga acima da capacidade diária configurada */
+    .dia-sobrecarregado { background-color: #fef3c7 !important; }
+
+    .modal-backdrop { background-color: rgba(17, 38, 29, 0.6); backdrop-filter: blur(4px); }
+    .badge-ewma { font-size: 9px; padding: 1px 6px; border-radius: 999px; font-weight: 700; }
   </style>
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
@@ -69,11 +60,19 @@
           <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Otimização Operacional</p>
         </div>
       </div>
-      <nav class="p-2 space-y-1 text-xs">
+      <nav class="p-2 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-140px)] custom-scroll">
         <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Dashboard</span></a>
-        <a href="escala_producao.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition"><span>Escala Otimizada</span></a>
-        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Sala de Incubação</span></a>
-        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition"><span>Sala de Frutificação</span></a>
+        <a href="escala_producao.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition"><span>Escala de Produção</span></a>
+        <a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Compras e Investimentos</span></a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Estoque e Insumos</span></a>
+        <a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Banco de Culturas &amp; CL</span></a>
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Produção de CL</span></a>
+        <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Produção de Spawn</span></a>
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Produção de Composto</span></a>
+        <a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Controle de Blocos</span></a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Sala de Incubação</span></a>
+        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Sala de Frutificação</span></a>
+        <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Colheita e Produção</span></a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -87,11 +86,14 @@
     <header class="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
       <div>
         <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">ESCALA INTELIGENTE DE PRODUÇÃO</h2>
-        <p class="text-xs text-gray-500 font-medium">TEMPOS DE INCUBAÇÃO & CICLOS CONFIGURÁVEIS (ATÉ 12 MESES)</p>
+        <p class="text-xs text-gray-500 font-medium">LOGÍSTICA REVERSA · BUFFER DE GELADEIRA · EWMA · ATÉ 12 MESES</p>
       </div>
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2">
+        <button onclick="sincronizarGoogleAgenda()" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          🔄 Google Agenda
+        </button>
         <button onclick="abrirModalTarefas()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
-          📋 Manutenções & Tarefas Manuais
+          📋 Manutenções &amp; Tarefas
         </button>
         <button onclick="abrirModalConfiguracoes()" class="bg-emerald-800 hover:bg-emerald-900 text-white p-2 rounded-lg shadow-sm transition flex items-center justify-center" title="Configurações da Escala">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,15 +104,19 @@
       </div>
     </header>
 
-    <div class="p-6 space-y-6">
+    <div class="p-6 space-y-4">
+
+      <div id="bannerSobrecarga" class="hidden bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-2.5 text-xs font-bold flex items-center gap-2">
+        ⚠️ <span id="textoSobrecarga"></span>
+      </div>
 
       <!-- CARDS DE RESUMO (KPIS) -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
             <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Dias Utilizados</p>
             <h3 id="resumoDiasUtilizados" class="text-xl font-black text-emerald-800 mt-1">0 de 0 dias</h3>
-            <p id="subDiasUtilizados" class="text-[10px] text-gray-400 font-medium mt-0.5">Disponibilidade configurada</p>
+            <p id="subDiasUtilizados" class="text-[10px] text-gray-400 font-medium mt-0.5">Mês visível no calendário</p>
           </div>
           <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold">🧰</div>
         </div>
@@ -119,7 +125,7 @@
           <div>
             <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Spawn Necessário</p>
             <h3 id="resumoSpawn" class="text-xl font-black text-blue-800 mt-1">0 kg</h3>
-            <p id="subSpawn" class="text-[10px] text-gray-400 font-medium mt-0.5">0 sacos no período</p>
+            <p class="text-[10px] text-gray-400 font-medium mt-0.5">No mês visível</p>
           </div>
           <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold">🌾</div>
         </div>
@@ -128,14 +134,23 @@
           <div>
             <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Blocos de Substrato</p>
             <h3 id="resumoBlocos" class="text-xl font-black text-amber-800 mt-1">0 Blocos</h3>
-            <p id="subBlocos" class="text-[10px] text-gray-400 font-medium mt-0.5">0 kg de composto</p>
+            <p class="text-[10px] text-gray-400 font-medium mt-0.5">No mês visível</p>
           </div>
           <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 font-bold">📦</div>
         </div>
 
+        <div onclick="abrirModalBOM()" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-red-300 transition">
+          <div>
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Alertas de Estoque</p>
+            <h3 id="resumoEstoque" class="text-xl font-black text-red-700 mt-1">0 itens</h3>
+            <p class="text-[10px] text-gray-400 font-medium mt-0.5">Clique para ver a projeção (BOM)</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 font-bold">⚠️</div>
+        </div>
+
         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
-            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Manutenções & Limpeza</p>
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Manutenções &amp; Limpeza</p>
             <h3 id="resumoTarefasManuais" class="text-xl font-black text-purple-800 mt-1">0 Ativas</h3>
             <p class="text-[10px] text-gray-400 font-medium mt-0.5">Recorrentes + Manuais</p>
           </div>
@@ -149,16 +164,19 @@
           <div>
             <h3 class="text-xs font-bold text-gray-800 uppercase tracking-wider">📅 Agenda Operacional Sequencial</h3>
             <p class="text-[11px] text-gray-500">
-              <span class="inline-block w-2.5 h-2.5 bg-gray-400 rounded-sm opacity-50 border border-dashed border-gray-800 mr-1"></span><b>Transparente:</b> Data Ideal Pura &nbsp;|&nbsp; 
-              <span class="inline-block w-2.5 h-2.5 bg-emerald-700 rounded-sm mr-1"></span><b>Sólido:</b> Execução Agendada nos seus Dias Livres
+              <span class="inline-block w-2.5 h-2.5 bg-gray-400 rounded-sm opacity-50 border border-dashed border-gray-800 mr-1"></span><b>Transparente:</b> Data Ideal &nbsp;|&nbsp;
+              <span class="inline-block w-2.5 h-2.5 bg-emerald-700 rounded-sm mr-1"></span><b>Sólido:</b> Agendado na Folga &nbsp;|&nbsp;
+              <span class="inline-block w-2.5 h-2.5 bg-emerald-700 rounded-sm mr-1" style="outline:2px dashed #0891b2;"></span><b>❄️ Buffer Geladeira</b>
             </p>
           </div>
           <div class="flex flex-wrap gap-2 text-[10px] font-bold">
-            <span class="px-2 py-1 rounded bg-emerald-800 text-white">● CL Master</span>
-            <span class="px-2 py-1 rounded bg-blue-700 text-white">● Inocular Spawn</span>
-            <span class="px-2 py-1 rounded bg-amber-700 text-white">● Inocular Blocos</span>
-            <span class="px-2 py-1 rounded bg-cyan-700 text-white">● Limpeza Pré/Pós</span>
-            <span class="px-2 py-1 rounded bg-indigo-700 text-white">● Manutenções</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#1d4ed8;">● Cultura Líquida</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#d97706;">● Spawn</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#78350f;">● Composto/Blocos</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#047857;">● Frutificação/Colheita</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#dc2626;">● Higienização Crítica</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#0e7490;">● Limpeza Pré</span>
+            <span class="px-2 py-1 rounded text-white" style="background:#4338ca;">● Manutenção</span>
           </div>
         </div>
 
@@ -174,37 +192,48 @@
       <div class="bg-emerald-900 text-white p-4 px-6 flex justify-between items-center">
         <div class="flex items-center gap-2">
           <span class="text-lg">⚙️</span>
-          <h3 class="font-bold text-sm uppercase tracking-wider">Configurações da Escala & Capacidade</h3>
+          <h3 class="font-bold text-sm uppercase tracking-wider">Configurações da Escala &amp; Capacidade</h3>
         </div>
         <button onclick="fecharModalConfiguracoes()" class="text-emerald-200 hover:text-white font-bold text-lg">✕</button>
       </div>
 
       <div class="p-6 overflow-y-auto space-y-6 text-xs">
-        
+
         <div class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-2">
           <label class="block font-bold text-indigo-900 uppercase tracking-wide">🔁 Modo de Produção / Planejamento</label>
           <select id="selectTipoProducao" class="w-full border rounded-lg p-2 bg-white font-bold text-indigo-950 outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="recorrente" selected>🔄 Recorrente Mensal (Projetar próximos 12 meses)</option>
-            <option value="unico">🎯 Lote Único (Executar apenas para o mês selecionado)</option>
+            <option value="recorrente" selected>🔄 Recorrente Mensal (projeta o padrão de folgas por 12 meses)</option>
+            <option value="unico">🎯 Lote Único (executa apenas para o mês selecionado)</option>
           </select>
-          <p id="descTipoProducao" class="text-[10px] text-indigo-700 font-medium">A escala replicará o ciclo de colheitas e metas mensalmente para os próximos 12 meses, reajustando as datas automaticamente.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-2">
+            <label class="block font-bold text-gray-800">Estratégia de Cultura Líquida (CL)</label>
+            <select id="selectEstrategiaCL" class="w-full border rounded-lg p-2 bg-white font-semibold outline-none">
+              <option value="trimestral" selected>🔄 Lote Trimestral (Vigor das Cepas)</option>
+              <option value="semestral">⚡ Super Lote Semestral</option>
+              <option value="mensal">🔄 Produzir CL Mensalmente</option>
+            </select>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-2">
+            <label class="block font-bold text-gray-800">Capacidade Diária (Teoria das Restrições)</label>
+            <input type="number" id="inputCapacidadeDiaria" min="60" step="30" value="480" class="w-full border rounded-lg p-2 bg-white font-bold outline-none">
+            <p class="text-[10px] text-gray-500">Minutos de trabalho presencial por dia de folga (padrão: 480 = 8h). Acima disso, tarefas de menor prioridade são remanejadas automaticamente.</p>
+          </div>
         </div>
 
         <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 space-y-3">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
-              <h4 class="font-bold text-emerald-900 uppercase tracking-wide flex items-center gap-1.5">
-                📅 Escolha de Dias Disponíveis no Mês
-              </h4>
-              <p class="text-gray-600 text-[11px]">As alterações feitas mantêm o histórico dos meses passados intacto!</p>
+              <h4 class="font-bold text-emerald-900 uppercase tracking-wide flex items-center gap-1.5">📅 Dias Disponíveis no Mês</h4>
+              <p class="text-gray-600 text-[11px]">No modo recorrente, este padrão de dias-do-mês se repete automaticamente nos próximos 12 meses.</p>
             </div>
-            
             <div class="flex items-center gap-3">
               <div class="flex items-center gap-1">
                 <label class="font-bold text-gray-700 whitespace-nowrap">Mês:</label>
                 <input type="month" id="inputMesSelecionado" onchange="aoMudarMesSelecionado()" class="border rounded-lg p-1.5 font-bold bg-white text-emerald-900 outline-none">
               </div>
-
               <div class="flex items-center gap-1">
                 <label class="font-bold text-gray-700 whitespace-nowrap">Qtd. Dias:</label>
                 <select id="selectQtdDias" onchange="alterarQtdDiasEGerar()" class="border rounded-lg p-1.5 font-bold bg-white outline-none text-emerald-800">
@@ -219,36 +248,15 @@
               </div>
             </div>
           </div>
-          
           <div id="containerDiasDisponiveis" class="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2"></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-2">
-            <label class="block font-bold text-gray-800">Estratégia de Cultura Líquida (CL)</label>
-            <select id="selectEstrategiaCL" class="w-full border rounded-lg p-2 bg-white font-semibold outline-none">
-              <option value="trimestral" selected>🔄 Lote Trimestral (1x a cada 3 meses - Vigor das Cepas)</option>
-              <option value="semestral">⚡ Super Lote Semestral (1x a cada 6 meses)</option>
-              <option value="mensal">🔄 Produzir CL Mensalmente</option>
-            </select>
-          </div>
-
-          <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-2">
-            <label class="block font-bold text-amber-900">Limpezas do Ciclo de Frutificação</label>
-            <div class="text-[11px] text-amber-800 font-medium">
-              ✅ <b>Obrigatória Antes:</b> Higienização da tenda 1 dia antes do lote entrar.<br>
-              ✅ <b>Obrigatória Após:</b> Sanitização pós-colheita/descarte do composto.
-            </div>
-          </div>
         </div>
 
         <div class="space-y-3">
           <div class="flex items-center justify-between border-b pb-2">
-            <h4 class="font-bold text-gray-800 uppercase tracking-wide">🍄 Capacidade e Metas de Espécies (Por Ciclo/Mês)</h4>
-            <button type="button" onclick="adicionarLinhaEspecie()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-3 py-1 rounded text-xs transition">
-              ➕ Add Espécie
-            </button>
+            <h4 class="font-bold text-gray-800 uppercase tracking-wide">🍄 Metas de Espécies (kg/mês)</h4>
+            <button type="button" onclick="adicionarLinhaEspecie()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-3 py-1 rounded text-xs transition">➕ Add Espécie</button>
           </div>
+          <p id="avisoSemEspecies" class="hidden text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">Nenhuma espécie cadastrada ainda. Cadastre em <a href="culturas.html" class="underline font-bold">Banco de Culturas</a> antes de montar a escala.</p>
           <form id="formEscala" onsubmit="event.preventDefault();" class="space-y-2">
             <div id="listaEspeciesContainer" class="space-y-2"></div>
           </form>
@@ -257,9 +265,42 @@
 
       <div class="bg-gray-100 p-4 px-6 flex justify-end gap-3 border-t">
         <button onclick="fecharModalConfiguracoes()" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-200 transition">Cancelar</button>
-        <button onclick="salvarEAplicarConfiguracoes()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition">
-          💾 Salvar e Recalcular Escala
-        </button>
+        <button onclick="salvarEAplicarConfiguracoes()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition">💾 Salvar e Recalcular Escala</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE PARÂMETROS DA ESPÉCIE ================= -->
+  <div id="modalParametrosEspecie" class="fixed inset-0 modal-backdrop z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-teal-900 text-white p-4 px-6 flex justify-between items-center">
+        <h3 class="font-bold text-sm uppercase tracking-wider">🧬 Parâmetros de Escala: <span id="paramEspecieNome"></span></h3>
+        <button onclick="fecharModalParametrosEspecie()" class="text-teal-200 hover:text-white font-bold text-lg">✕</button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-3 text-xs">
+        <p class="text-[10px] text-gray-500">Estes valores são o ponto de partida (prior teórico). Conforme você confirmar execuções reais na tela, o sistema passa a usar automaticamente a média móvel (EWMA) dos últimos lotes.</p>
+        <div class="grid grid-cols-3 gap-3">
+          <div><label class="block font-bold text-gray-700">CL (dias) <span id="badgeEwmaCL" class="badge-ewma"></span></label><input type="number" id="paramClDias" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Spawn (dias) <span id="badgeEwmaSPAWN" class="badge-ewma"></span></label><input type="number" id="paramSpawnDias" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Composto (dias) <span id="badgeEwmaCOMPOSTO" class="badge-ewma"></span></label><input type="number" id="paramCompostoDias" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">1º Flush (dias) <span id="badgeEwmaFRUTIFICACAO" class="badge-ewma"></span></label><input type="number" id="paramFlush1Dias" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">2º Flush (dias) <span id="badgeEwmaCOLHEITA_F1" class="badge-ewma"></span></label><input type="number" id="paramFlush2Dias" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">3º Flush (dias, 0=sem)</label><input type="number" id="paramFlush3Dias" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">% Colheita F1</label><input type="number" step="0.05" id="paramPctFlush1" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">% Colheita F2</label><input type="number" step="0.05" id="paramPctFlush2" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">% Colheita F3</label><input type="number" step="0.05" id="paramPctFlush3" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Rendimento kg/bloco</label><input type="number" step="0.01" id="paramRendimentoKgBloco" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Peso bloco (kg)</label><input type="number" step="0.1" id="paramPesoBlocoKg" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">% Spawn/kg composto</label><input type="number" step="0.01" id="paramPercSpawnPorKgComposto" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Tempo spawn (min)</label><input type="number" id="paramTempoSpawnMin" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Tempo bloco (min)</label><input type="number" id="paramTempoBlocoMin" class="w-full border rounded p-1.5 font-bold"></div>
+          <div><label class="block font-bold text-gray-700">Min. colheita/kg</label><input type="number" id="paramTempoColheitaMinPorKg" class="w-full border rounded p-1.5 font-bold"></div>
+          <div class="col-span-3"><label class="block font-bold text-gray-700">Tolerância máx. buffer geladeira (dias)</label><input type="number" id="paramBufferGeladeiraMaxDias" class="w-full border rounded p-1.5 font-bold"></div>
+        </div>
+      </div>
+      <div class="bg-gray-100 p-4 px-6 flex justify-end gap-3 border-t">
+        <button onclick="fecharModalParametrosEspecie()" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-200 transition">Cancelar</button>
+        <button onclick="salvarParametrosEspecie()" class="bg-teal-700 hover:bg-teal-800 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition">💾 Salvar Parâmetros</button>
       </div>
     </div>
   </div>
@@ -268,16 +309,12 @@
   <div id="modalEdicaoTarefa" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
       <div class="bg-emerald-800 text-white p-4 px-6 flex justify-between items-center">
-        <h3 class="font-bold text-sm uppercase tracking-wider">✏️ Editar Tarefa da Escala</h3>
+        <h3 class="font-bold text-sm uppercase tracking-wider">✏️ <span id="editTituloHeader">Editar Tarefa</span></h3>
         <button onclick="fecharModalEdicao()" class="text-emerald-200 hover:text-white font-bold text-lg">✕</button>
       </div>
-      <form id="formEditarTarefa" onsubmit="event.preventDefault(); salvarEdicaoTarefa();" class="p-5 space-y-4 text-xs">
+      <div class="p-5 space-y-4 text-xs">
         <input type="hidden" id="editEventoId">
-        
-        <div>
-          <label class="block font-bold mb-1 text-gray-700">Título da Tarefa</label>
-          <input type="text" id="editTitulo" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500" required>
-        </div>
+        <div id="editObservacaoSistema" class="hidden bg-cyan-50 border border-cyan-200 text-cyan-800 rounded-lg p-2 text-[11px] font-medium"></div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -285,8 +322,8 @@
             <input type="date" id="editData" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500" required>
           </div>
           <div>
-            <label class="block font-bold mb-1 text-gray-700">Tempo Estimado</label>
-            <input type="text" id="editTempo" placeholder="Ex: 2h 30min" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500">
+            <label class="block font-bold mb-1 text-gray-700">Tempo Estimado (min)</label>
+            <input type="number" id="editTempo" class="w-full border rounded-lg p-2 font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
 
@@ -296,52 +333,112 @@
         </div>
 
         <div>
-          <label class="block font-bold mb-1 text-gray-700">Observações Adicionais</label>
-          <textarea id="editObs" rows="2" class="w-full border rounded-lg p-2 font-medium text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Instruções para o operador..."></textarea>
+          <label class="block font-bold mb-1 text-gray-700">Observações</label>
+          <textarea id="editObs" rows="2" class="w-full border rounded-lg p-2 font-medium text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
         </div>
 
-        <div class="flex justify-end gap-2 border-t pt-3">
-          <button type="button" onclick="fecharModalEdicao()" class="px-4 py-2 rounded-lg font-bold text-gray-600 hover:bg-gray-100">Cancelar</button>
-          <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition">💾 Salvar Alterações</button>
+        <div class="flex flex-wrap justify-between items-center gap-2 border-t pt-3">
+          <div class="flex gap-2">
+            <button type="button" onclick="excluirEventoAtual()" class="px-3 py-2 rounded-lg font-bold text-red-600 hover:bg-red-50 text-[11px]">🗑️ Remover</button>
+            <button type="button" onclick="marcarBufferEventoAtual()" class="px-3 py-2 rounded-lg font-bold text-cyan-700 hover:bg-cyan-50 text-[11px]">❄️ Marcar Buffer</button>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" onclick="confirmarExecucaoEventoAtual()" class="bg-teal-700 hover:bg-teal-800 text-white px-3 py-2 rounded-lg font-bold shadow-sm transition text-[11px]">✅ Confirmar Execução</button>
+            <button type="button" onclick="salvarEdicaoTarefa()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition">💾 Salvar</button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
-  <!-- MODAIS AUXILIARES -->
+  <!-- ================= MODAL BOM / ALERTAS DE ESTOQUE ================= -->
+  <div id="modalBOM" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="bg-red-800 text-white p-4 px-6 flex justify-between items-center">
+        <h3 class="font-bold text-sm uppercase tracking-wider">⚠️ Explosão de Materiais (BOM) — Insumos em Falta</h3>
+        <button onclick="fecharModalBOM()" class="text-red-200 hover:text-white font-bold text-lg">✕</button>
+      </div>
+      <div class="p-5 overflow-y-auto text-xs">
+        <p class="text-[10px] text-gray-500 mb-3">Projeção baseada nas receitas cadastradas para cada fase (CL/Spawn/Composto) e nos eventos ainda não concluídos da escala. Não deduz nada do estoque real.</p>
+        <table class="w-full text-left">
+          <thead><tr class="text-[10px] text-gray-400 uppercase border-b">
+            <th class="py-1">Insumo</th><th class="py-1">Necessário</th><th class="py-1">Disponível</th><th class="py-1">Faltante</th><th class="py-1">Prazo</th>
+          </tr></thead>
+          <tbody id="tabelaBOM"></tbody>
+        </table>
+        <p id="semFaltantesBOM" class="hidden text-center text-gray-400 py-6">Nenhum insumo em falta para os eventos planejados. ✅</p>
+      </div>
+      <div class="bg-gray-100 p-4 px-6 flex justify-end border-t">
+        <a href="compras.html" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-xs font-bold transition">🛒 Abrir Lista de Compras</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAIS AUXILIARES: TAREFAS E RECORRÊNCIAS -->
   <div id="modalTarefas" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="bg-blue-900 text-white p-4 px-6 flex justify-between items-center">
-        <h3 class="font-bold text-sm uppercase tracking-wider">📋 Gerenciar Manutenções & Tarefas</h3>
+        <h3 class="font-bold text-sm uppercase tracking-wider">📋 Gerenciar Manutenções &amp; Tarefas</h3>
         <button onclick="fecharModalTarefas()" class="text-blue-200 hover:text-white font-bold text-lg">✕</button>
       </div>
 
       <div class="p-6 overflow-y-auto space-y-6 text-xs">
-        <form id="formNovaRecorrencia" onsubmit="event.preventDefault();" class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-3">
-          <h4 class="font-bold text-indigo-900 uppercase tracking-wide">🔄 Criar Manutenção Programada Recorrente</h4>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div class="md:col-span-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form id="formNovaRecorrencia" onsubmit="event.preventDefault(); salvarNovaRecorrencia();" class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-3">
+            <h4 class="font-bold text-indigo-900 uppercase tracking-wide">🔄 Manutenção Programada Recorrente</h4>
+            <div>
               <label class="block font-bold mb-1 text-gray-700">Título</label>
               <input type="text" id="inputRecorrenciaNome" placeholder="Ex: Limpeza de Filtro HEPA" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
             </div>
-            <div>
-              <label class="block font-bold mb-1 text-gray-700">Frequência</label>
-              <select id="selectFrequencia" class="w-full border rounded-lg p-2 font-semibold bg-white outline-none">
-                <option value="7">Semanal (7 dias)</option>
-                <option value="15">Quinzenal (15 dias)</option>
-                <option value="30" selected>Mensal (30 dias)</option>
-                <option value="90">Trimestral (90 dias)</option>
-              </select>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold mb-1 text-gray-700">Frequência</label>
+                <select id="selectFrequencia" class="w-full border rounded-lg p-2 font-semibold bg-white outline-none">
+                  <option value="7">Semanal</option>
+                  <option value="15">Quinzenal</option>
+                  <option value="30" selected>Mensal</option>
+                  <option value="90">Trimestral</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold mb-1 text-gray-700">Data Inicial</label>
+                <input type="date" id="inputRecorrenciaDataInicio" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
+              </div>
             </div>
             <div>
-              <label class="block font-bold mb-1 text-gray-700">Data Inicial</label>
-              <input type="date" id="inputRecorrenciaDataInicio" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
+              <label class="block font-bold mb-1 text-gray-700">Tempo Estimado</label>
+              <input type="text" id="inputRecorrenciaTempo" placeholder="Ex: 1h" class="w-full border rounded-lg p-2 font-medium bg-white outline-none">
             </div>
-          </div>
-          <div class="flex justify-end">
-            <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold transition">➕ Cadastrar</button>
-          </div>
-        </form>
+            <div class="flex justify-end">
+              <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold transition">➕ Cadastrar</button>
+            </div>
+          </form>
+
+          <form id="formNovaTarefa" onsubmit="event.preventDefault(); salvarNovaTarefaAvulsa();" class="bg-blue-50/70 p-4 rounded-xl border border-blue-200 space-y-3">
+            <h4 class="font-bold text-blue-900 uppercase tracking-wide">📌 Tarefa Avulsa</h4>
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Título</label>
+              <input type="text" id="inputTarefaNome" placeholder="Ex: Manutenção do exaustor" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold mb-1 text-gray-700">Data</label>
+                <input type="date" id="inputTarefaData" class="w-full border rounded-lg p-2 font-medium bg-white outline-none" required>
+              </div>
+              <div>
+                <label class="block font-bold mb-1 text-gray-700">Tempo Estimado</label>
+                <input type="text" id="inputTarefaTempo" placeholder="Ex: 30min" class="w-full border rounded-lg p-2 font-medium bg-white outline-none">
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Observações</label>
+              <input type="text" id="inputTarefaObs" class="w-full border rounded-lg p-2 font-medium bg-white outline-none">
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-bold transition">➕ Cadastrar</button>
+            </div>
+          </form>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-2">
@@ -361,119 +458,150 @@
   </div>
 
   <script>
-    const TEMPOS_ESPECIES = {
-      "Shimeji Branco": { cl: 12, spawn: 14, composto: 16, flush1: 7, flush2: 9,  rendimentoKgBloco: 0.38, pesoBloco: 2.0, tempoSpawMin: 45, tempoBlocoMin: 90 },
-      "Shimeji Preto":  { cl: 12, spawn: 14, composto: 18, flush1: 7, flush2: 10, rendimentoKgBloco: 0.40, pesoBloco: 2.0, tempoSpawMin: 45, tempoBlocoMin: 90 },
-      "Hiratake":       { cl: 10, spawn: 12, composto: 15, flush1: 6, flush2: 8,  rendimentoKgBloco: 0.42, pesoBloco: 2.0, tempoSpawMin: 40, tempoBlocoMin: 80 },
-      "Juba de Leão":   { cl: 15, spawn: 18, composto: 21, flush1: 8, flush2: 12, rendimentoKgBloco: 0.35, pesoBloco: 2.0, tempoSpawMin: 60, tempoBlocoMin: 120 },
-      "Shiitake":       { cl: 15, spawn: 20, composto: 60, flush1: 10, flush2: 14, rendimentoKgBloco: 0.45, pesoBloco: 2.5, tempoSpawMin: 60, tempoBlocoMin: 150 }
-    };
+    const API_URL = "https://script.google.com/macros/s/AKfycbzn3J-hHcyoBMkENETimsBx4Dw9XbvcIAsVjWytSNfWQgCe-u_KcUTlDThdrCt8dJM/exec";
 
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+
+    async function chamarAPI(action, payload) {
+      const body = Object.assign({ action: action }, payload || {});
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body)
+      });
+      return response.json();
+    }
+
+    /* ---------- Estado global ---------- */
+    let dadosEscala = { especies: [], especiesInfo: {}, parametrosEspecie: {}, configuracoes: {}, eventos: [], tarefasManuais: [], recorrencias: [], insumos: [], bomShortfall: [], resumoEwma: {}, resumoCarga: { cargaPorDia: {}, diasSobrecarregados: [] } };
     let mapaDiasDisponiveisPorMes = {};
     let ultimoMesAberto = "";
+    let mesVisivelCalendario = "";
     let calendar = null;
-    let eventosMemoria = [];
+    let paramEspecieAtual = null;
 
-    window.onload = function() {
-      const hoje = new Date();
-      const mesStr = String(hoje.getMonth() + 1).padStart(2, '0');
-      const anoStr = hoje.getFullYear();
-      const mesChaveAtual = `${anoStr}-${mesStr}`;
-
-      ultimoMesAberto = mesChaveAtual;
-      document.getElementById('inputMesSelecionado').value = mesChaveAtual;
-
-      // Define os dias padrão pré-preenchidos se necessário
-      mapaDiasDisponiveisPorMes[mesChaveAtual] = [
-        `${anoStr}-${mesStr}-19`,
-        `${anoStr}-${mesStr}-20`,
-        `${anoStr}-${mesStr}-21`,
-        `${anoStr}-${mesStr}-22`,
-        `${anoStr}-${mesStr}-28`
-      ];
-
-      gerarCamposDiasDisponiveis();
-      inicializarCalendario();
-
-      adicionarLinhaEspecie("Shimeji Branco", 150);
-      adicionarLinhaEspecie("Juba de Leão", 50);
-      
-      calcularEGerarEscala();
+    const FASE_LABEL = {
+      CL: 'Produção de CL', SPAWN: 'Inocular Spawn', COMPOSTO: 'Inocular Blocos',
+      FRUTIFICACAO: 'Entrada na Tenda', COLHEITA_F1: '1º Flush', COLHEITA_F2: '2º Flush', COLHEITA_F3: '3º Flush',
+      LIMPEZA_PRE: 'Limpeza Pré', LIMPEZA_POS: 'Higienização Crítica', MANUTENCAO: 'Manutenção', TAREFA_MANUAL: 'Tarefa'
     };
-
-    function abrirModalConfiguracoes() { document.getElementById('modalConfiguracoes').classList.remove('hidden'); }
-    function fecharModalConfiguracoes() { document.getElementById('modalConfiguracoes').classList.add('hidden'); }
-    function abrirModalTarefas() { document.getElementById('modalTarefas').classList.remove('hidden'); }
-    function fecharModalTarefas() { document.getElementById('modalTarefas').classList.add('hidden'); }
-    function fecharModalEdicao() { document.getElementById('modalEdicaoTarefa').classList.add('hidden'); }
-
-    function aoMudarMesSelecionado() {
-      guardarDiasDoMesNoMapa(ultimoMesAberto);
-      const novoMes = document.getElementById('inputMesSelecionado').value;
-      ultimoMesAberto = novoMes;
-      gerarCamposDiasDisponiveis();
-    }
-
-    function guardarDiasDoMesNoMapa(mesChave) {
-      if (!mesChave) return;
-      const inputs = document.querySelectorAll('.input-dia-disponivel');
-      const datasValidas = [];
-      inputs.forEach(inp => { if (inp.value) datasValidas.push(inp.value); });
-      if (datasValidas.length > 0) mapaDiasDisponiveisPorMes[mesChave] = datasValidas;
-    }
-
-    function alterarQtdDiasEGerar() {
-      const mesChave = document.getElementById('inputMesSelecionado').value;
-      delete mapaDiasDisponiveisPorMes[mesChave];
-      gerarCamposDiasDisponiveis();
-    }
-
-    function gerarCamposDiasDisponiveis() {
-      const mesChave = document.getElementById('inputMesSelecionado').value;
-      if (!mesChave) return;
-
-      const [anoStr, mesStr] = mesChave.split('-');
-      const qtd = parseInt(document.getElementById('selectQtdDias').value);
-      const container = document.getElementById('containerDiasDisponiveis');
-      container.innerHTML = "";
-
-      const datasExistentes = mapaDiasDisponiveisPorMes[mesChave] || [];
-      const qtdFinal = datasExistentes.length > 0 ? datasExistentes.length : qtd;
-
-      for (let i = 1; i <= qtdFinal; i++) {
-        const div = document.createElement('div');
-        let valorData = datasExistentes[i - 1] || `${anoStr}-${mesStr}-${String(Math.min(i * 5, 28)).padStart(2, '0')}`;
-        div.innerHTML = `
-          <label class="block font-bold mb-1 text-gray-700">Dia ${i}</label>
-          <input type="date" class="input-dia-disponivel w-full border rounded-lg p-2 font-semibold bg-white outline-none focus:ring-2 focus:ring-emerald-500" value="${valorData}">
-        `;
-        container.appendChild(div);
+    const FASE_EMOJI = {
+      CL: '🧫', SPAWN: '🌾', COMPOSTO: '📦', FRUTIFICACAO: '🍄', COLHEITA_F1: '🧺', COLHEITA_F2: '🧺',
+      COLHEITA_F3: '🧺', LIMPEZA_PRE: '🧹', LIMPEZA_POS: '🧹', MANUTENCAO: '🔧', TAREFA_MANUAL: '📌'
+    };
+    function corPorFase(fase) {
+      switch (fase) {
+        case 'CL': return '#1d4ed8';
+        case 'SPAWN': return '#d97706';
+        case 'COMPOSTO': return '#78350f';
+        case 'FRUTIFICACAO': case 'COLHEITA_F1': case 'COLHEITA_F2': case 'COLHEITA_F3': return '#047857';
+        case 'LIMPEZA_POS': return '#dc2626';
+        case 'LIMPEZA_PRE': return '#0e7490';
+        case 'MANUTENCAO': case 'TAREFA_MANUAL': return '#4338ca';
+        default: return '#6b7280';
       }
     }
 
-    function adicionarLinhaEspecie(especiePadrao = "Shimeji Branco", metaPadrao = 100) {
+    window.onload = async function () {
+      const hoje = new Date();
+      const mesChaveAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+      ultimoMesAberto = mesChaveAtual;
+      mesVisivelCalendario = mesChaveAtual;
+      document.getElementById('inputMesSelecionado').value = mesChaveAtual;
+
+      inicializarCalendario();
+      await carregarDadosEscala();
+    };
+
+    async function carregarDadosEscala() {
+      const res = await chamarAPI('getDadosEscalaProducao', {});
+      if (!res.success) { alert('Erro ao carregar dados da escala: ' + res.message); return; }
+      dadosEscala = res;
+      mapaDiasDisponiveisPorMes = {};
+      Object.keys(dadosEscala.configuracoes || {}).forEach(function (mesChave) {
+        mapaDiasDisponiveisPorMes[mesChave] = (dadosEscala.configuracoes[mesChave].diasDisponiveis || []).slice();
+      });
+      popularSelectEspecies();
+      renderCalendarEvents();
+      atualizarKPIs();
+      renderBanners();
+      renderListasTarefas();
+    }
+
+    /* ---------- Modais simples ---------- */
+    function abrirModalConfiguracoes() {
+      gerarCamposDiasDisponiveis();
+      renderLinhasEspeciesConfig();
+      const cfg = dadosEscala.configuracoes[document.getElementById('inputMesSelecionado').value];
+      if (cfg) {
+        document.getElementById('selectTipoProducao').value = cfg.tipoProducao || 'recorrente';
+        document.getElementById('selectEstrategiaCL').value = cfg.estrategiaCL || 'trimestral';
+        document.getElementById('inputCapacidadeDiaria').value = cfg.capacidadeDiariaMin || 480;
+      }
+      document.getElementById('modalConfiguracoes').classList.remove('hidden');
+    }
+    function fecharModalConfiguracoes() { document.getElementById('modalConfiguracoes').classList.add('hidden'); }
+    function abrirModalTarefas() { renderListasTarefas(); document.getElementById('modalTarefas').classList.remove('hidden'); }
+    function fecharModalTarefas() { document.getElementById('modalTarefas').classList.add('hidden'); }
+    function fecharModalEdicao() { document.getElementById('modalEdicaoTarefa').classList.add('hidden'); }
+    function abrirModalBOM() { renderTabelaBOM(); document.getElementById('modalBOM').classList.remove('hidden'); }
+    function fecharModalBOM() { document.getElementById('modalBOM').classList.add('hidden'); }
+
+    /* ---------- Espécies (dropdown real, populado pelo backend) ---------- */
+    function popularSelectEspecies() {
+      document.getElementById('avisoSemEspecies').classList.toggle('hidden', (dadosEscala.especies || []).length > 0);
+    }
+
+    function renderLinhasEspeciesConfig() {
+      const container = document.getElementById('listaEspeciesContainer');
+      container.innerHTML = "";
+      const cfg = dadosEscala.configuracoes[document.getElementById('inputMesSelecionado').value];
+      const metas = (cfg && cfg.metasEspecies && cfg.metasEspecies.length > 0) ? cfg.metasEspecies : [];
+      if (metas.length === 0 && (dadosEscala.especies || []).length > 0) {
+        adicionarLinhaEspecie(dadosEscala.especies[0], 100);
+      } else {
+        metas.forEach(function (m) { adicionarLinhaEspecie(m.especie, m.metaMensalKg); });
+      }
+    }
+
+    function adicionarLinhaEspecie(especiePadrao, metaPadrao) {
+      const especies = dadosEscala.especies || [];
+      if (especies.length === 0) return;
+      especiePadrao = especiePadrao || especies[0];
+      metaPadrao = metaPadrao || 100;
       const container = document.getElementById('listaEspeciesContainer');
       const rowId = 'especie_row_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
       const div = document.createElement('div');
       div.id = rowId;
-      div.className = "flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-lg text-xs";
+      div.className = "flex items-center gap-2 bg-gray-50 border border-gray-200 p-2 rounded-lg text-xs";
 
       let optionsHTML = "";
-      for (let esp in TEMPOS_ESPECIES) {
-        optionsHTML += `<option value="${esp}" ${esp === especiePadrao ? 'selected' : ''}>${esp}</option>`;
-      }
+      especies.forEach(function (esp) { optionsHTML += `<option value="${esp}" ${esp === especiePadrao ? 'selected' : ''}>${esp}</option>`; });
 
       div.innerHTML = `
         <div class="flex-1">
           <label class="block font-semibold text-gray-700">Espécie</label>
           <select class="select-especie w-full border rounded p-1.5 bg-white font-medium outline-none">${optionsHTML}</select>
         </div>
-        <div class="w-36">
-          <label class="block font-semibold text-gray-700">Meta Mensal (kg)</label>
+        <div class="w-32">
+          <label class="block font-semibold text-gray-700">Meta (kg/mês)</label>
           <input type="number" min="1" value="${metaPadrao}" class="input-meta-kg w-full border rounded p-1.5 font-bold text-emerald-800 outline-none">
         </div>
-        <button type="button" onclick="removerLinhaEspecie('${rowId}')" class="bg-red-100 text-red-700 font-bold px-2.5 py-1.5 rounded transition mt-3">🗑️</button>
+        <button type="button" class="bg-teal-100 text-teal-700 font-bold px-2.5 py-1.5 rounded transition mt-4" title="Parâmetros de tempo/rendimento">⚙️</button>
+        <button type="button" class="bg-red-100 text-red-700 font-bold px-2.5 py-1.5 rounded transition mt-4">🗑️</button>
       `;
+      const selectEl = div.querySelector('.select-especie');
+      div.querySelectorAll('button')[0].onclick = function () { abrirModalParametrosEspecie(selectEl.value); };
+      div.querySelectorAll('button')[1].onclick = function () { removerLinhaEspecie(rowId); };
       container.appendChild(div);
     }
 
@@ -483,52 +611,143 @@
       }
     }
 
-    function criarDataLocal(strData) {
-      const [ano, mes, dia] = strData.split('-').map(Number);
-      return new Date(ano, mes - 1, dia);
+    /* ---------- Parâmetros por espécie ---------- */
+    function abrirModalParametrosEspecie(nomeEspecie) {
+      paramEspecieAtual = nomeEspecie;
+      const p = dadosEscala.parametrosEspecie[nomeEspecie] || {};
+      document.getElementById('paramEspecieNome').textContent = nomeEspecie;
+      document.getElementById('paramClDias').value = p.clDias || 12;
+      document.getElementById('paramSpawnDias').value = p.spawnDias || 14;
+      document.getElementById('paramCompostoDias').value = p.compostoDias || 18;
+      document.getElementById('paramFlush1Dias').value = p.flush1Dias || 7;
+      document.getElementById('paramFlush2Dias').value = p.flush2Dias || 9;
+      document.getElementById('paramFlush3Dias').value = p.flush3Dias || 0;
+      document.getElementById('paramPctFlush1').value = p.pctFlush1 != null ? p.pctFlush1 : 0.6;
+      document.getElementById('paramPctFlush2').value = p.pctFlush2 != null ? p.pctFlush2 : 0.4;
+      document.getElementById('paramPctFlush3').value = p.pctFlush3 || 0;
+      document.getElementById('paramRendimentoKgBloco').value = p.rendimentoKgBloco || 0.35;
+      document.getElementById('paramPesoBlocoKg').value = p.pesoBlocoKg || 2.0;
+      document.getElementById('paramPercSpawnPorKgComposto').value = p.percSpawnPorKgComposto || 0.10;
+      document.getElementById('paramTempoSpawnMin').value = p.tempoSpawnMin || 45;
+      document.getElementById('paramTempoBlocoMin').value = p.tempoBlocoMin || 90;
+      document.getElementById('paramTempoColheitaMinPorKg').value = p.tempoColheitaMinPorKg || 8;
+      document.getElementById('paramBufferGeladeiraMaxDias').value = p.bufferGeladeiraMaxDias || 10;
+
+      const ewma = (dadosEscala.resumoEwma && dadosEscala.resumoEwma[nomeEspecie]) || {};
+      ['CL', 'SPAWN', 'COMPOSTO', 'FRUTIFICACAO', 'COLHEITA_F1'].forEach(function (fase) {
+        const n = ewma[fase] || 0;
+        const el = document.getElementById('badgeEwma' + fase);
+        if (!el) return;
+        if (n >= 3) { el.textContent = 'EWMA · ' + n + ' lotes'; el.className = 'badge-ewma bg-teal-100 text-teal-800'; }
+        else { el.textContent = n + '/3 p/ EWMA'; el.className = 'badge-ewma bg-gray-100 text-gray-500'; }
+      });
+
+      document.getElementById('modalParametrosEspecie').classList.remove('hidden');
+    }
+    function fecharModalParametrosEspecie() { document.getElementById('modalParametrosEspecie').classList.add('hidden'); }
+
+    async function salvarParametrosEspecie() {
+      const payload = {
+        nome: paramEspecieAtual,
+        clDias: parseFloat(document.getElementById('paramClDias').value) || undefined,
+        spawnDias: parseFloat(document.getElementById('paramSpawnDias').value) || undefined,
+        compostoDias: parseFloat(document.getElementById('paramCompostoDias').value) || undefined,
+        flush1Dias: parseFloat(document.getElementById('paramFlush1Dias').value) || undefined,
+        flush2Dias: parseFloat(document.getElementById('paramFlush2Dias').value) || undefined,
+        flush3Dias: parseFloat(document.getElementById('paramFlush3Dias').value) || 0,
+        pctFlush1: parseFloat(document.getElementById('paramPctFlush1').value) || undefined,
+        pctFlush2: parseFloat(document.getElementById('paramPctFlush2').value) || undefined,
+        pctFlush3: parseFloat(document.getElementById('paramPctFlush3').value) || 0,
+        rendimentoKgBloco: parseFloat(document.getElementById('paramRendimentoKgBloco').value) || undefined,
+        pesoBlocoKg: parseFloat(document.getElementById('paramPesoBlocoKg').value) || undefined,
+        percSpawnPorKgComposto: parseFloat(document.getElementById('paramPercSpawnPorKgComposto').value) || undefined,
+        tempoSpawnMin: parseFloat(document.getElementById('paramTempoSpawnMin').value) || undefined,
+        tempoBlocoMin: parseFloat(document.getElementById('paramTempoBlocoMin').value) || undefined,
+        tempoColheitaMinPorKg: parseFloat(document.getElementById('paramTempoColheitaMinPorKg').value) || undefined,
+        bufferGeladeiraMaxDias: parseFloat(document.getElementById('paramBufferGeladeiraMaxDias').value) || undefined,
+        responsavel: userData.nome
+      };
+      const res = await chamarAPI('salvarParametrosEspecieEscala', payload);
+      if (!res.success) { alert('Erro: ' + res.message); return; }
+      fecharModalParametrosEspecie();
+      await carregarDadosEscala();
     }
 
-    function formatarDataISO(data) {
-      const ano = data.getFullYear();
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const dia = String(data.getDate()).padStart(2, '0');
-      return `${ano}-${mes}-${dia}`;
+    /* ---------- Dias disponíveis (mesmo mecanismo do protótipo original) ---------- */
+    function aoMudarMesSelecionado() {
+      guardarDiasDoMesNoMapa(ultimoMesAberto);
+      const novoMes = document.getElementById('inputMesSelecionado').value;
+      ultimoMesAberto = novoMes;
+      gerarCamposDiasDisponiveis();
+      renderLinhasEspeciesConfig();
     }
-
-    function somarDias(dataBase, dias) {
-      const novaData = new Date(dataBase.getTime());
-      novaData.setDate(novaData.getDate() + dias);
-      return novaData;
+    function guardarDiasDoMesNoMapa(mesChave) {
+      if (!mesChave) return;
+      const inputs = document.querySelectorAll('.input-dia-disponivel');
+      const datasValidas = [];
+      inputs.forEach(function (inp) { if (inp.value) datasValidas.push(inp.value); });
+      if (datasValidas.length > 0) mapaDiasDisponiveisPorMes[mesChave] = datasValidas;
     }
-
-    // Busca dinâmica de dias livres em múltiplos meses para evitar loops
-    function encontrarProximoDiaLivreValido(dataMinima) {
-      let dataTeste = new Date(dataMinima.getFullYear(), dataMinima.getMonth(), dataMinima.getDate());
-      
-      for (let i = 0; i < 365; i++) {
-        const ano = dataTeste.getFullYear();
-        const mesStr = String(dataTeste.getMonth() + 1).padStart(2, '0');
-        const mesChave = `${ano}-${mesStr}`;
-        const dataISO = formatarDataISO(dataTeste);
-        
-        let diasLivresDoMes = mapaDiasDisponiveisPorMes[mesChave];
-        
-        // Se estiver no mês ativo da tela, garante captura dos inputs atuais
-        if (mesChave === document.getElementById('inputMesSelecionado').value) {
-          const inputs = document.querySelectorAll('.input-dia-disponivel');
-          diasLivresDoMes = Array.from(inputs).map(inp => inp.value).filter(Boolean);
-        }
-
-        if (diasLivresDoMes && diasLivresDoMes.includes(dataISO)) {
-          return new Date(dataTeste);
-        }
-        
-        dataTeste.setDate(dataTeste.getDate() + 1);
+    function alterarQtdDiasEGerar() {
+      const mesChave = document.getElementById('inputMesSelecionado').value;
+      delete mapaDiasDisponiveisPorMes[mesChave];
+      gerarCamposDiasDisponiveis();
+    }
+    function gerarCamposDiasDisponiveis() {
+      const mesChave = document.getElementById('inputMesSelecionado').value;
+      if (!mesChave) return;
+      const partes = mesChave.split('-');
+      const anoStr = partes[0], mesStr = partes[1];
+      const qtd = parseInt(document.getElementById('selectQtdDias').value);
+      const container = document.getElementById('containerDiasDisponiveis');
+      container.innerHTML = "";
+      const datasExistentes = mapaDiasDisponiveisPorMes[mesChave] || [];
+      const qtdFinal = datasExistentes.length > 0 ? datasExistentes.length : qtd;
+      for (let i = 1; i <= qtdFinal; i++) {
+        const div = document.createElement('div');
+        const valorData = datasExistentes[i - 1] || `${anoStr}-${mesStr}-${String(Math.min(i * 5, 28)).padStart(2, '0')}`;
+        div.innerHTML = `<label class="block font-bold mb-1 text-gray-700">Dia ${i}</label>
+          <input type="date" class="input-dia-disponivel w-full border rounded-lg p-2 font-semibold bg-white outline-none focus:ring-2 focus:ring-emerald-500" value="${valorData}">`;
+        container.appendChild(div);
       }
-      
-      return new Date(dataMinima);
     }
 
+    async function salvarEAplicarConfiguracoes() {
+      const mesChave = document.getElementById('inputMesSelecionado').value;
+      guardarDiasDoMesNoMapa(mesChave);
+
+      const linhas = document.querySelectorAll('#listaEspeciesContainer > div');
+      const metasEspecies = [];
+      linhas.forEach(function (linha) {
+        const esp = linha.querySelector('.select-especie').value;
+        const meta = parseFloat(linha.querySelector('.input-meta-kg').value) || 0;
+        if (meta > 0) metasEspecies.push({ especie: esp, metaMensalKg: meta });
+      });
+      if (metasEspecies.length === 0) { alert('Adicione ao menos uma espécie com meta mensal.'); return; }
+
+      const payload = {
+        mesChave: mesChave,
+        tipoProducao: document.getElementById('selectTipoProducao').value,
+        estrategiaCL: document.getElementById('selectEstrategiaCL').value,
+        capacidadeDiariaMin: parseFloat(document.getElementById('inputCapacidadeDiaria').value) || 480,
+        diasDisponiveis: mapaDiasDisponiveisPorMes[mesChave] || [],
+        metasEspecies: metasEspecies,
+        responsavel: userData.nome
+      };
+
+      const res = await chamarAPI('salvarConfiguracaoEscala', payload);
+      if (!res.success) { alert('Erro ao recalcular escala: ' + res.message); return; }
+
+      fecharModalConfiguracoes();
+      mesVisivelCalendario = mesChave;
+      await carregarDadosEscala();
+      if (calendar) calendar.gotoDate(mesChave + '-01');
+      // Aviso de sobrecarga (Teoria das Restrições) já aparece no banner fixo
+      // no topo da página (renderBanners, chamado dentro de carregarDadosEscala)
+      // — evitamos alert() bloqueante aqui para não travar a tela do operador.
+    }
+
+    /* ---------- Calendário ---------- */
     function inicializarCalendario() {
       const calendarEl = document.getElementById('calendar');
       calendar = new FullCalendar.Calendar(calendarEl, {
@@ -537,271 +756,284 @@
         headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
         buttonText: { today: 'Hoje', month: 'Mês', list: 'Lista' },
         events: [],
-        
-        eventClassNames: function(arg) {
-          if (arg.event.extendedProps && arg.event.extendedProps.isIdeal) {
-            return ['evento-ideal'];
-          }
-          return [];
+        datesSet: function (arg) {
+          const meio = new Date(arg.view.currentStart.getFullYear(), arg.view.currentStart.getMonth(), 15);
+          mesVisivelCalendario = `${meio.getFullYear()}-${String(meio.getMonth() + 1).padStart(2, '0')}`;
+          atualizarKPIs();
         },
-
-        eventClick: function(info) {
-          abrirModalParaEditar(info.event);
+        eventClassNames: function (arg) {
+          const props = arg.event.extendedProps || {};
+          const classes = [];
+          if (props.isIdeal) classes.push('evento-ideal');
+          if (props.isBuffer) classes.push('evento-buffer');
+          if (props.editadoManualmente) classes.push('evento-editado');
+          return classes;
         },
-
-        eventDidMount: function(info) {
-          const props = info.event.extendedProps;
-          if (props) {
-            let htmlTooltip = `
-              <div class="p-2 space-y-1 text-xs max-w-xs">
-                <div class="font-bold border-b pb-1 text-emerald-300 flex justify-between items-center">
-                  <span>${info.event.title}</span>
-                  ${props.isIdeal ? '<span class="text-[9px] bg-amber-500/30 text-amber-200 px-1 rounded">Ideal</span>' : '<span class="text-[9px] bg-emerald-500/30 text-emerald-200 px-1 rounded">Agendado</span>'}
-                </div>
-                ${props.quantidade ? `<div>📦 <b>Quantidade:</b> ${props.quantidade}</div>` : ''}
-                ${props.tempoEstimado ? `<div>⏱️ <b>Tempo Estimado:</b> ${props.tempoEstimado}</div>` : ''}
-                ${props.detalheCiclo ? `<div class="text-[10px] text-gray-300 pt-1 border-t border-white/10">🔄 ${props.detalheCiclo}</div>` : ''}
-                ${props.obs ? `<div class="italic text-gray-300">📝 ${props.obs}</div>` : ''}
-                <div class="text-[9px] text-gray-400 pt-1 text-right">💡 Clique para editar</div>
+        dayCellClassNames: function (arg) {
+          const iso = formatarDataISO(arg.date);
+          const dias = (dadosEscala.resumoCarga && dadosEscala.resumoCarga.diasSobrecarregados) || [];
+          return dias.includes(iso) ? ['dia-sobrecarregado'] : [];
+        },
+        eventClick: function (info) {
+          const props = info.event.extendedProps || {};
+          if (props.isIdeal) return;
+          abrirModalParaEditar(props.evento);
+        },
+        eventDidMount: function (info) {
+          const props = info.event.extendedProps || {};
+          const ev = props.evento;
+          if (!ev && !props.isIdeal) return;
+          let htmlTooltip;
+          if (props.isIdeal) {
+            htmlTooltip = `<div class="p-2 text-xs max-w-xs"><div class="font-bold border-b pb-1 text-amber-300">${info.event.title}</div><div class="text-[10px] text-gray-300 pt-1">Data ideal teórica (sem ajuste de folga).</div></div>`;
+          } else {
+            htmlTooltip = `<div class="p-2 space-y-1 text-xs max-w-xs">
+              <div class="font-bold border-b pb-1 text-emerald-300 flex justify-between items-center">
+                <span>${info.event.title}</span>
+                <span class="text-[9px] ${ev.status === 'Concluido' ? 'bg-teal-500/30 text-teal-200' : 'bg-emerald-500/30 text-emerald-200'} px-1 rounded">${ev.status}</span>
               </div>
-            `;
-
-            tippy(info.el, {
-              content: htmlTooltip,
-              allowHTML: true,
-              theme: 'coloniza',
-              placement: 'top',
-              interactive: true
-            });
+              ${ev.quantidadeDescricao ? `<div>📦 <b>Quantidade:</b> ${ev.quantidadeDescricao}</div>` : ''}
+              ${ev.tempoEstimadoMin ? `<div>⏱️ <b>Tempo:</b> ${ev.tempoEstimadoMin} min</div>` : ''}
+              ${ev.observacoes ? `<div class="text-[10px] text-gray-300 pt-1 border-t border-white/10">${ev.observacoes}</div>` : ''}
+              <div class="text-[9px] text-gray-400 pt-1 text-right">💡 Clique para editar</div>
+            </div>`;
           }
+          tippy(info.el, { content: htmlTooltip, allowHTML: true, theme: 'coloniza', placement: 'top', interactive: true });
         }
       });
       calendar.render();
     }
 
-    function abrirModalParaEditar(evento) {
-      document.getElementById('editEventoId').value = evento.id;
-      document.getElementById('editTitulo').value = evento.title;
-      document.getElementById('editData').value = evento.startStr;
-      document.getElementById('editTempo').value = evento.extendedProps.tempoEstimado || '';
-      document.getElementById('editQtd').value = evento.extendedProps.quantidade || '';
-      document.getElementById('editObs').value = evento.extendedProps.obs || '';
+    function formatarDataISO(data) {
+      return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+    }
 
+    function renderCalendarEvents() {
+      const fcEvents = [];
+      (dadosEscala.eventos || []).forEach(function (ev) {
+        if (!ev.dataAgendada) return;
+        const cor = corPorFase(ev.fase);
+        const titulo = (FASE_EMOJI[ev.fase] || '•') + ' ' + (FASE_LABEL[ev.fase] || ev.fase) + (ev.especie ? (': ' + ev.especie) : '');
+
+        if (ev.dataIdeal && ev.dataIdeal !== ev.dataAgendada) {
+          fcEvents.push({
+            id: 'ideal_' + ev.eventoId, title: '(ideal) ' + titulo, start: ev.dataIdeal,
+            backgroundColor: cor, borderColor: cor,
+            extendedProps: { isIdeal: true }
+          });
+        }
+        fcEvents.push({
+          id: ev.eventoId, title: (ev.isBuffer ? '❄️ ' : '') + titulo, start: ev.dataAgendada,
+          backgroundColor: cor, borderColor: ev.isBuffer ? '#0891b2' : cor,
+          extendedProps: { isIdeal: false, isBuffer: ev.isBuffer, editadoManualmente: ev.editadoManualmente, evento: ev }
+        });
+      });
+      if (calendar) {
+        calendar.removeAllEvents();
+        calendar.addEventSource(fcEvents);
+      }
+    }
+
+    /* ---------- Edição de evento ---------- */
+    function abrirModalParaEditar(ev) {
+      document.getElementById('editEventoId').value = ev.eventoId;
+      document.getElementById('editTituloHeader').textContent = (FASE_LABEL[ev.fase] || ev.fase) + (ev.especie ? (' — ' + ev.especie) : '');
+      document.getElementById('editData').value = ev.dataAgendada;
+      document.getElementById('editTempo').value = ev.tempoEstimadoMin || '';
+      document.getElementById('editQtd').value = ev.quantidadeDescricao || '';
+      document.getElementById('editObs').value = ev.observacoes || '';
+      const sistemaBox = document.getElementById('editObservacaoSistema');
+      if (ev.isBuffer) {
+        sistemaBox.textContent = '❄️ Este evento está em buffer de geladeira (' + (ev.diasBufferGeladeira || 0) + ' dia(s) até o dia de folga).';
+        sistemaBox.classList.remove('hidden');
+      } else {
+        sistemaBox.classList.add('hidden');
+      }
       document.getElementById('modalEdicaoTarefa').classList.remove('hidden');
     }
 
-    function salvarEdicaoTarefa() {
+    function eventoAtualDoModal() {
       const id = document.getElementById('editEventoId').value;
-      const eventoObj = calendar.getEventById(id);
+      return (dadosEscala.eventos || []).find(function (e) { return e.eventoId === id; });
+    }
 
-      if (eventoObj) {
-        const novoTitulo = document.getElementById('editTitulo').value;
-        const novaData = document.getElementById('editData').value;
-        const novoTempo = document.getElementById('editTempo').value;
-        const novaQtd = document.getElementById('editQtd').value;
-        const novaObs = document.getElementById('editObs').value;
-
-        eventoObj.setProp('title', novoTitulo);
-        eventoObj.setStart(novaData);
-        eventoObj.setExtendedProp('tempoEstimado', novoTempo);
-        eventoObj.setExtendedProp('quantidade', novaQtd);
-        eventoObj.setExtendedProp('obs', novaObs);
-      }
-
+    async function salvarEdicaoTarefa() {
+      const id = document.getElementById('editEventoId').value;
+      const res = await chamarAPI('atualizarEventoEscala', {
+        eventoId: id,
+        dataAgendada: document.getElementById('editData').value,
+        tempoEstimadoMin: document.getElementById('editTempo').value,
+        quantidadeDescricao: document.getElementById('editQtd').value,
+        observacoes: document.getElementById('editObs').value
+      });
+      if (!res.success) { alert('Erro: ' + res.message); return; }
       fecharModalEdicao();
+      await carregarDadosEscala();
     }
 
-    function salvarEAplicarConfiguracoes() {
-      guardarDiasDoMesNoMapa(document.getElementById('inputMesSelecionado').value);
-      fecharModalConfiguracoes();
-      calcularEGerarEscala();
+    async function confirmarExecucaoEventoAtual() {
+      const id = document.getElementById('editEventoId').value;
+      const dataReal = prompt('Data real de execução (AAAA-MM-DD):', document.getElementById('editData').value);
+      if (!dataReal) return;
+      const res = await chamarAPI('confirmarEventoEscala', { eventoId: id, dataRealExecucao: dataReal, responsavel: userData.nome });
+      if (!res.success) { alert('Erro: ' + res.message); return; }
+      fecharModalEdicao();
+      await carregarDadosEscala();
     }
 
-    function calcularEGerarEscala() {
-      const tipoProducao = document.getElementById('selectTipoProducao').value;
-      const qtdMesesProjecao = (tipoProducao === 'recorrente') ? 12 : 1;
-      const mesChaveSelecionado = document.getElementById('inputMesSelecionado').value;
-      if (!mesChaveSelecionado) return;
+    async function marcarBufferEventoAtual() {
+      const id = document.getElementById('editEventoId').value;
+      const res = await chamarAPI('moverEventoParaBuffer', { eventoId: id });
+      if (!res.success) { alert('Erro: ' + res.message); return; }
+      fecharModalEdicao();
+      await carregarDadosEscala();
+    }
 
-      guardarDiasDoMesNoMapa(mesChaveSelecionado);
+    async function excluirEventoAtual() {
+      if (!confirm('Remover esta tarefa da escala?')) return;
+      const id = document.getElementById('editEventoId').value;
+      const res = await chamarAPI('excluirEventoEscala', { eventoId: id });
+      if (!res.success) { alert('Erro: ' + res.message); return; }
+      fecharModalEdicao();
+      await carregarDadosEscala();
+    }
 
-      const [anoBaseSel, mesBaseSel] = mesChaveSelecionado.split('-').map(Number);
+    /* ---------- KPIs e banners ---------- */
+    function atualizarKPIs() {
+      const mes = mesVisivelCalendario;
+      const eventosDoMes = (dadosEscala.eventos || []).filter(function (e) { return e.mesChave === mes; });
 
-      const linhas = document.querySelectorAll('#listaEspeciesContainer > div');
-      const listaEspecies = [];
-      linhas.forEach(linha => {
-        const esp = linha.querySelector('.select-especie').value;
-        const meta = parseFloat(linha.querySelector('.input-meta-kg').value) || 0;
-        if (meta > 0) listaEspecies.push({ especie: esp, metaMensalKg: meta });
+      const diasConfig = (dadosEscala.configuracoes[mes] && dadosEscala.configuracoes[mes].diasDisponiveis) || mapaDiasDisponiveisPorMes[mes] || [];
+      document.getElementById('resumoDiasUtilizados').textContent = `${diasConfig.length} Dias Definidos`;
+
+      const spawnKg = eventosDoMes.filter(function (e) { return e.fase === 'SPAWN'; }).reduce(function (s, e) { return s + (e.quantidadeValor || 0); }, 0);
+      const blocos = eventosDoMes.filter(function (e) { return e.fase === 'COMPOSTO'; }).reduce(function (s, e) { return s + (e.qtdSacos || 0); }, 0);
+      document.getElementById('resumoSpawn').textContent = spawnKg.toFixed(1) + ' kg';
+      document.getElementById('resumoBlocos').textContent = blocos + ' Blocos';
+
+      document.getElementById('resumoEstoque').textContent = (dadosEscala.bomShortfall || []).length + ' itens';
+
+      const manutAtivas = (dadosEscala.recorrencias || []).filter(function (r) { return r.ativa; }).length +
+        (dadosEscala.tarefasManuais || []).filter(function (t) { return t.status !== 'Concluida'; }).length;
+      document.getElementById('resumoTarefasManuais').textContent = manutAtivas + ' Ativas';
+    }
+
+    function renderBanners() {
+      const dias = (dadosEscala.resumoCarga && dadosEscala.resumoCarga.diasSobrecarregados) || [];
+      const banner = document.getElementById('bannerSobrecarga');
+      if (dias.length > 0) {
+        document.getElementById('textoSobrecarga').textContent = dias.length + ' dia(s) de folga com carga acima da capacidade diária configurada — tarefas de menor prioridade (Spawn/CL/Manutenção) foram remanejadas automaticamente.';
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function renderTabelaBOM() {
+      const tbody = document.getElementById('tabelaBOM');
+      const lista = dadosEscala.bomShortfall || [];
+      tbody.innerHTML = "";
+      document.getElementById('semFaltantesBOM').classList.toggle('hidden', lista.length > 0);
+      lista.forEach(function (item) {
+        const tr = document.createElement('tr');
+        tr.className = "border-b";
+        tr.innerHTML = `<td class="py-1.5 font-bold">${item.nome}</td>
+          <td class="py-1.5">${item.necessario} ${item.unidade || ''}</td>
+          <td class="py-1.5">${item.disponivel} ${item.unidade || ''}</td>
+          <td class="py-1.5 font-bold text-red-700">${item.faltante} ${item.unidade || ''}</td>
+          <td class="py-1.5">${item.dataLimite || '-'}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ---------- Tarefas manuais e recorrências ---------- */
+    function renderListasTarefas() {
+      const contRec = document.getElementById('containerListaRecorrentes');
+      contRec.innerHTML = "";
+      (dadosEscala.recorrencias || []).forEach(function (r) {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 text-[11px]";
+        div.innerHTML = `<div><b>${r.titulo}</b><div class="text-gray-500">A cada ${r.frequenciaDias} dias · desde ${r.dataInicio}</div></div>
+          <button class="text-red-600 font-bold">🗑️</button>`;
+        div.querySelector('button').onclick = async function () {
+          if (!confirm('Excluir esta manutenção recorrente?')) return;
+          await chamarAPI('excluirRecorrenciaEscala', { recorrenciaId: r.recorrenciaId });
+          await carregarDadosEscala();
+          renderListasTarefas();
+        };
+        contRec.appendChild(div);
       });
 
-      let totalSpawnKgMes = 0;
-      let totalBlocosMes = 0;
-      let totalCompostoKgMes = 0;
-      let totalDiasAlocados = 0;
+      const contTar = document.getElementById('containerListaTarefas');
+      contTar.innerHTML = "";
+      (dadosEscala.tarefasManuais || []).forEach(function (t) {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-2 text-[11px]";
+        div.innerHTML = `<div><b>${t.titulo}</b><div class="text-gray-500">${t.data} · ${t.status}</div></div>
+          <button class="text-red-600 font-bold">🗑️</button>`;
+        div.querySelector('button').onclick = async function () {
+          if (!confirm('Excluir esta tarefa?')) return;
+          await chamarAPI('excluirTarefaManualEscala', { tarefaId: t.tarefaId });
+          await carregarDadosEscala();
+          renderListasTarefas();
+        };
+        contTar.appendChild(div);
+      });
+    }
 
-      eventosMemoria = [];
-      let globalIdCounter = 1;
+    async function salvarNovaRecorrencia() {
+      const res = await chamarAPI('salvarRecorrenciaEscala', {
+        titulo: document.getElementById('inputRecorrenciaNome').value,
+        frequenciaDias: document.getElementById('selectFrequencia').value,
+        dataInicio: document.getElementById('inputRecorrenciaDataInicio').value,
+        tempoEstimado: document.getElementById('inputRecorrenciaTempo').value,
+        responsavel: userData.nome
+      });
+      if (!res.success) { alert('Erro: ' + res.message); return; }
+      document.getElementById('formNovaRecorrencia').reset();
+      await carregarDadosEscala();
+      renderListasTarefas();
+    }
 
-      // Pega o primeiro dia marcado nos inputs da tela para iniciar a CL (Ex: Dia 19)
-      const inputsTela = document.querySelectorAll('.input-dia-disponivel');
-      let dataInicioGeral = inputsTela.length > 0 && inputsTela[0].value 
-        ? criarDataLocal(inputsTela[0].value) 
-        : new Date(anoBaseSel, mesBaseSel - 1, 1);
+    async function salvarNovaTarefaAvulsa() {
+      const res = await chamarAPI('salvarTarefaManualEscala', {
+        titulo: document.getElementById('inputTarefaNome').value,
+        data: document.getElementById('inputTarefaData').value,
+        tempoEstimado: document.getElementById('inputTarefaTempo').value,
+        observacoes: document.getElementById('inputTarefaObs').value,
+        responsavel: userData.nome
+      });
+      if (!res.success) { alert('Erro: ' + res.message); return; }
+      document.getElementById('formNovaTarefa').reset();
+      await carregarDadosEscala();
+      renderListasTarefas();
+    }
 
-      for (let mesIdx = 0; mesIdx < qtdMesesProjecao; mesIdx++) {
-        listaEspecies.forEach((item) => {
-          const t = TEMPOS_ESPECIES[item.especie];
-          const blocosLote = Math.ceil(item.metaMensalKg / t.rendimentoKgBloco);
-          const compostoKgLote = blocosLote * t.pesoBloco;
-          const spawnKgLote = compostoKgLote * 0.10;
-
-          if (mesIdx === 0) {
-            totalSpawnKgMes += spawnKgLote;
-            totalBlocosMes += blocosLote;
-            totalCompostoKgMes += compostoKgLote;
-          }
-
-          // --- 0. ETAPA DE CL MASTER ---
-          let dataIdealCL = new Date(dataInicioGeral);
-          dataIdealCL.setMonth(dataIdealCL.getMonth() + mesIdx);
-          
-          let dataRealCL = encontrarProximoDiaLivreValido(dataIdealCL);
-
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `🧫 [AGENDADO] Produção de CL: ${item.especie}`,
-            start: formatarDataISO(dataRealCL),
-            backgroundColor: '#065f46',
-            borderColor: '#065f46',
-            extendedProps: {
-              isIdeal: false,
-              quantidade: "Cultura Líquida Master",
-              tempoEstimado: "30 min",
-              detalheCiclo: `Início oficial do lote`
-            }
-          });
-
-          // --- 1. ETAPA DE SPAWN ---
-          // Calculado a partir da DATA REAL da CL + tempo de incubaçao da CL
-          const dataIdealSpawn = somarDias(dataRealCL, t.cl);
-          const dataRealSpawn = encontrarProximoDiaLivreValido(dataIdealSpawn);
-
-          // Evento IDEAL
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `🧪 [IDEAL] Inocular Spawn: ${item.especie}`,
-            start: formatarDataISO(dataIdealSpawn),
-            backgroundColor: '#2563eb',
-            borderColor: '#1d4ed8',
-            extendedProps: {
-              isIdeal: true,
-              quantidade: `${spawnKgLote.toFixed(1)} kg de Spawn`,
-              tempoEstimado: `${t.tempoSpawMin} min`,
-              detalheCiclo: `Dia ideal (${t.cl} dias pós-CL)`
-            }
-          });
-
-          // Evento REAL
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `🌾 [AGENDADO] Inocular Spawn: ${item.especie}`,
-            start: formatarDataISO(dataRealSpawn),
-            backgroundColor: '#1d4ed8',
-            borderColor: '#1d4ed8',
-            extendedProps: {
-              isIdeal: false,
-              quantidade: `${spawnKgLote.toFixed(1)} kg de Spawn`,
-              tempoEstimado: `${t.tempoSpawMin} min`,
-              detalheCiclo: `Agendado no seu dia disponível`
-            }
-          });
-
-          // --- 2. ETAPA DE SUBSTRATO / BLOCOS ---
-          // Calculado a partir da DATA REAL do Spawn + tempo de incubação do Spawn
-          const dataIdealSubstrato = somarDias(dataRealSpawn, t.spawn);
-          const dataRealSubstrato = encontrarProximoDiaLivreValido(dataIdealSubstrato);
-
-          // Evento IDEAL
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `📦 [IDEAL] Inocular Blocos: ${item.especie}`,
-            start: formatarDataISO(dataIdealSubstrato),
-            backgroundColor: '#d97706',
-            borderColor: '#b45309',
-            extendedProps: {
-              isIdeal: true,
-              quantidade: `${blocosLote} blocos (${compostoKgLote.toFixed(0)}kg)`,
-              tempoEstimado: `${t.tempoBlocoMin} min`,
-              detalheCiclo: `Dia ideal após ${t.spawn} dias de colonização do Spawn`
-            }
-          });
-
-          // Evento REAL
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `📦 [AGENDADO] Inocular Blocos: ${item.especie}`,
-            start: formatarDataISO(dataRealSubstrato),
-            backgroundColor: '#b45309',
-            borderColor: '#b45309',
-            extendedProps: {
-              isIdeal: false,
-              quantidade: `${blocosLote} blocos (${compostoKgLote.toFixed(0)}kg)`,
-              tempoEstimado: `${t.tempoBlocoMin} min`,
-              detalheCiclo: `Agendado no seu dia disponível`
-            }
-          });
-
-          // --- 3. FRUTIFICAÇÃO E COLHEITAS ---
-          const diaEntradaFrutificacao = somarDias(dataRealSubstrato, t.composto);
-          const diaColheitaF1 = somarDias(diaEntradaFrutificacao, t.flush1);
-          const diaColheitaF2 = somarDias(diaColheitaF1, t.flush2);
-
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `🍄 1º Flush: ${item.especie}`,
-            start: formatarDataISO(diaColheitaF1),
-            backgroundColor: '#6b21a8',
-            borderColor: '#6b21a8',
-            extendedProps: {
-              isIdeal: false,
-              quantidade: `~${(item.metaMensalKg * 0.6).toFixed(1)} kg estimados`,
-              tempoEstimado: "60 min (Colheita/Embalagem)",
-              detalheCiclo: `Primeira colheita (${t.composto} dias pós-substrato)`
-            }
-          });
-
-          eventosMemoria.push({
-            id: 'ev_' + (globalIdCounter++),
-            title: `🍄 2º Flush: ${item.especie}`,
-            start: formatarDataISO(diaColheitaF2),
-            backgroundColor: '#3730a3',
-            borderColor: '#3730a3',
-            extendedProps: {
-              isIdeal: false,
-              quantidade: `~${(item.metaMensalKg * 0.4).toFixed(1)} kg estimados`,
-              tempoEstimado: "45 min (Colheita/Descarte)",
-              detalheCiclo: `Segunda colheita + finalização do ciclo`
-            }
-          });
-        });
+    /* ---------- Toast não bloqueante (evita alert() travando a tela após operações demoradas) ---------- */
+    function mostrarToast(mensagem, tipo) {
+      let toast = document.getElementById('toastColoniza');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toastColoniza';
+        toast.className = 'fixed bottom-5 right-5 z-[100] max-w-sm px-4 py-3 rounded-xl shadow-lg text-xs font-bold transition-opacity duration-300';
+        document.body.appendChild(toast);
       }
+      toast.textContent = mensagem;
+      toast.className = 'fixed bottom-5 right-5 z-[100] max-w-sm px-4 py-3 rounded-xl shadow-lg text-xs font-bold transition-opacity duration-300 ' +
+        (tipo === 'erro' ? 'bg-red-700 text-white' : 'bg-emerald-800 text-white');
+      toast.style.opacity = '1';
+      clearTimeout(toast._timeoutId);
+      toast._timeoutId = setTimeout(function () { toast.style.opacity = '0'; }, 6000);
+    }
 
-      // ATUALIZAR CARDS COM VALORES CALCULADOS
-      const inputsFinais = document.querySelectorAll('.input-dia-disponivel');
-      let contadorDiasPreenchidos = 0;
-      inputsFinais.forEach(i => { if (i.value) contadorDiasPreenchidos++; });
-
-      document.getElementById('resumoDiasUtilizados').textContent = `${contadorDiasPreenchidos} Dias Definidos`;
-      document.getElementById('resumoSpawn').textContent = `${totalSpawnKgMes.toFixed(1)} kg`;
-      document.getElementById('resumoBlocos').textContent = `${totalBlocosMes} Blocos`;
-
-      // RECARREGAR EVENTOS NO FULLCALENDAR
-      if (calendar) {
-        calendar.removeAllEvents();
-        calendar.addEventSource(eventosMemoria);
-        calendar.gotoDate(`${anoBaseSel}-${String(mesBaseSel).padStart(2, '0')}-01`);
-      }
+    /* ---------- Google Agenda ---------- */
+    async function sincronizarGoogleAgenda() {
+      const mesesCarregados = Object.keys(dadosEscala.configuracoes || {});
+      if (mesesCarregados.length === 0) { mostrarToast('Configure e salve a escala antes de sincronizar.', 'erro'); return; }
+      mostrarToast('Sincronizando com o Google Agenda...', 'ok');
+      const res = await chamarAPI('sincronizarGoogleAgendaEscala', { mesChaves: mesesCarregados });
+      mostrarToast(res.success ? res.message : ('Erro: ' + res.message), res.success ? 'ok' : 'erro');
+      if (res.success) await carregarDadosEscala();
     }
   </script>
 </body>
