@@ -23,11 +23,16 @@
   <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
     <div>
       <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
-          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
-          </svg>
+        <div class="relative shrink-0">
+          <div id="logoInstitucionalCirculo" class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30 overflow-hidden">
+            <svg id="logoInstitucionalIcone" class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+            </svg>
+            <img id="logoInstitucionalImg" class="hidden w-full h-full object-cover" alt="Logo Coloniza">
+          </div>
+          <button type="button" onclick="document.getElementById('inputLogoInstitucional').click()" title="Alterar logo da Coloniza" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center text-[10px] font-bold leading-none border border-[#11261d]">+</button>
+          <input type="file" id="inputLogoInstitucional" accept="image/*" class="hidden" onchange="trocarLogoInstitucional(event)">
         </div>
         <div>
           <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
@@ -71,6 +76,9 @@
         </a>
         <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Colheita e Produção</span>
+        </a>
+        <a href="vendas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Vendas</span>
         </a>
         <a href="clientes.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
           <span>Clientes</span>
@@ -303,11 +311,8 @@
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block font-semibold mb-1 text-emerald-900">Tabela de Preço</label>
-              <select id="tabelaPrecoInput" class="w-full border rounded-lg p-2.5 outline-none bg-white">
-                <option value="Atacado - Restaurantes">Atacado - Restaurantes</option>
-                <option value="Varejo - Consumidor Final">Varejo - Consumidor Final</option>
-                <option value="Personalizada">Personalizada</option>
-              </select>
+              <select id="tabelaPrecoInput" class="w-full border rounded-lg p-2.5 outline-none bg-white"></select>
+              <p class="text-[10px] text-gray-400 mt-1">Tabelas são cadastradas na página Vendas (botão "Produtos" → Tabelas de Preço).</p>
             </div>
             <div>
               <label class="block font-semibold mb-1 text-emerald-900">Condição de Pagamento</label>
@@ -703,6 +708,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzn3J-hHcyoBMkENETimsBx4Dw9XbvcIAsVjWytSNfWQgCe-u_KcUTlDThdrCt8dJM/exec";
 
     let listaClientesCache = [];
+    let tabelasPrecoCache = [];
     let listaFiltrada = [];
     let paginaAtual = 1;
     let itensPorPagina = 5;
@@ -719,6 +725,63 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
+
+    // ==================== LOGO INSTITUCIONAL (compartilhada em todas as páginas) ====================
+    async function carregarLogoInstitucional() {
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getInfoEmpresa' }) });
+        const res = await r.json();
+        if (res.success && res.infoEmpresa && res.infoEmpresa.logomarca) {
+          aplicarLogoInstitucional(res.infoEmpresa.logomarca);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar logomarca institucional:', err);
+      }
+    }
+    function aplicarLogoInstitucional(dataUrl) {
+      const img = document.getElementById('logoInstitucionalImg');
+      const icone = document.getElementById('logoInstitucionalIcone');
+      if (!img || !icone) return;
+      img.src = dataUrl;
+      img.classList.remove('hidden');
+      icone.classList.add('hidden');
+    }
+    function trocarLogoInstitucional(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const leitor = new FileReader();
+      leitor.onload = function (ev) {
+        const imagem = new Image();
+        imagem.onload = async function () {
+          const tam = 256;
+          const canvas = document.createElement('canvas');
+          canvas.width = tam; canvas.height = tam;
+          const ctx = canvas.getContext('2d');
+          const lado = Math.min(imagem.width, imagem.height);
+          const sx = (imagem.width - lado) / 2;
+          const sy = (imagem.height - lado) / 2;
+          ctx.drawImage(imagem, sx, sy, lado, lado, 0, 0, tam, tam);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          aplicarLogoInstitucional(dataUrl);
+          try {
+            const base64 = dataUrl.split(',')[1];
+            const resp = await fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'salvarLogomarca', fotoBase64: base64, nomeFoto: file.name || 'logo.jpg' })
+            });
+            const res = await resp.json();
+            if (!res.success) alert('Erro ao salvar a nova logo: ' + (res.message || ''));
+          } catch (err) {
+            alert('Erro de conexão ao salvar a nova logo.');
+          }
+        };
+        imagem.src = ev.target.result;
+      };
+      leitor.readAsDataURL(file);
+      e.target.value = '';
+    }
+    carregarLogoInstitucional();
 
     function logout() {
       localStorage.removeItem('coloniza_user');
@@ -746,16 +809,27 @@
     }
 
     // ==================== CARREGAMENTO DE DADOS ====================
+    async function apiPost(payload) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      return response.json();
+    }
+
     async function loadData() {
       try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'getClientes' })
-        });
-        const res = await response.json();
-        if (res.success) {
-          listaClientesCache = res.clientes || [];
+        const [resClientes, resTabelas] = await Promise.all([
+          apiPost({ action: 'getClientes' }),
+          apiPost({ action: 'getTabelasPreco' })
+        ]);
+        if (resTabelas.success) {
+          tabelasPrecoCache = resTabelas.tabelas || [];
+          popularSelectTabelaPreco();
+        }
+        if (resClientes.success) {
+          listaClientesCache = resClientes.clientes || [];
           atualizarKPIs();
           filterTable();
         }
@@ -763,6 +837,19 @@
         console.error("Erro ao carregar clientes:", err);
         document.getElementById('clientesBody').innerHTML = '<tr><td colspan="7" class="py-4 text-center text-gray-400">Não foi possível conectar ao servidor.</td></tr>';
       }
+    }
+
+    function popularSelectTabelaPreco() {
+      const select = document.getElementById('tabelaPrecoInput');
+      const atual = select.value;
+      select.innerHTML = tabelasPrecoCache
+        .filter(function (t) { return t.ativo; })
+        .map(function (t) { return `<option value="${t.id}">${t.nome}</option>`; }).join('');
+      if (atual) select.value = atual;
+    }
+    function nomeTabelaPreco(id) {
+      const t = tabelasPrecoCache.find(function (x) { return x.id === id; });
+      return t ? t.nome : (id || '-');
     }
 
     // ==================== KPIs ====================
@@ -986,6 +1073,8 @@
       document.getElementById('enderecosEntregaContainer').innerHTML = '';
       selecionarTipoPessoa('PJ');
       adicionarLinhaEndereco({ principal: true });
+      popularSelectTabelaPreco();
+      document.getElementById('tabelaPrecoInput').value = 'varejo';
       openModal('modalCliente');
     }
 
@@ -1036,7 +1125,8 @@
       (c.enderecosEntrega || []).forEach(e => adicionarLinhaEndereco(e));
       if ((c.enderecosEntrega || []).length === 0) adicionarLinhaEndereco({ principal: true });
 
-      document.getElementById('tabelaPrecoInput').value = c.tabelaPreco || 'Atacado - Restaurantes';
+      popularSelectTabelaPreco();
+      document.getElementById('tabelaPrecoInput').value = c.tabelaPreco || 'varejo';
       document.getElementById('condicaoPagamentoInput').value = c.condicaoPagamento || 'À vista';
       document.getElementById('limiteCreditoInput').value = c.limiteCredito || '';
       document.getElementById('embalagemInput').value = c.embalagemPreferida || 'A granel em caixa retornável';
@@ -1173,7 +1263,7 @@
       document.getElementById('fichaIE').textContent = c.inscricaoEstadual || '-';
       document.getElementById('fichaCanal').textContent = c.canalAquisicao || '-';
       document.getElementById('fichaDataCadastro').textContent = formatarDataBR(c.dataCadastro);
-      document.getElementById('fichaTabelaPreco').textContent = c.tabelaPreco || '-';
+      document.getElementById('fichaTabelaPreco').textContent = nomeTabelaPreco(c.tabelaPreco);
       document.getElementById('fichaCondicaoPagamento').textContent = c.condicaoPagamento || '-';
       document.getElementById('fichaLimiteCredito').textContent = formatarMoeda(c.limiteCredito);
 
@@ -1442,7 +1532,7 @@
       document.getElementById('vendaItensContainer').innerHTML = '';
       document.getElementById('vendaClienteId').value = c.id;
       document.getElementById('vendaClienteNome').textContent = c.nome + (c.nomeFantasia ? ' (' + c.nomeFantasia + ')' : '');
-      document.getElementById('vendaTabelaPreco').value = c.tabelaPreco || '-';
+      document.getElementById('vendaTabelaPreco').value = nomeTabelaPreco(c.tabelaPreco);
       document.getElementById('vendaFormaPagamento').value = c.condicaoPagamento || '-';
 
       const selectEndereco = document.getElementById('vendaEnderecoEntrega');

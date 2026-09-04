@@ -17,9 +17,10 @@
     <div class="text-center mb-8">
       <!-- Container da Logo com Efeito Elegante -->
       <div class="inline-flex items-center justify-center p-3 bg-[#1b382b]/5 rounded-2xl mb-4 border border-[#1b382b]/10 shadow-sm">
-        <img 
-          src="https://lh3.googleusercontent.com/d/1CugN1KOVDxjxmwCVb3m2EzVW8beUYfSt" 
-          alt="Logo COLONIZA" 
+        <img
+          id="logoInstitucionalImg"
+          src="https://lh3.googleusercontent.com/d/1CugN1KOVDxjxmwCVb3m2EzVW8beUYfSt"
+          alt="Logo COLONIZA"
           class="h-20 w-auto object-contain drop-shadow-md"
         >
       </div>
@@ -62,6 +63,22 @@
   <script>
     // URL do seu Google Apps Script (Substitua entre as aspas)
     const API_URL = "https://script.google.com/macros/s/AKfycbzn3J-hHcyoBMkENETimsBx4Dw9XbvcIAsVjWytSNfWQgCe-u_KcUTlDThdrCt8dJM/exec";
+
+    // ==================== LOGO INSTITUCIONAL (compartilhada em todas as páginas) ====================
+    // Sem botão de troca aqui (tela de login, antes de autenticar) — só busca
+    // e exibe a logo atual; se nenhuma tiver sido enviada ainda, mantém a
+    // imagem padrão já definida no atributo src acima.
+    (async function carregarLogoInstitucional() {
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getInfoEmpresa' }) });
+        const res = await r.json();
+        if (res.success && res.infoEmpresa && res.infoEmpresa.logomarca) {
+          document.getElementById('logoInstitucionalImg').src = res.infoEmpresa.logomarca;
+        }
+      } catch (err) {
+        console.error('Erro ao carregar logomarca institucional:', err);
+      }
+    })();
 
     async function realizarLogin(e) {
       e.preventDefault();

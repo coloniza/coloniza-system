@@ -10,6 +10,8 @@
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
     .sidebar { background-color: #11261d; }
     .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
   </style>
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
@@ -18,18 +20,23 @@
   <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
     <div>
       <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30">
-          <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
-          </svg>
+        <div class="relative shrink-0">
+          <div id="logoInstitucionalCirculo" class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30 overflow-hidden">
+            <svg id="logoInstitucionalIcone" class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+            </svg>
+            <img id="logoInstitucionalImg" class="hidden w-full h-full object-cover" alt="Logo Coloniza">
+          </div>
+          <button type="button" onclick="document.getElementById('inputLogoInstitucional').click()" title="Alterar logo da Coloniza" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center text-[10px] font-bold leading-none border border-[#11261d]">+</button>
+          <input type="file" id="inputLogoInstitucional" accept="image/*" class="hidden" onchange="trocarLogoInstitucional(event)">
         </div>
         <div>
           <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
           <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
         </div>
       </div>
-      <nav class="p-2 space-y-1 text-xs">
+      <nav class="p-2 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-140px)] custom-scroll">
         <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
           <span>Dashboard</span>
@@ -66,6 +73,9 @@
         </a>
         <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Colheita e Produção</span>
+        </a>
+        <a href="vendas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Vendas</span>
         </a>
         <a href="clientes.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
           <span>Clientes</span>
@@ -311,6 +321,63 @@
     } else {
       document.getElementById('userName').textContent = userData.nome;
     }
+
+    // ==================== LOGO INSTITUCIONAL (compartilhada em todas as páginas) ====================
+    async function carregarLogoInstitucional() {
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getInfoEmpresa' }) });
+        const res = await r.json();
+        if (res.success && res.infoEmpresa && res.infoEmpresa.logomarca) {
+          aplicarLogoInstitucional(res.infoEmpresa.logomarca);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar logomarca institucional:', err);
+      }
+    }
+    function aplicarLogoInstitucional(dataUrl) {
+      const img = document.getElementById('logoInstitucionalImg');
+      const icone = document.getElementById('logoInstitucionalIcone');
+      if (!img || !icone) return;
+      img.src = dataUrl;
+      img.classList.remove('hidden');
+      icone.classList.add('hidden');
+    }
+    function trocarLogoInstitucional(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const leitor = new FileReader();
+      leitor.onload = function (ev) {
+        const imagem = new Image();
+        imagem.onload = async function () {
+          const tam = 256;
+          const canvas = document.createElement('canvas');
+          canvas.width = tam; canvas.height = tam;
+          const ctx = canvas.getContext('2d');
+          const lado = Math.min(imagem.width, imagem.height);
+          const sx = (imagem.width - lado) / 2;
+          const sy = (imagem.height - lado) / 2;
+          ctx.drawImage(imagem, sx, sy, lado, lado, 0, 0, tam, tam);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          aplicarLogoInstitucional(dataUrl);
+          try {
+            const base64 = dataUrl.split(',')[1];
+            const resp = await fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'salvarLogomarca', fotoBase64: base64, nomeFoto: file.name || 'logo.jpg' })
+            });
+            const res = await resp.json();
+            if (!res.success) alert('Erro ao salvar a nova logo: ' + (res.message || ''));
+          } catch (err) {
+            alert('Erro de conexão ao salvar a nova logo.');
+          }
+        };
+        imagem.src = ev.target.result;
+      };
+      leitor.readAsDataURL(file);
+      e.target.value = '';
+    }
+    carregarLogoInstitucional();
 
     function logout() {
       localStorage.removeItem('coloniza_user');

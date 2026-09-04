@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLONIZA - Vendas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .sidebar { background-color: #11261d; }
+    .sidebar-item:hover, .sidebar-item.active { background-color: #1e3d30; color: #ffffff; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    .filtro-periodo.active { background-color: #047857; color: #fff; border-color: #047857; }
+    .cliente-sugestao:hover { background-color: #ecfdf5; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-300 flex flex-col justify-between h-full flex-shrink-0 z-20">
+    <div>
+      <div class="p-5 border-b border-emerald-900/40 flex items-center space-x-3">
+        <div class="relative shrink-0">
+          <div id="logoInstitucionalCirculo" class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center border border-emerald-500/30 overflow-hidden">
+            <svg id="logoInstitucionalIcone" class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10M7 12h10"></path>
+            </svg>
+            <img id="logoInstitucionalImg" class="hidden w-full h-full object-cover" alt="Logo Coloniza">
+          </div>
+          <button type="button" onclick="document.getElementById('inputLogoInstitucional').click()" title="Alterar logo da Coloniza" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center text-[10px] font-bold leading-none border border-[#11261d]">+</button>
+          <input type="file" id="inputLogoInstitucional" accept="image/*" class="hidden" onchange="trocarLogoInstitucional(event)">
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-wider text-base leading-none">COLONIZA</h1>
+          <p class="text-[10px] text-emerald-400/80 uppercase tracking-widest mt-1">Onde a excelência cria raízes</p>
+        </div>
+      </div>
+      <nav class="p-2 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-140px)] custom-scroll">
+        <a href="dashboard.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="escala_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Escala de Produção</span>
+        </a>
+        <a href="compras.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Compras &amp; Investimentos</span>
+        </a>
+        <a href="estoque.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Estoque &amp; Insumos</span>
+        </a>
+        <a href="culturas.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Banco de Culturas &amp; CL</span>
+        </a>
+        <a href="producao_cl.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de CL</span>
+        </a>
+        <a href="producao_spawn.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Spawn</span>
+        </a>
+        <a href="producao_composto.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Produção de Composto</span>
+        </a>
+        <a href="controle_blocos.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Controle de Blocos</span>
+        </a>
+        <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Incubação</span>
+        </a>
+        <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Sala de Frutificação</span>
+        </a>
+        <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Colheita e Produção</span>
+        </a>
+        <a href="vendas.html" class="sidebar-item active flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white font-medium transition">
+          <span>Vendas</span>
+        </a>
+        <a href="clientes.html" class="sidebar-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-300 transition">
+          <span>Clientes</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
+      <div>
+        <div>Responsável: <span id="userName" class="text-white font-semibold">---</span></div>
+      </div>
+      <button onclick="logout()" class="hover:text-red-400 transition" title="Sair">Sair</button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <header class="bg-white border-b px-6 py-4 flex flex-wrap items-center justify-between gap-3 shadow-sm sticky top-0 z-10">
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-800 tracking-tight">VENDAS</h2>
+        <p class="text-xs text-gray-500 font-medium">SAÚDE FINANCEIRA COMERCIAL DA COLONIZA</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="abrirRelatorio()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold transition">📄 Relatório PDF</button>
+        <button onclick="abrirGerenciarProdutos()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold transition">🍄 Produtos</button>
+        <button onclick="abrirNovaVenda()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm transition">+ Nova Venda</button>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- FILTRO DE PERÍODO -->
+      <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-2">
+        <span class="text-[11px] font-bold text-gray-400 uppercase mr-1">Período:</span>
+        <button data-periodo="hoje" onclick="selecionarPeriodo('hoje')" class="filtro-periodo px-3 py-1.5 rounded-full text-[11px] font-semibold border transition bg-gray-50 text-gray-600 border-gray-200">Hoje</button>
+        <button data-periodo="ontem" onclick="selecionarPeriodo('ontem')" class="filtro-periodo px-3 py-1.5 rounded-full text-[11px] font-semibold border transition bg-gray-50 text-gray-600 border-gray-200">Ontem</button>
+        <button data-periodo="7dias" onclick="selecionarPeriodo('7dias')" class="filtro-periodo px-3 py-1.5 rounded-full text-[11px] font-semibold border transition bg-gray-50 text-gray-600 border-gray-200">Últimos 7 dias</button>
+        <button data-periodo="mes" onclick="selecionarPeriodo('mes')" class="filtro-periodo active px-3 py-1.5 rounded-full text-[11px] font-semibold border transition bg-emerald-700 text-white border-emerald-700">Este Mês</button>
+        <button data-periodo="mesPassado" onclick="selecionarPeriodo('mesPassado')" class="filtro-periodo px-3 py-1.5 rounded-full text-[11px] font-semibold border transition bg-gray-50 text-gray-600 border-gray-200">Mês Passado</button>
+        <div class="flex items-center gap-1.5 ml-1">
+          <input type="date" id="periodoInicioInput" onchange="selecionarPeriodo('custom')" class="border rounded-lg px-2 py-1 text-[11px]">
+          <span class="text-gray-400 text-[11px]">até</span>
+          <input type="date" id="periodoFimInput" onchange="selecionarPeriodo('custom')" class="border rounded-lg px-2 py-1 text-[11px]">
+        </div>
+        <span id="periodoLabel" class="text-[11px] text-gray-400 ml-auto"></span>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Faturamento Líquido</p>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">💵</div>
+          </div>
+          <h4 id="kpiFaturamentoLiquido" class="text-lg font-extrabold text-gray-800 mt-1">R$ 0,00</h4>
+          <p id="kpiFaturamentoBruto" class="text-[10px] text-gray-400 font-medium mt-0.5">Bruto: R$ 0,00</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Volume Comercializado</p>
+            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold">🍄</div>
+          </div>
+          <h4 id="kpiVolumeKg" class="text-lg font-extrabold text-gray-800 mt-1">0 kg</h4>
+          <p id="kpiVolumeTop" class="text-[10px] text-gray-400 font-medium mt-0.5">-</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Ticket Médio</p>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold">🎟️</div>
+          </div>
+          <h4 id="kpiTicketMedio" class="text-lg font-extrabold text-gray-800 mt-1">R$ 0,00</h4>
+          <p id="kpiTotalPedidos" class="text-[10px] text-gray-400 font-medium mt-0.5">0 pedidos</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Recorrência</p>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold">🔁</div>
+          </div>
+          <h4 id="kpiTaxaRecorrencia" class="text-lg font-extrabold text-gray-800 mt-1">0%</h4>
+          <p class="text-[10px] text-gray-400 font-medium mt-0.5">do faturamento líquido</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Funil de Pedidos</p>
+            <div class="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 flex items-center justify-center font-bold">📊</div>
+          </div>
+          <div id="kpiFunil" class="flex flex-wrap gap-1 mt-2 text-[10px] font-semibold"></div>
+        </div>
+      </div>
+
+      <!-- BANNER RECORRÊNCIA DO DIA -->
+      <div id="bannerRecorrenciaHoje" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-blue-800 font-bold text-sm">
+            <span>🔁</span>
+            <span id="bannerRecorrenciaTexto">0 entregas de recorrência previstas para hoje ainda não geradas.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="abrirPainelRecorrenciaHoje()" class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-1.5 rounded-lg text-xs font-semibold">Ver detalhes</button>
+            <button onclick="aprovarRecorrenciaHoje()" class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">Aprovar todas de hoje</button>
+          </div>
+        </div>
+        <div id="listaRecorrenciaHoje" class="hidden mt-3 space-y-1.5 text-xs"></div>
+      </div>
+
+      <!-- GRÁFICOS -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Evolução do Faturamento</h3>
+          <div class="h-52 relative"><canvas id="chartEvolucao"></canvas></div>
+        </div>
+        <div class="lg:col-span-4 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Participação por Variedade (Kg)</h3>
+          <div class="h-52 relative"><canvas id="chartVariedade"></canvas></div>
+        </div>
+        <div class="lg:col-span-3 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-gray-700 mb-3 tracking-wider">Avulso vs. Recorrente</h3>
+          <div class="h-52 relative"><canvas id="chartAvulsoRecorrente"></canvas></div>
+        </div>
+      </div>
+
+      <!-- TABELA DE VENDAS -->
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        <div class="flex flex-wrap justify-between items-center gap-3">
+          <h3 class="text-sm font-bold uppercase text-emerald-800 tracking-wider flex items-center gap-2">
+            <span>🧾</span> Pedidos do Período
+          </h3>
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="lblQtdVendas" class="text-[10px] font-semibold text-gray-400 select-none">5 linhas</span>
+            <button type="button" onclick="alternarQtdLinhasVendas()" class="relative w-9 h-5 rounded-full bg-gray-300 transition-colors duration-200 focus:outline-none">
+              <span id="bolaQtdVendas" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="text" id="searchVenda" onkeyup="filterTable()" placeholder="Buscar por cliente ou produto..." class="border rounded-lg px-3 py-1.5 text-xs outline-none w-72 focus:ring-2 focus:ring-emerald-500 transition">
+          <select id="filtroCanal" onchange="filterTable()" class="border rounded-lg px-2 py-1.5 text-xs bg-white">
+            <option value="">Todos os canais</option>
+            <option value="Recorrência B2B">Recorrência B2B</option>
+            <option value="WhatsApp Direto">WhatsApp Direto</option>
+            <option value="Feira">Feira</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Indicação">Indicação</option>
+            <option value="Outro">Outro</option>
+          </select>
+          <select id="filtroStatusPagamento" onchange="filterTable()" class="border rounded-lg px-2 py-1.5 text-xs bg-white">
+            <option value="">Toda situação de pagamento</option>
+            <option value="Pago">Pago</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Faturado">Faturado (a vencer)</option>
+            <option value="Inadimplente">Inadimplente</option>
+          </select>
+          <select id="filtroStatusPedido" onchange="filterTable()" class="border rounded-lg px-2 py-1.5 text-xs bg-white">
+            <option value="">Todo status de pedido</option>
+            <option value="Orçamento">Orçamento</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="Em Preparação">Em Preparação</option>
+            <option value="A Caminho">A Caminho</option>
+            <option value="Entregue">Entregue</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+          <select id="filtroVariedade" onchange="filterTable()" class="border rounded-lg px-2 py-1.5 text-xs bg-white">
+            <option value="">Toda variedade</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table id="tabelaVendas" class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-2.5 font-semibold">DATA</th>
+                <th class="p-2.5 font-semibold">CLIENTE</th>
+                <th class="p-2.5 font-semibold">ORIGEM</th>
+                <th class="p-2.5 font-semibold">ITENS (KG)</th>
+                <th class="p-2.5 font-semibold">PAGAMENTO</th>
+                <th class="p-2.5 font-semibold">STATUS PAGTO</th>
+                <th class="p-2.5 font-semibold">STATUS PEDIDO</th>
+                <th class="p-2.5 font-semibold text-right">VALOR</th>
+                <th class="p-2.5 font-semibold">NF-e</th>
+                <th class="p-2.5 font-semibold text-center">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="vendasBody" class="divide-y divide-gray-100">
+              <tr><td colspan="10" class="py-4 text-center text-gray-400">Carregando vendas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-between items-center border-t pt-3 text-xs text-gray-500">
+          <span id="pageInfo">Mostrando 0 de 0 pedidos</span>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnFirst" onclick="irPrimeiraPagina()" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&lt;&lt;</button>
+            <button id="btnPrev" onclick="mudarPagina(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">&lt; Anterior</button>
+            <span id="pageIndicator" class="font-semibold text-gray-700 px-1">Página 1</span>
+            <button id="btnNext" onclick="mudarPagina(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">Próxima &gt;</button>
+            <button id="btnLast" onclick="irUltimaPagina()" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">&gt;&gt;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ MODAL NOVA VENDA ============ -->
+  <div id="modalVenda" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-40 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[92vh] overflow-y-auto">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Nova Venda</h3>
+
+      <form id="formVenda" onsubmit="submitFormVenda(event)" class="space-y-3 text-xs">
+        <!-- Busca de Cliente -->
+        <div class="relative">
+          <label class="block font-semibold mb-1">Cliente</label>
+          <div id="clienteSelecionadoBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex justify-between items-center">
+            <div>
+              <div id="clienteSelecionadoNome" class="font-bold text-emerald-900">-</div>
+              <div id="clienteSelecionadoInfo" class="text-[10px] text-emerald-700">-</div>
+            </div>
+            <button type="button" onclick="trocarCliente()" class="text-emerald-700 hover:text-emerald-900 font-bold text-[11px]">Trocar</button>
+          </div>
+          <div id="clienteAlertaInadimplente" class="hidden mt-1.5 bg-red-50 border border-red-200 text-red-700 text-[11px] font-semibold rounded-lg p-2">
+            ⚠️ Cliente inadimplente — confirme com atenção antes de prosseguir.
+          </div>
+          <div id="buscaClienteWrap">
+            <div class="flex gap-2">
+              <input type="text" id="buscaClienteInput" oninput="buscarClienteVenda()" placeholder="Buscar por nome ou CPF/CNPJ..." class="flex-1 border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+              <button type="button" onclick="abrirClienteRapido()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 rounded-lg font-semibold whitespace-nowrap">+ Novo Cliente</button>
+            </div>
+            <div id="sugestoesClienteBox" class="hidden absolute z-10 bg-white border rounded-lg shadow-lg w-full mt-1 max-h-48 overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <!-- Itens -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-semibold">Itens do Pedido</label>
+            <button type="button" onclick="adicionarLinhaItemVenda()" class="text-emerald-700 font-bold text-[11px] hover:text-emerald-900">+ Adicionar Item</button>
+          </div>
+          <datalist id="listaProdutosDatalist"></datalist>
+          <div id="vendaItensContainer" class="space-y-2"></div>
+        </div>
+
+        <!-- Desconto -->
+        <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border">
+          <div>
+            <label class="block font-semibold mb-1">Desconto / Cortesia</label>
+            <select id="descontoTipoInput" onchange="calcularTotalVenda()" class="w-full border rounded-lg p-2 outline-none bg-white">
+              <option value="Nenhum">Nenhum</option>
+              <option value="Percentual">Percentual (%)</option>
+              <option value="Fixo">Valor Fixo (R$)</option>
+              <option value="Cortesia">Cortesia / Amostra Grátis</option>
+            </select>
+          </div>
+          <div id="descontoValorWrap">
+            <label class="block font-semibold mb-1">Valor do Desconto</label>
+            <input type="number" step="0.01" id="descontoValorInput" value="0" oninput="calcularTotalVenda()" class="w-full border rounded-lg p-2 outline-none">
+          </div>
+          <div class="text-right">
+            <label class="block font-semibold mb-1 text-gray-500">Valor Bruto</label>
+            <div id="vendaValorBruto" class="font-bold text-gray-700 pt-1.5">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-100 text-right font-semibold text-gray-700">
+          Valor Líquido a Cobrar: <span id="vendaTotalCalculado" class="text-emerald-700 font-bold text-sm">R$ 0,00</span>
+        </div>
+
+        <!-- Comercial -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold mb-1">Endereço de Entrega</label>
+            <select id="vendaEnderecoEntrega" class="w-full border rounded-lg p-2.5 outline-none bg-white"></select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Forma / Condição de Pagamento</label>
+            <input type="text" id="vendaFormaPagamento" readonly class="w-full border rounded-lg p-2.5 outline-none bg-gray-50 text-gray-600">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Canal de Origem</label>
+            <select id="vendaCanalOrigem" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+              <option value="WhatsApp Direto">WhatsApp Direto</option>
+              <option value="Feira">Feira</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Indicação">Indicação</option>
+              <option value="Recorrência B2B">Recorrência B2B</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Status do Pedido</label>
+            <select id="vendaStatusInput" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+              <option value="Confirmado" selected>Confirmado</option>
+              <option value="Em Preparação">Em Preparação</option>
+              <option value="A Caminho">A Caminho</option>
+              <option value="Entregue">Entregue</option>
+              <option value="Orçamento">Orçamento (não confirmado — não reserva estoque)</option>
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="block font-semibold mb-1">Status de Pagamento</label>
+            <select id="vendaStatusPagamento" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+              <option value="Pago">Pago</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Faturado">Faturado (a vencer)</option>
+              <option value="Inadimplente">Inadimplente</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Observações</label>
+          <textarea id="vendaObservacoes" rows="2" class="w-full border rounded-lg p-2.5 outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalVenda')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Registrar Venda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL CLIENTE RÁPIDO ============ -->
+  <div id="modalClienteRapido" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Cadastro Rápido de Cliente</h3>
+      <p class="text-[11px] text-gray-500 mb-4">Sua venda em andamento não será perdida.</p>
+      <form id="formClienteRapido" onsubmit="submitClienteRapido(event)" class="space-y-3 text-xs">
+        <div class="flex gap-2">
+          <button type="button" id="btnRapidoPJ" onclick="selecionarTipoRapido('PJ')" class="flex-1 py-2 rounded-lg border font-semibold bg-emerald-700 text-white border-emerald-700">Pessoa Jurídica</button>
+          <button type="button" id="btnRapidoPF" onclick="selecionarTipoRapido('PF')" class="flex-1 py-2 rounded-lg border font-semibold bg-white text-gray-600">Pessoa Física</button>
+        </div>
+        <input type="hidden" id="rapidoTipoPessoa" value="PJ">
+        <div>
+          <label class="block font-semibold mb-1" id="rapidoLabelNome">Razão Social / Nome Fantasia</label>
+          <input type="text" id="rapidoNome" required class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1" id="rapidoLabelDoc">CNPJ</label>
+          <input type="text" id="rapidoDocumento" required class="w-full border rounded-lg p-2.5 outline-none">
+        </div>
+        <input type="text" id="rapidoWhatsapp" placeholder="WhatsApp / Telefone" class="w-full border rounded-lg p-2.5 outline-none">
+        <div class="grid grid-cols-2 gap-2">
+          <select id="rapidoTabelaPreco" class="w-full border rounded-lg p-2.5 outline-none bg-white"></select>
+          <select id="rapidoCondicaoPagamento" class="w-full border rounded-lg p-2.5 outline-none bg-white">
+            <option value="À vista">À vista</option>
+            <option value="PIX na entrega">PIX na entrega</option>
+            <option value="Faturado 7 dias">Faturado 7 dias</option>
+            <option value="Faturado 14 dias">Faturado 14 dias</option>
+            <option value="Faturado 21 dias">Faturado 21 dias</option>
+          </select>
+        </div>
+        <p class="text-[10px] text-gray-400">Cadastro simplificado — os demais dados (endereços, preferências) podem ser completados depois na página Clientes.</p>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('modalClienteRapido')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">Salvar e Selecionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL PRODUTOS ============ -->
+  <div id="modalProdutos" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-40 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl p-6 max-h-[88vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">Produtos, Estoque e Tabelas de Preço</h3>
+        <button onclick="closeModal('modalProdutos')" class="text-gray-400 hover:text-gray-700 font-bold text-lg leading-none">✕</button>
+      </div>
+
+      <div class="flex gap-1 border-b mb-4 text-xs font-bold text-gray-500">
+        <button type="button" data-aba-produtos="estoque" onclick="mudarAbaProdutos('estoque')" class="aba-produtos-btn px-3 py-2 border-b-2 border-transparent">📦 Estoque de Produtos</button>
+        <button type="button" data-aba-produtos="precos" onclick="mudarAbaProdutos('precos')" class="aba-produtos-btn px-3 py-2 border-b-2 border-transparent">💰 Tabelas de Preço</button>
+        <button type="button" data-aba-produtos="especies" onclick="mudarAbaProdutos('especies')" class="aba-produtos-btn px-3 py-2 border-b-2 border-transparent">🍄 Espécies</button>
+      </div>
+
+      <!-- ABA: ESTOQUE -->
+      <div id="abaProdutosEstoque" class="space-y-2">
+        <p class="text-[11px] text-gray-500">Lotes vêm automaticamente da colheita registrada em Frutificação, ordenados pela validade mais próxima primeiro (o que vence antes deve ser vendido antes).</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th class="p-2 font-semibold">ESPÉCIE</th>
+                <th class="p-2 font-semibold">RASTREIO</th>
+                <th class="p-2 font-semibold">SALA</th>
+                <th class="p-2 font-semibold">CICLO</th>
+                <th class="p-2 font-semibold">QUALIDADE</th>
+                <th class="p-2 font-semibold">COLHIDO EM</th>
+                <th class="p-2 font-semibold text-right">DIAS ATÉ COLHER</th>
+                <th class="p-2 font-semibold">VALIDADE</th>
+                <th class="p-2 font-semibold text-right">DISPONÍVEL (KG)</th>
+                <th class="p-2 font-semibold text-center">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="estoqueLotesBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ABA: TABELAS DE PREÇO -->
+      <div id="abaProdutosPrecos" class="hidden space-y-3">
+        <div class="flex justify-between items-center">
+          <p class="text-[11px] text-gray-500 max-w-md">Cada tabela guarda o preço por Kg de cada espécie. Vincule uma tabela a um cliente específico (ex: "Restaurante Sabor & Arte") para usar um preço combinado só com ele.</p>
+          <button type="button" onclick="prepararNovaTabelaPreco()" class="text-emerald-700 font-bold text-xs hover:text-emerald-900 whitespace-nowrap">+ Nova Tabela de Preço</button>
+        </div>
+        <div id="formTabelaPrecoWrap" class="hidden bg-gray-50 border rounded-lg p-3">
+          <form id="formTabelaPreco" onsubmit="submitFormTabelaPreco(event)" class="space-y-2 text-xs">
+            <input type="hidden" id="tabelaPrecoId" value="">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="tabelaPrecoNome" placeholder="Nome da tabela (Ex: Restaurante Sabor & Arte)" required class="border rounded-lg p-2 outline-none">
+              <select id="tabelaPrecoClienteId" class="border rounded-lg p-2 outline-none bg-white">
+                <option value="">Sem cliente vinculado (tabela genérica)</option>
+              </select>
+            </div>
+            <div id="tabelaPrecoItensWrap" class="grid grid-cols-2 gap-2 bg-white border rounded-lg p-2"></div>
+            <label class="flex items-center gap-1.5 text-gray-600"><input type="checkbox" id="tabelaPrecoAtivo" checked class="w-3.5 h-3.5 accent-emerald-700"> Ativa</label>
+            <div class="flex justify-end gap-2 pt-1">
+              <button type="button" onclick="document.getElementById('formTabelaPrecoWrap').classList.add('hidden')" class="px-3 py-1.5 bg-gray-200 rounded-lg">Cancelar</button>
+              <button type="submit" class="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-semibold">Salvar Tabela</button>
+            </div>
+          </form>
+        </div>
+        <div id="tabelasPrecoLista" class="space-y-2"></div>
+      </div>
+
+      <!-- ABA: ESPÉCIES -->
+      <div id="abaProdutosEspecies" class="hidden space-y-3">
+        <div class="flex justify-end">
+          <button type="button" onclick="prepararNovoProduto()" class="text-emerald-700 font-bold text-xs hover:text-emerald-900">+ Nova Espécie</button>
+        </div>
+        <div id="formProdutoWrap" class="hidden bg-gray-50 border rounded-lg p-3">
+          <form id="formProduto" onsubmit="submitFormProduto(event)" class="grid grid-cols-2 gap-2 text-xs">
+            <input type="hidden" id="produtoId" value="">
+            <input type="text" id="produtoNome" placeholder="Nome (Ex: Shimeji Preto)" required class="col-span-2 border rounded-lg p-2 outline-none">
+            <input type="number" min="1" step="1" id="produtoValidadeDias" placeholder="Validade (dias, refrigerado)" required class="border rounded-lg p-2 outline-none">
+            <input type="text" id="produtoNcm" placeholder="NCM" value="0709.59.00" class="border rounded-lg p-2 outline-none">
+            <label class="flex items-center gap-1.5 text-gray-600 col-span-2"><input type="checkbox" id="produtoAtivo" checked class="w-3.5 h-3.5 accent-emerald-700"> Ativo</label>
+            <div class="col-span-2 flex justify-end gap-2">
+              <button type="button" onclick="document.getElementById('formProdutoWrap').classList.add('hidden')" class="px-3 py-1.5 bg-gray-200 rounded-lg">Cancelar</button>
+              <button type="submit" class="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-semibold">Salvar</button>
+            </div>
+          </form>
+        </div>
+        <table class="w-full text-left text-xs">
+          <thead class="bg-gray-50 text-gray-500 border-b">
+            <tr>
+              <th class="p-2 font-semibold">ESPÉCIE</th>
+              <th class="p-2 font-semibold text-right">VALIDADE</th>
+              <th class="p-2 font-semibold text-right">ESTOQUE (KG)</th>
+              <th class="p-2 font-semibold text-center">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody id="produtosBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end pt-4 mt-2 border-t">
+        <button type="button" onclick="closeModal('modalProdutos')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL DETALHES DO PEDIDO ============ -->
+  <div id="modalDetalhePedido" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-40 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[88vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800">Detalhes do Pedido</h3>
+        <button onclick="closeModal('modalDetalhePedido')" class="text-gray-400 hover:text-gray-700 font-bold">✕</button>
+      </div>
+      <div id="detalhePedidoConteudo" class="text-xs space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL RELATÓRIO ============ -->
+  <div id="modalRelatorio" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-40 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Gerar Relatório em PDF</h3>
+      <p class="text-[11px] text-gray-500 mb-4">O relatório usa o período selecionado no topo da página.</p>
+      <div id="relatorioPeriodoTexto" class="bg-gray-50 border rounded-lg p-2.5 text-xs font-semibold text-gray-700 mb-4">-</div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeModal('modalRelatorio')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-xs">Cancelar</button>
+        <button type="button" onclick="gerarRelatorioPDF()" id="btnGerarRelatorio" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold text-xs">Gerar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS OCULTOS PARA GERAR OS GRÁFICOS NO RELATÓRIO IMPRESSO -->
+  <div style="position: absolute; left: -9999px; top: -9999px;">
+    <canvas id="chartFaturamentoRelatorio" width="400" height="200"></canvas>
+    <canvas id="chartVariedadeRelatorio" width="200" height="200"></canvas>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzn3J-hHcyoBMkENETimsBx4Dw9XbvcIAsVjWytSNfWQgCe-u_KcUTlDThdrCt8dJM/exec";
+
+    let listaClientesCache = [];
+    let listaProdutosCache = [];
+    let estoqueCache = {};
+    let lotesEstoqueCache = [];
+    let tabelasPrecoCache = [];
+    let pedidosCache = [];
+    let listaFiltrada = [];
+    let paginaAtual = 1;
+    let itensPorPagina = 5;
+    let periodoAtual = { tipo: 'mes', inicio: '', fim: '' };
+
+    let clienteSelecionadoVenda = null;
+    let indiceItemVenda = 0;
+    let recorrenciaHojeCache = [];
+    let infoEmpresa = {};
+
+    const userData = JSON.parse(localStorage.getItem('coloniza_user'));
+    if (!userData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('userName').textContent = userData.nome;
+    }
+
+    // ==================== LOGO INSTITUCIONAL (compartilhada em todas as páginas) ====================
+    async function carregarLogoInstitucional() {
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getInfoEmpresa' }) });
+        const res = await r.json();
+        if (res.success && res.infoEmpresa && res.infoEmpresa.logomarca) {
+          aplicarLogoInstitucional(res.infoEmpresa.logomarca);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar logomarca institucional:', err);
+      }
+    }
+    function aplicarLogoInstitucional(dataUrl) {
+      const img = document.getElementById('logoInstitucionalImg');
+      const icone = document.getElementById('logoInstitucionalIcone');
+      if (!img || !icone) return;
+      img.src = dataUrl;
+      img.classList.remove('hidden');
+      icone.classList.add('hidden');
+    }
+    function trocarLogoInstitucional(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const leitor = new FileReader();
+      leitor.onload = function (ev) {
+        const imagem = new Image();
+        imagem.onload = async function () {
+          const tam = 256;
+          const canvas = document.createElement('canvas');
+          canvas.width = tam; canvas.height = tam;
+          const ctx = canvas.getContext('2d');
+          const lado = Math.min(imagem.width, imagem.height);
+          const sx = (imagem.width - lado) / 2;
+          const sy = (imagem.height - lado) / 2;
+          ctx.drawImage(imagem, sx, sy, lado, lado, 0, 0, tam, tam);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          aplicarLogoInstitucional(dataUrl);
+          try {
+            const base64 = dataUrl.split(',')[1];
+            const resp = await fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'salvarLogomarca', fotoBase64: base64, nomeFoto: file.name || 'logo.jpg' })
+            });
+            const res = await resp.json();
+            if (!res.success) alert('Erro ao salvar a nova logo: ' + (res.message || ''));
+          } catch (err) {
+            alert('Erro de conexão ao salvar a nova logo.');
+          }
+        };
+        imagem.src = ev.target.result;
+      };
+      leitor.readAsDataURL(file);
+      e.target.value = '';
+    }
+    carregarLogoInstitucional();
+
+    function logout() {
+      localStorage.removeItem('coloniza_user');
+      window.location.href = "index.html";
+    }
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+    function formatarDataBR(dataIso) {
+      if (!dataIso) return '-';
+      const partes = String(dataIso).split('-');
+      if (partes.length !== 3) return dataIso;
+      const [ano, mes, dia] = partes;
+      return `${dia}-${mes}-${ano}`;
+    }
+    function formatarMoeda(v) { return (parseFloat(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function isoHoje(offsetDias) {
+      const d = new Date();
+      d.setDate(d.getDate() + (offsetDias || 0));
+      return d.toISOString().slice(0, 10);
+    }
+
+    // ==================== PERÍODO ====================
+    function selecionarPeriodo(tipo) {
+      const hoje = new Date();
+      let inicio, fim;
+      if (tipo === 'hoje') { inicio = isoHoje(0); fim = isoHoje(0); }
+      else if (tipo === 'ontem') { inicio = isoHoje(-1); fim = isoHoje(-1); }
+      else if (tipo === '7dias') { inicio = isoHoje(-6); fim = isoHoje(0); }
+      else if (tipo === 'mes') {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0, 10);
+        fim = isoHoje(0);
+      } else if (tipo === 'mesPassado') {
+        const mesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+        inicio = mesPassado.toISOString().slice(0, 10);
+        fim = new Date(hoje.getFullYear(), hoje.getMonth(), 0).toISOString().slice(0, 10);
+      } else {
+        inicio = document.getElementById('periodoInicioInput').value || isoHoje(-30);
+        fim = document.getElementById('periodoFimInput').value || isoHoje(0);
+      }
+      periodoAtual = { tipo, inicio, fim };
+      document.querySelectorAll('.filtro-periodo').forEach(function (b) {
+        const ativo = b.dataset.periodo === tipo;
+        b.classList.toggle('active', ativo);
+        b.classList.toggle('bg-emerald-700', ativo);
+        b.classList.toggle('text-white', ativo);
+        b.classList.toggle('border-emerald-700', ativo);
+        b.classList.toggle('bg-gray-50', !ativo);
+        b.classList.toggle('text-gray-600', !ativo);
+        b.classList.toggle('border-gray-200', !ativo);
+      });
+      if (tipo !== 'custom') {
+        document.getElementById('periodoInicioInput').value = inicio;
+        document.getElementById('periodoFimInput').value = fim;
+      }
+      document.getElementById('periodoLabel').textContent = `${formatarDataBR(inicio)} a ${formatarDataBR(fim)}`;
+      carregarDashboard();
+    }
+
+    // ==================== CARREGAMENTO ====================
+    async function apiPost(payload) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      return response.json();
+    }
+
+    async function carregarBase() {
+      try {
+        const [resClientes, resProdutos, resEstoque, resTabelas, resInfoEmpresa] = await Promise.all([
+          apiPost({ action: 'getClientes' }),
+          apiPost({ action: 'getProdutos' }),
+          apiPost({ action: 'getEstoqueVendas' }),
+          apiPost({ action: 'getTabelasPreco' }),
+          apiPost({ action: 'getInfoEmpresa' })
+        ]);
+        if (resClientes.success) listaClientesCache = resClientes.clientes || [];
+        if (resProdutos.success) listaProdutosCache = resProdutos.produtos || [];
+        if (resEstoque.success) {
+          estoqueCache = {};
+          (resEstoque.estoque || []).forEach(function (e) { estoqueCache[e.nome] = e.disponivelKg; });
+          lotesEstoqueCache = resEstoque.lotes || [];
+        }
+        if (resTabelas.success) tabelasPrecoCache = resTabelas.tabelas || [];
+        if (resInfoEmpresa.success) infoEmpresa = resInfoEmpresa.infoEmpresa || {};
+        popularDatalistProdutos();
+        popularFiltroVariedade();
+      } catch (err) {
+        console.error('Erro ao carregar clientes/produtos:', err);
+      }
+    }
+
+    function nomeTabelaPreco(id) {
+      const t = tabelasPrecoCache.find(function (x) { return x.id === id; });
+      return t ? t.nome : (id || '-');
+    }
+    function popularSelectTabelasPreco(selectId, valorAtual) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = tabelasPrecoCache
+        .filter(function (t) { return t.ativo; })
+        .map(function (t) { return `<option value="${t.id}">${t.nome}</option>`; }).join('');
+      if (valorAtual !== undefined) select.value = valorAtual;
+    }
+    function popularSelectClientesParaTabela(valorAtual) {
+      const select = document.getElementById('tabelaPrecoClienteId');
+      select.innerHTML = '<option value="">Sem cliente vinculado (tabela genérica)</option>' + listaClientesCache
+        .map(function (c) { return `<option value="${c.id}">${c.nome}</option>`; }).join('');
+      select.value = valorAtual || '';
+    }
+
+    async function carregarDashboard() {
+      try {
+        const res = await apiPost({ action: 'getVendasDashboard', inicio: periodoAtual.inicio, fim: periodoAtual.fim });
+        if (!res.success) return;
+        pedidosCache = res.pedidos || [];
+        recorrenciaHojeCache = res.recorrenciaHoje || [];
+        renderKPIs(res.kpis, res.funil);
+        renderGraficos(res.series, res.pizza, res.avulsoRecorrente);
+        renderBannerRecorrencia();
+        window.__ultimoDashboard = res;
+        filterTable();
+      } catch (err) {
+        console.error('Erro ao carregar dashboard de vendas:', err);
+      }
+    }
+
+    function popularDatalistProdutos() {
+      document.getElementById('listaProdutosDatalist').innerHTML = listaProdutosCache
+        .filter(function (p) { return p.ativo; })
+        .map(function (p) { return `<option value="${p.nome}">`; }).join('');
+    }
+    function popularFiltroVariedade() {
+      const select = document.getElementById('filtroVariedade');
+      const atual = select.value;
+      select.innerHTML = '<option value="">Toda variedade</option>' + listaProdutosCache.map(function (p) { return `<option value="${p.nome}">${p.nome}</option>`; }).join('');
+      select.value = atual;
+    }
+
+    // ==================== KPIs / GRÁFICOS ====================
+    function renderKPIs(kpis, funil) {
+      document.getElementById('kpiFaturamentoLiquido').textContent = formatarMoeda(kpis.faturamentoLiquido);
+      document.getElementById('kpiFaturamentoBruto').textContent = 'Bruto: ' + formatarMoeda(kpis.faturamentoBruto);
+      document.getElementById('kpiVolumeKg').textContent = kpis.totalVolumeKg.toLocaleString('pt-BR') + ' kg';
+      document.getElementById('kpiTicketMedio').textContent = formatarMoeda(kpis.ticketMedio);
+      document.getElementById('kpiTotalPedidos').textContent = kpis.totalPedidos + ' pedidos válidos';
+      document.getElementById('kpiTaxaRecorrencia').textContent = kpis.taxaRecorrencia + '%';
+
+      const coresFunil = { 'Orçamento': 'bg-gray-100 text-gray-600', 'Confirmado': 'bg-blue-100 text-blue-700', 'Em Preparação': 'bg-amber-100 text-amber-700', 'A Caminho': 'bg-purple-100 text-purple-700', 'Entregue': 'bg-emerald-100 text-emerald-700', 'Cancelado': 'bg-red-100 text-red-700' };
+      document.getElementById('kpiFunil').innerHTML = Object.keys(funil).map(function (status) {
+        return `<span class="px-2 py-0.5 rounded-full ${coresFunil[status] || 'bg-gray-100 text-gray-600'}">${status}: ${funil[status]}</span>`;
+      }).join('');
+    }
+
+    function renderGraficos(series, pizza, avulsoRecorrente) {
+      const ctx1 = document.getElementById('chartEvolucao').getContext('2d');
+      if (window._chartEvolucao) window._chartEvolucao.destroy();
+      window._chartEvolucao = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: series.map(function (s) { return formatarDataBR(s.data); }),
+          datasets: [{ label: 'Faturamento (R$)', data: series.map(function (s) { return s.valor; }), borderColor: '#047857', backgroundColor: 'rgba(4,120,87,0.1)', fill: true, tension: 0.3 }]
+        },
+        options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
+      });
+
+      const ctx2 = document.getElementById('chartVariedade').getContext('2d');
+      if (window._chartVariedade) window._chartVariedade.destroy();
+      const cores = ['#047857', '#0ea5e9', '#f59e0b', '#a855f7', '#ef4444', '#6b7280'];
+      window._chartVariedade = new Chart(ctx2, {
+        type: 'doughnut',
+        data: { labels: pizza.map(function (p) { return p.produto; }), datasets: [{ data: pizza.map(function (p) { return p.kg; }), backgroundColor: cores, borderWidth: 0 }] },
+        options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }, responsive: true, maintainAspectRatio: false, cutout: '65%' }
+      });
+
+      const ctx3 = document.getElementById('chartAvulsoRecorrente').getContext('2d');
+      if (window._chartAvulsoRecorrente) window._chartAvulsoRecorrente.destroy();
+      window._chartAvulsoRecorrente = new Chart(ctx3, {
+        type: 'bar',
+        data: { labels: ['Avulso', 'Recorrente'], datasets: [{ data: [avulsoRecorrente.avulso, avulsoRecorrente.recorrente], backgroundColor: ['#0ea5e9', '#047857'], borderRadius: 6 }] },
+        options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function renderBannerRecorrencia() {
+      const banner = document.getElementById('bannerRecorrenciaHoje');
+      if (!recorrenciaHojeCache.length) { banner.classList.add('hidden'); return; }
+      banner.classList.remove('hidden');
+      document.getElementById('bannerRecorrenciaTexto').textContent = `${recorrenciaHojeCache.length} entrega(s) de recorrência previstas para hoje ainda não geradas.`;
+      document.getElementById('listaRecorrenciaHoje').innerHTML = recorrenciaHojeCache.map(function (r) {
+        return `<div class="flex items-center gap-2 bg-white border border-blue-100 rounded-lg px-2.5 py-1.5">
+          <input type="checkbox" class="chk-recorrencia-hoje w-3.5 h-3.5 accent-blue-700" value="${r.clienteId}" checked>
+          <span class="font-semibold text-gray-700">${r.clienteNome}</span>
+          <span class="text-gray-400">${(r.itens || []).map(function (it) { return it.produto + ' (' + it.qtd + it.unidade + ')'; }).join(', ')}</span>
+        </div>`;
+      }).join('');
+    }
+    function abrirPainelRecorrenciaHoje() {
+      document.getElementById('listaRecorrenciaHoje').classList.toggle('hidden');
+    }
+    async function aprovarRecorrenciaHoje() {
+      const painelVisivel = !document.getElementById('listaRecorrenciaHoje').classList.contains('hidden');
+      let clienteIds = null;
+      if (painelVisivel) {
+        clienteIds = Array.from(document.querySelectorAll('.chk-recorrencia-hoje:checked')).map(function (c) { return c.value; });
+        if (clienteIds.length === 0) { alert('Selecione ao menos uma entrega para aprovar.'); return; }
+      }
+      if (!confirm(`Confirma a geração dos pedidos de recorrência de hoje (${clienteIds ? clienteIds.length : recorrenciaHojeCache.length} entrega(s))?`)) return;
+      try {
+        const res = await apiPost({ action: 'gerarPedidosRecorrenciaDia', clienteIds: clienteIds });
+        alert(res.message || 'Processado.');
+        carregarDashboard();
+      } catch (err) {
+        alert('Erro de conexão ao gerar pedidos de recorrência.');
+      }
+    }
+
+    // ==================== FILTROS / TABELA ====================
+    function filterTable() {
+      const termo = document.getElementById('searchVenda').value.toLowerCase().trim();
+      const canal = document.getElementById('filtroCanal').value;
+      const statusPagamento = document.getElementById('filtroStatusPagamento').value;
+      const statusPedido = document.getElementById('filtroStatusPedido').value;
+      const variedade = document.getElementById('filtroVariedade').value;
+      paginaAtual = 1;
+
+      listaFiltrada = pedidosCache.filter(function (p) {
+        if (canal && p.canalOrigem !== canal) return false;
+        if (statusPagamento && p.statusPagamento !== statusPagamento) return false;
+        if (statusPedido && p.status !== statusPedido) return false;
+        if (variedade && !p.itens.some(function (it) { return it.produto === variedade; })) return false;
+        if (termo) {
+          const alvo = (p.clienteNome + ' ' + p.itens.map(function (it) { return it.produto; }).join(' ')).toLowerCase();
+          if (alvo.indexOf(termo) === -1) return false;
+        }
+        return true;
+      });
+      renderPage();
+    }
+
+    function badgeStatusPedido(status) {
+      const map = { 'Orçamento': 'bg-gray-100 text-gray-600', 'Confirmado': 'bg-blue-100 text-blue-700', 'Em Preparação': 'bg-amber-100 text-amber-700', 'A Caminho': 'bg-purple-100 text-purple-700', 'Entregue': 'bg-emerald-100 text-emerald-700', 'Cancelado': 'bg-red-100 text-red-700' };
+      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${map[status] || 'bg-gray-100 text-gray-600'}">${status || '-'}</span>`;
+    }
+    function badgeStatusPagamento(status) {
+      const map = { 'Pago': 'bg-emerald-100 text-emerald-700', 'Pendente': 'bg-amber-100 text-amber-700', 'Faturado': 'bg-blue-100 text-blue-700', 'Inadimplente': 'bg-red-100 text-red-700' };
+      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${map[status] || 'bg-gray-100 text-gray-600'}">${status || '-'}</span>`;
+    }
+    function badgeNotaFiscal(status) {
+      const map = { 'Não emitida': 'bg-gray-100 text-gray-500', 'Emitida': 'bg-emerald-100 text-emerald-700', 'Cancelada': 'bg-red-100 text-red-700' };
+      const cls = Object.keys(map).find(function (k) { return (status || '').indexOf(k) === 0; });
+      const corFinal = cls ? map[cls] : 'bg-amber-100 text-amber-700';
+      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${corFinal}" title="${status}">${(status || '-').slice(0, 18)}</span>`;
+    }
+
+    function renderPage() {
+      const tbody = document.getElementById('vendasBody');
+      tbody.innerHTML = '';
+      if (listaFiltrada.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-center text-gray-400">Nenhum pedido encontrado no período.</td></tr>';
+        document.getElementById('pageInfo').textContent = 'Mostrando 0 de 0 pedidos';
+        document.getElementById('pageIndicator').textContent = 'Página 0 de 0';
+        ['btnFirst', 'btnPrev', 'btnNext', 'btnLast'].forEach(function (id) { document.getElementById(id).disabled = true; });
+        return;
+      }
+      const totalPaginas = Math.ceil(listaFiltrada.length / itensPorPagina);
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = Math.min(inicio + itensPorPagina, listaFiltrada.length);
+
+      listaFiltrada.slice(inicio, fim).forEach(function (p) {
+        const itensResumo = p.itens.map(function (it) { return `${it.produto} (${it.qtd}${it.unidade || 'kg'})`; }).join(', ');
+        const podeEmitirNFe = p.notaFiscalStatus === 'Não emitida' && p.status !== 'Cancelado';
+        const jaEmitida = p.notaFiscalStatus === 'Emitida';
+        tbody.innerHTML += `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="p-2.5 font-medium text-gray-600">${formatarDataBR(p.data)}</td>
+            <td class="p-2.5 font-bold text-gray-800 cursor-pointer" onclick="abrirDetalhePedido('${p.id}')">${p.clienteNome}</td>
+            <td class="p-2.5 text-gray-500">${p.canalOrigem || '-'}</td>
+            <td class="p-2.5 text-gray-600 max-w-[220px] truncate" title="${itensResumo}">${itensResumo || '-'}</td>
+            <td class="p-2.5 text-gray-500">${p.formaPagamento || '-'}</td>
+            <td class="p-2.5">${badgeStatusPagamento(p.statusPagamento)}</td>
+            <td class="p-2.5">
+              <select onchange="alterarStatusPedido('${p.id}', this.value)" class="text-[10px] font-bold uppercase border rounded-full px-1.5 py-0.5 bg-white">
+                ${['Orçamento', 'Confirmado', 'Em Preparação', 'A Caminho', 'Entregue', 'Cancelado'].map(function (s) { return `<option value="${s}" ${s === p.status ? 'selected' : ''}>${s}</option>`; }).join('')}
+              </select>
+            </td>
+            <td class="p-2.5 text-right font-bold text-emerald-800">${formatarMoeda(p.valorTotal)}</td>
+            <td class="p-2.5">${badgeNotaFiscal(p.notaFiscalStatus)}</td>
+            <td class="p-2.5 text-center">
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="abrirDetalhePedido('${p.id}')" title="Detalhes" class="bg-gray-50 hover:bg-gray-100 text-gray-600 px-1.5 py-1 rounded border text-[11px]">👁</button>
+                ${podeEmitirNFe ? `<button onclick="emitirNFe('${p.id}')" title="Emitir NF-e" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-1.5 py-1 rounded border border-blue-200 text-[11px]">NF-e</button>` : ''}
+                ${jaEmitida ? `<button onclick="cancelarNFe('${p.id}')" title="Cancelar NF-e" class="bg-red-50 hover:bg-red-100 text-red-600 px-1.5 py-1 rounded border border-red-200 text-[11px]">✕NF</button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+      });
+      document.getElementById('pageInfo').textContent = `Mostrando ${inicio + 1}-${fim} de ${listaFiltrada.length} pedidos`;
+      document.getElementById('pageIndicator').textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+      document.getElementById('btnFirst').disabled = (paginaAtual === 1);
+      document.getElementById('btnPrev').disabled = (paginaAtual === 1);
+      document.getElementById('btnNext').disabled = (paginaAtual === totalPaginas);
+      document.getElementById('btnLast').disabled = (paginaAtual === totalPaginas);
+    }
+    function mudarPagina(delta) { paginaAtual += delta; renderPage(); }
+    function irPrimeiraPagina() { paginaAtual = 1; renderPage(); }
+    function irUltimaPagina() { paginaAtual = Math.max(1, Math.ceil(listaFiltrada.length / itensPorPagina)); renderPage(); }
+    function alternarQtdLinhasVendas() {
+      itensPorPagina = (itensPorPagina === 5) ? 10 : 5;
+      paginaAtual = 1;
+      document.getElementById('lblQtdVendas').textContent = itensPorPagina + ' linhas';
+      const bola = document.getElementById('bolaQtdVendas');
+      const trilho = bola.parentElement;
+      trilho.classList.toggle('bg-emerald-600', itensPorPagina === 10);
+      trilho.classList.toggle('bg-gray-300', itensPorPagina === 5);
+      bola.style.transform = itensPorPagina === 10 ? 'translateX(16px)' : 'translateX(0px)';
+      renderPage();
+    }
+
+    async function alterarStatusPedido(pedidoId, novoStatus) {
+      try {
+        const res = await apiPost({ action: 'atualizarStatusPedidoVenda', pedidoId: pedidoId, novoStatus: novoStatus });
+        if (!res.success) { alert('Erro: ' + res.message); return; }
+        const pedido = pedidosCache.find(function (p) { return p.id === pedidoId; });
+        if (pedido) pedido.status = novoStatus;
+      } catch (err) {
+        alert('Erro de conexão ao atualizar status.');
+      }
+    }
+
+    function abrirDetalhePedido(pedidoId) {
+      const p = pedidosCache.find(function (x) { return x.id === pedidoId; });
+      if (!p) return;
+      const itensHtml = p.itens.map(function (it) {
+        return `<div class="flex justify-between border-b py-1"><span>${it.produto}</span><span class="font-semibold">${it.qtd} ${it.unidade || 'kg'} x ${formatarMoeda(it.precoUnit)} = ${formatarMoeda(it.subtotal)}</span></div>`;
+      }).join('');
+      document.getElementById('detalhePedidoConteudo').innerHTML = `
+        <div class="bg-gray-50 border rounded-lg p-3 space-y-1">
+          <div class="flex justify-between"><span class="text-gray-400">Cliente:</span><span class="font-bold">${p.clienteNome}</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Data:</span><span class="font-semibold">${formatarDataBR(p.data)}</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Canal:</span><span class="font-semibold">${p.canalOrigem || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Pagamento:</span><span class="font-semibold">${p.formaPagamento || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Status Pedido:</span>${badgeStatusPedido(p.status)}</div>
+          <div class="flex justify-between"><span class="text-gray-400">Status Pagamento:</span>${badgeStatusPagamento(p.statusPagamento)}</div>
+          ${p.observacoes ? `<div class="pt-1 text-gray-600 italic">"${p.observacoes}"</div>` : ''}
+        </div>
+        <div><p class="font-bold text-gray-600 uppercase text-[10px] mb-1">Itens</p>${itensHtml}</div>
+        <div class="grid grid-cols-2 gap-2 text-right">
+          <div class="bg-gray-50 border rounded-lg p-2"><p class="text-gray-400 text-[10px]">Valor Bruto</p><p class="font-bold">${formatarMoeda(p.valorBruto)}</p></div>
+          <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-2"><p class="text-emerald-600 text-[10px]">Valor Líquido</p><p class="font-bold text-emerald-800">${formatarMoeda(p.valorTotal)}</p></div>
+        </div>
+        <div class="bg-gray-50 border rounded-lg p-3">
+          <p class="font-bold text-gray-600 uppercase text-[10px] mb-1">Nota Fiscal</p>
+          <div class="flex justify-between items-center">
+            ${badgeNotaFiscal(p.notaFiscalStatus)}
+            <div class="flex gap-2">
+              ${p.notaFiscalUrlPdf ? `<a href="${p.notaFiscalUrlPdf}" target="_blank" class="text-blue-700 underline font-semibold">Baixar PDF</a>` : ''}
+              ${p.notaFiscalUrlXml ? `<a href="${p.notaFiscalUrlXml}" target="_blank" class="text-blue-700 underline font-semibold">Baixar XML</a>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      openModal('modalDetalhePedido');
+    }
+
+    // ==================== NOVA VENDA ====================
+    function abrirNovaVenda() {
+      document.getElementById('formVenda').reset();
+      document.getElementById('vendaItensContainer').innerHTML = '';
+      clienteSelecionadoVenda = null;
+      document.getElementById('clienteSelecionadoBox').classList.add('hidden');
+      document.getElementById('buscaClienteWrap').classList.remove('hidden');
+      document.getElementById('clienteAlertaInadimplente').classList.add('hidden');
+      document.getElementById('buscaClienteInput').value = '';
+      document.getElementById('descontoTipoInput').value = 'Nenhum';
+      document.getElementById('descontoValorInput').value = 0;
+      document.getElementById('vendaStatusInput').value = 'Confirmado';
+      adicionarLinhaItemVenda();
+      calcularTotalVenda();
+      openModal('modalVenda');
+    }
+
+    function buscarClienteVenda() {
+      const termo = document.getElementById('buscaClienteInput').value.toLowerCase().trim();
+      const box = document.getElementById('sugestoesClienteBox');
+      if (!termo) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+      const resultados = listaClientesCache.filter(function (c) {
+        return (c.nome || '').toLowerCase().indexOf(termo) !== -1 || (c.documento || '').toLowerCase().indexOf(termo) !== -1;
+      }).slice(0, 8);
+      if (resultados.length === 0) { box.innerHTML = '<div class="p-2.5 text-gray-400">Nenhum cliente encontrado.</div>'; box.classList.remove('hidden'); return; }
+      box.innerHTML = resultados.map(function (c) {
+        return `<div class="cliente-sugestao p-2.5 cursor-pointer border-b last:border-0" onclick='selecionarClienteVenda(${JSON.stringify(c.id)})'>
+          <div class="font-bold text-gray-700">${c.nome}</div>
+          <div class="text-[10px] text-gray-400">${c.documento || '-'} · ${nomeTabelaPreco(c.tabelaPreco)}</div>
+        </div>`;
+      }).join('');
+      box.classList.remove('hidden');
+    }
+
+    function selecionarClienteVenda(clienteId) {
+      const c = listaClientesCache.find(function (x) { return x.id === clienteId; });
+      if (!c) return;
+      clienteSelecionadoVenda = c;
+      document.getElementById('sugestoesClienteBox').classList.add('hidden');
+      document.getElementById('buscaClienteWrap').classList.add('hidden');
+      document.getElementById('clienteSelecionadoBox').classList.remove('hidden');
+      document.getElementById('clienteSelecionadoNome').textContent = c.nome;
+      document.getElementById('clienteSelecionadoInfo').textContent = `${nomeTabelaPreco(c.tabelaPreco)} · ${c.condicaoPagamento || '-'}`;
+      document.getElementById('clienteAlertaInadimplente').classList.toggle('hidden', !c.inadimplente);
+      document.getElementById('vendaFormaPagamento').value = c.condicaoPagamento || '-';
+
+      const select = document.getElementById('vendaEnderecoEntrega');
+      const entregas = c.enderecosEntrega || [];
+      select.innerHTML = entregas.length
+        ? entregas.map(function (e, i) { return `<option value="${i}" ${e.principal ? 'selected' : ''}>${e.apelido || 'Endereço ' + (i + 1)}</option>`; }).join('')
+        : '<option value="">Endereço de cobrança (sem entrega cadastrada)</option>';
+
+      recalcularPrecosItensVenda();
+    }
+    function trocarCliente() {
+      clienteSelecionadoVenda = null;
+      document.getElementById('clienteSelecionadoBox').classList.add('hidden');
+      document.getElementById('buscaClienteWrap').classList.remove('hidden');
+      document.getElementById('buscaClienteInput').value = '';
+      document.getElementById('buscaClienteInput').focus();
+    }
+
+    function abrirClienteRapido() {
+      document.getElementById('formClienteRapido').reset();
+      selecionarTipoRapido('PJ');
+      popularSelectTabelasPreco('rapidoTabelaPreco', 'varejo');
+      openModal('modalClienteRapido');
+    }
+    function selecionarTipoRapido(tipo) {
+      document.getElementById('rapidoTipoPessoa').value = tipo;
+      document.getElementById('btnRapidoPJ').classList.toggle('bg-emerald-700', tipo === 'PJ');
+      document.getElementById('btnRapidoPJ').classList.toggle('text-white', tipo === 'PJ');
+      document.getElementById('btnRapidoPJ').classList.toggle('bg-white', tipo !== 'PJ');
+      document.getElementById('btnRapidoPJ').classList.toggle('text-gray-600', tipo !== 'PJ');
+      document.getElementById('btnRapidoPF').classList.toggle('bg-emerald-700', tipo === 'PF');
+      document.getElementById('btnRapidoPF').classList.toggle('text-white', tipo === 'PF');
+      document.getElementById('btnRapidoPF').classList.toggle('bg-white', tipo !== 'PF');
+      document.getElementById('btnRapidoPF').classList.toggle('text-gray-600', tipo !== 'PF');
+      document.getElementById('rapidoLabelNome').textContent = tipo === 'PJ' ? 'Razão Social / Nome Fantasia' : 'Nome Completo';
+      document.getElementById('rapidoLabelDoc').textContent = tipo === 'PJ' ? 'CNPJ' : 'CPF';
+    }
+    async function submitClienteRapido(e) {
+      e.preventDefault();
+      const payload = {
+        action: 'cadastrarCliente',
+        tipoPessoa: document.getElementById('rapidoTipoPessoa').value,
+        nome: document.getElementById('rapidoNome').value,
+        documento: document.getElementById('rapidoDocumento').value,
+        whatsapp: document.getElementById('rapidoWhatsapp').value,
+        tabelaPreco: document.getElementById('rapidoTabelaPreco').value,
+        condicaoPagamento: document.getElementById('rapidoCondicaoPagamento').value,
+        canalAquisicao: 'Prospecção Direta',
+        enderecosEntrega: [],
+        ativo: true,
+        responsavel: userData.nome
+      };
+      try {
+        const res = await apiPost(payload);
+        if (!res.success) { alert('Erro ao cadastrar cliente: ' + res.message); return; }
+        const novoCliente = Object.assign({}, payload, { id: res.id, saldoDevedor: 0, inadimplente: false, pedidos: [], enderecosEntrega: [] });
+        listaClientesCache.push(novoCliente);
+        closeModal('modalClienteRapido');
+        selecionarClienteVenda(res.id);
+      } catch (err) {
+        alert('Erro de conexão ao cadastrar cliente.');
+      }
+    }
+
+    function adicionarLinhaItemVenda(dados) {
+      const idx = indiceItemVenda++;
+      const d = dados || {};
+      const div = document.createElement('div');
+      div.className = 'linha-item-venda space-y-1';
+      div.dataset.idx = idx;
+      div.innerHTML = `
+        <div class="flex gap-1.5 items-center">
+          <input type="text" list="listaProdutosDatalist" data-f="produto" placeholder="Produto" value="${d.produto || ''}" oninput="recalcularPrecosItensVenda()" class="flex-1 border rounded-lg p-2 outline-none text-xs">
+          <input type="number" step="any" min="0" data-f="qtd" placeholder="Qtd" value="${d.qtd || 1}" oninput="calcularTotalVenda()" class="w-16 border rounded-lg p-2 outline-none text-xs">
+          <select data-f="unidade" onchange="calcularTotalVenda()" class="w-16 border rounded-lg p-2 outline-none text-xs bg-white">
+            <option value="kg" ${d.unidade === 'g' ? '' : 'selected'}>Kg</option>
+            <option value="g" ${d.unidade === 'g' ? 'selected' : ''}>g</option>
+          </select>
+          <input type="number" step="0.01" data-f="preco" placeholder="Preço/kg" value="${d.preco || ''}" oninput="calcularTotalVenda()" class="w-24 border rounded-lg p-2 outline-none text-xs">
+          <span data-f="subtotal" class="w-24 text-right font-semibold text-gray-700 text-xs">R$ 0,00</span>
+          <button type="button" onclick="this.closest('.linha-item-venda').remove(); calcularTotalVenda();" class="text-red-500 hover:text-red-700 font-bold px-1">✕</button>
+        </div>
+        <div data-f="estoqueInfo" class="text-[10px] text-gray-400 pl-1"></div>
+      `;
+      document.getElementById('vendaItensContainer').appendChild(div);
+      calcularTotalVenda();
+    }
+
+    function resolverPrecoTabela(nomeProduto, tabelaId) {
+      const tabela = tabelasPrecoCache.find(function (t) { return t.id === tabelaId; });
+      if (!tabela || !tabela.precos) return null;
+      const preco = tabela.precos[nomeProduto];
+      return preco === undefined ? null : preco;
+    }
+
+    // Lote com validade mais próxima entre os disponíveis dessa espécie —
+    // usado só para avisar o vendedor de qual lote sairá primeiro (FIFO por
+    // vencimento é decidido de fato no backend, no momento da venda).
+    function proximoLoteVencer(nomeProduto) {
+      const lotes = lotesEstoqueCache.filter(function (l) { return l.especie === nomeProduto && l.status === 'Disponível'; });
+      if (lotes.length === 0) return null;
+      return lotes.slice().sort(function (a, b) { return String(a.validade).localeCompare(String(b.validade)); })[0];
+    }
+
+    function recalcularPrecosItensVenda() {
+      document.querySelectorAll('.linha-item-venda').forEach(function (row) {
+        const produtoInput = row.querySelector('[data-f="produto"]');
+        const precoInput = row.querySelector('[data-f="preco"]');
+        const nome = produtoInput.value.trim();
+        if (nome && clienteSelecionadoVenda) {
+          const preco = resolverPrecoTabela(nome, clienteSelecionadoVenda.tabelaPreco);
+          if (preco !== null) precoInput.value = preco;
+        }
+        const estoqueInfo = row.querySelector('[data-f="estoqueInfo"]');
+        const disponivel = estoqueCache[nome];
+        const proximoLote = nome ? proximoLoteVencer(nome) : null;
+        let texto = '';
+        if (disponivel !== undefined && disponivel !== null) {
+          texto = `Estoque disponível: ${disponivel} kg` + (disponivel <= 0 ? ' ⚠️ sem saldo' : '');
+          if (proximoLote) {
+            const dias = Math.round((new Date(proximoLote.validade) - new Date(isoHoje(0))) / 86400000);
+            texto += ` · próximo a vencer: ${proximoLote.quantidadeDisponivelKg}kg em ${dias <= 0 ? 'hoje/vencido' : dias + ' dia(s)'}`;
+          }
+        }
+        estoqueInfo.textContent = texto;
+        estoqueInfo.className = 'text-[10px] pl-1 ' + (disponivel <= 0 ? 'text-red-500 font-semibold' : 'text-gray-400');
+      });
+      calcularTotalVenda();
+    }
+
+    function coletarItensVenda() {
+      return Array.from(document.querySelectorAll('.linha-item-venda')).map(function (row) {
+        const qtdDigitada = parseFloat(row.querySelector('[data-f="qtd"]').value) || 0;
+        const unidade = row.querySelector('[data-f="unidade"]').value;
+        const qtdKg = unidade === 'g' ? qtdDigitada / 1000 : qtdDigitada;
+        const preco = parseFloat(row.querySelector('[data-f="preco"]').value) || 0;
+        const subtotal = qtdKg * preco;
+        row.querySelector('[data-f="subtotal"]').textContent = formatarMoeda(subtotal);
+        // O pedido é sempre gravado em Kg (o preço também é sempre por Kg) —
+        // a unidade escolhida na tela (Kg/g) é só para facilitar a digitação.
+        return { produto: row.querySelector('[data-f="produto"]').value, qtd: qtdKg, unidade: 'kg', precoUnit: preco, subtotal: subtotal };
+      }).filter(function (it) { return it.produto; });
+    }
+
+    function calcularTotalVenda() {
+      const itens = coletarItensVenda();
+      const bruto = itens.reduce(function (s, it) { return s + it.subtotal; }, 0);
+      document.getElementById('vendaValorBruto').textContent = formatarMoeda(bruto);
+
+      const tipo = document.getElementById('descontoTipoInput').value;
+      const valorDesconto = parseFloat(document.getElementById('descontoValorInput').value) || 0;
+      document.getElementById('descontoValorWrap').classList.toggle('hidden', tipo === 'Nenhum' || tipo === 'Cortesia');
+
+      let liquido = bruto;
+      if (tipo === 'Percentual') liquido = bruto * (1 - Math.min(100, Math.max(0, valorDesconto)) / 100);
+      else if (tipo === 'Fixo') liquido = Math.max(0, bruto - valorDesconto);
+      else if (tipo === 'Cortesia') liquido = 0;
+
+      document.getElementById('vendaTotalCalculado').textContent = formatarMoeda(liquido);
+    }
+
+    async function submitFormVenda(e) {
+      e.preventDefault();
+      if (!clienteSelecionadoVenda) { alert('Selecione um cliente para a venda.'); return; }
+      const itens = coletarItensVenda();
+      if (itens.length === 0) { alert('Adicione ao menos um item ao pedido.'); return; }
+
+      if (clienteSelecionadoVenda.inadimplente && !confirm('Este cliente está inadimplente. Deseja prosseguir mesmo assim?')) return;
+
+      const payload = {
+        action: 'cadastrarPedido',
+        clienteId: clienteSelecionadoVenda.id,
+        data: isoHoje(0),
+        itens: itens,
+        status: document.getElementById('vendaStatusInput').value,
+        enderecoEntregaIndice: document.getElementById('vendaEnderecoEntrega').value,
+        formaPagamento: clienteSelecionadoVenda.condicaoPagamento || '',
+        observacoes: document.getElementById('vendaObservacoes').value,
+        canalOrigem: document.getElementById('vendaCanalOrigem').value,
+        statusPagamento: document.getElementById('vendaStatusPagamento').value,
+        descontoTipo: document.getElementById('descontoTipoInput').value,
+        descontoValor: parseFloat(document.getElementById('descontoValorInput').value) || 0,
+        origemRecorrencia: false,
+        responsavel: userData.nome
+      };
+      try {
+        const res = await apiPost(payload);
+        if (!res.success) { alert('Erro ao registrar venda: ' + res.message); return; }
+        alert(res.message || 'Venda registrada com sucesso!');
+        closeModal('modalVenda');
+        carregarDashboard();
+      } catch (err) {
+        alert('Erro de conexão ao registrar a venda.');
+      }
+    }
+
+    // ==================== NF-e ====================
+    async function emitirNFe(pedidoId) {
+      if (!confirm('Confirma a emissão da nota fiscal para este pedido?')) return;
+      try {
+        const res = await apiPost({ action: 'emitirNFe', pedidoId: pedidoId });
+        alert(res.message || (res.success ? 'Nota fiscal emitida!' : 'Não foi possível emitir a nota.'));
+        if (res.success) carregarDashboard();
+      } catch (err) {
+        alert('Erro de conexão ao emitir a nota fiscal.');
+      }
+    }
+    async function cancelarNFe(pedidoId) {
+      const justificativa = prompt('Motivo do cancelamento da nota fiscal:');
+      if (justificativa === null) return;
+      try {
+        const res = await apiPost({ action: 'cancelarNFe', pedidoId: pedidoId, justificativa: justificativa });
+        alert(res.message || (res.success ? 'Nota cancelada.' : 'Não foi possível cancelar.'));
+        if (res.success) carregarDashboard();
+      } catch (err) {
+        alert('Erro de conexão ao cancelar a nota fiscal.');
+      }
+    }
+
+    // ==================== PRODUTOS / ESTOQUE / TABELAS DE PREÇO ====================
+    function abrirGerenciarProdutos() {
+      document.getElementById('formProdutoWrap').classList.add('hidden');
+      document.getElementById('formTabelaPrecoWrap').classList.add('hidden');
+      mudarAbaProdutos('estoque');
+      openModal('modalProdutos');
+    }
+
+    function mudarAbaProdutos(aba) {
+      ['estoque', 'precos', 'especies'].forEach(function (a) {
+        document.getElementById('abaProdutos' + a.charAt(0).toUpperCase() + a.slice(1)).classList.toggle('hidden', a !== aba);
+        const btn = document.querySelector('[data-aba-produtos="' + a + '"]');
+        btn.classList.toggle('border-emerald-700', a === aba);
+        btn.classList.toggle('text-emerald-800', a === aba);
+        btn.classList.toggle('border-transparent', a !== aba);
+      });
+      if (aba === 'estoque') renderEstoqueLotes();
+      if (aba === 'precos') renderTabelasPrecoLista();
+      if (aba === 'especies') renderProdutosLista();
+    }
+
+    function badgeStatusLote(status, validade) {
+      if (status === 'Esgotado') return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">Esgotado</span>';
+      if (status === 'Vencido') return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">Vencido</span>';
+      if (status === 'Descartado') return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-400">Descartado</span>';
+      const dias = validade ? Math.round((new Date(validade) - new Date(isoHoje(0))) / 86400000) : null;
+      if (dias !== null && dias <= 1) return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Vence em breve</span>';
+      return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Disponível</span>';
+    }
+
+    function renderEstoqueLotes() {
+      const lotes = lotesEstoqueCache.filter(function (l) { return l.status !== 'Descartado'; });
+      document.getElementById('estoqueLotesBody').innerHTML = lotes.length
+        ? lotes.map(function (l) {
+            return `<tr>
+              <td class="p-2 font-bold text-gray-700">${l.especie}</td>
+              <td class="p-2 text-gray-500 font-mono">${l.codigoRastreio || '-'}</td>
+              <td class="p-2 text-gray-500">${l.sala || '-'}</td>
+              <td class="p-2 text-gray-500">${l.ciclo || '-'}</td>
+              <td class="p-2 text-gray-500">${l.qualidade || '-'}</td>
+              <td class="p-2 text-gray-500">${formatarDataBR(l.dataColheita)}</td>
+              <td class="p-2 text-right text-gray-500">${l.diasAteColheita === '' || l.diasAteColheita === undefined ? '-' : l.diasAteColheita}</td>
+              <td class="p-2 text-gray-500">${formatarDataBR(l.validade)}</td>
+              <td class="p-2 text-right font-semibold ${l.status === 'Disponível' ? 'text-gray-700' : 'text-gray-400'}">${l.quantidadeDisponivelKg}</td>
+              <td class="p-2 text-center">${badgeStatusLote(l.status, l.validade)}</td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="10" class="py-4 text-center text-gray-400">Nenhum lote colhido ainda.</td></tr>';
+    }
+
+    // ---------- Tabelas de Preço ----------
+    function renderTabelasPrecoLista() {
+      document.getElementById('tabelasPrecoLista').innerHTML = tabelasPrecoCache.map(function (t) {
+        const linhasPreco = listaProdutosCache.filter(function (p) { return p.ativo; }).map(function (p) {
+          return `<div class="flex justify-between border-b py-0.5"><span>${p.nome}</span><span class="font-semibold">${formatarMoeda(t.precos[p.nome] || 0)}/kg</span></div>`;
+        }).join('');
+        const padrao = t.id === 'varejo' || t.id === 'atacado';
+        return `<div class="border rounded-lg p-3">
+          <div class="flex justify-between items-start mb-1.5">
+            <div>
+              <p class="font-bold text-gray-800 text-xs">${t.nome} ${t.ativo ? '' : '<span class="text-[10px] text-gray-400">(inativa)</span>'}</p>
+              <p class="text-[10px] text-gray-400">${t.clienteNome ? 'Vinculada a: ' + t.clienteNome : 'Tabela genérica (qualquer cliente pode usar)'}</p>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button onclick='abrirEdicaoTabelaPreco(${JSON.stringify(t)})' class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-2 py-1 rounded border border-blue-200 text-[11px]">✏️</button>
+              ${padrao ? '' : `<button onclick="excluirTabelaPrecoUI('${t.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 text-[11px]">🗑️</button>`}
+            </div>
+          </div>
+          <div class="text-[11px] text-gray-600">${linhasPreco || '<span class="text-gray-400">Nenhuma espécie ativa cadastrada.</span>'}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderTabelaPrecoItensInputs(precosAtuais) {
+      const precos = precosAtuais || {};
+      document.getElementById('tabelaPrecoItensWrap').innerHTML = listaProdutosCache.filter(function (p) { return p.ativo; }).map(function (p) {
+        return `<label class="flex flex-col gap-0.5">
+          <span class="text-[10px] text-gray-500">${p.nome} (R$/kg)</span>
+          <input type="number" step="0.01" min="0" data-produto="${p.nome}" value="${precos[p.nome] || 0}" class="border rounded-lg p-1.5 outline-none">
+        </label>`;
+      }).join('');
+    }
+
+    function prepararNovaTabelaPreco() {
+      document.getElementById('formTabelaPreco').reset();
+      document.getElementById('tabelaPrecoId').value = '';
+      document.getElementById('tabelaPrecoAtivo').checked = true;
+      popularSelectClientesParaTabela('');
+      renderTabelaPrecoItensInputs({});
+      document.getElementById('formTabelaPrecoWrap').classList.remove('hidden');
+    }
+    function abrirEdicaoTabelaPreco(t) {
+      document.getElementById('tabelaPrecoId').value = t.id;
+      document.getElementById('tabelaPrecoNome').value = t.nome;
+      document.getElementById('tabelaPrecoAtivo').checked = t.ativo;
+      popularSelectClientesParaTabela(t.clienteId);
+      renderTabelaPrecoItensInputs(t.precos);
+      document.getElementById('formTabelaPrecoWrap').classList.remove('hidden');
+    }
+    async function submitFormTabelaPreco(e) {
+      e.preventDefault();
+      const id = document.getElementById('tabelaPrecoId').value;
+      const precos = {};
+      document.querySelectorAll('#tabelaPrecoItensWrap [data-produto]').forEach(function (input) {
+        precos[input.dataset.produto] = parseFloat(input.value) || 0;
+      });
+      const payload = {
+        action: id ? 'editarTabelaPreco' : 'cadastrarTabelaPreco',
+        id: id,
+        nome: document.getElementById('tabelaPrecoNome').value,
+        clienteId: document.getElementById('tabelaPrecoClienteId').value,
+        ativo: document.getElementById('tabelaPrecoAtivo').checked,
+        precos: precos
+      };
+      try {
+        const res = await apiPost(payload);
+        if (!res.success) { alert('Erro: ' + res.message); return; }
+        await carregarBase();
+        renderTabelasPrecoLista();
+        document.getElementById('formTabelaPrecoWrap').classList.add('hidden');
+      } catch (err) {
+        alert('Erro de conexão ao salvar a tabela de preço.');
+      }
+    }
+    async function excluirTabelaPrecoUI(id) {
+      if (!confirm('Excluir esta tabela de preço?')) return;
+      try {
+        const res = await apiPost({ action: 'excluirTabelaPreco', id: id });
+        if (!res.success) { alert('Erro: ' + res.message); return; }
+        await carregarBase();
+        renderTabelasPrecoLista();
+      } catch (err) {
+        alert('Erro de conexão ao excluir a tabela de preço.');
+      }
+    }
+
+    // ---------- Espécies / Produtos ----------
+    function renderProdutosLista() {
+      document.getElementById('produtosBody').innerHTML = listaProdutosCache.map(function (p) {
+        const estoque = estoqueCache[p.nome];
+        return `<tr>
+          <td class="p-2 font-bold text-gray-700">${p.nome} ${p.ativo ? '' : '<span class="text-[10px] text-gray-400">(inativo)</span>'}</td>
+          <td class="p-2 text-right text-gray-600">${p.validadeDias} dia(s)</td>
+          <td class="p-2 text-right ${estoque < 0 ? 'text-red-600 font-bold' : 'text-gray-600'}">${estoque === undefined || estoque === null ? '-' : estoque}</td>
+          <td class="p-2 text-center">
+            <button onclick='editarProdutoUI(${JSON.stringify(p)})' class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-2 py-1 rounded border border-blue-200 text-[11px]">✏️</button>
+            <button onclick="excluirProdutoUI('${p.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 text-[11px]">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+    function prepararNovoProduto() {
+      document.getElementById('formProduto').reset();
+      document.getElementById('produtoId').value = '';
+      document.getElementById('produtoNcm').value = '0709.59.00';
+      document.getElementById('produtoValidadeDias').value = 7;
+      document.getElementById('produtoAtivo').checked = true;
+      document.getElementById('formProdutoWrap').classList.remove('hidden');
+    }
+    function editarProdutoUI(p) {
+      document.getElementById('produtoId').value = p.id;
+      document.getElementById('produtoNome').value = p.nome;
+      document.getElementById('produtoValidadeDias').value = p.validadeDias;
+      document.getElementById('produtoNcm').value = p.ncm;
+      document.getElementById('produtoAtivo').checked = p.ativo;
+      document.getElementById('formProdutoWrap').classList.remove('hidden');
+    }
+    async function submitFormProduto(e) {
+      e.preventDefault();
+      const id = document.getElementById('produtoId').value;
+      const payload = {
+        action: id ? 'editarProduto' : 'cadastrarProduto',
+        id: id,
+        nome: document.getElementById('produtoNome').value,
+        validadeDias: document.getElementById('produtoValidadeDias').value,
+        ncm: document.getElementById('produtoNcm').value,
+        ativo: document.getElementById('produtoAtivo').checked
+      };
+      try {
+        const res = await apiPost(payload);
+        if (!res.success) { alert('Erro: ' + res.message); return; }
+        await carregarBase();
+        renderProdutosLista();
+        document.getElementById('formProdutoWrap').classList.add('hidden');
+      } catch (err) {
+        alert('Erro de conexão ao salvar produto.');
+      }
+    }
+    async function excluirProdutoUI(id) {
+      if (!confirm('Excluir esta espécie do catálogo?')) return;
+      try {
+        const res = await apiPost({ action: 'excluirProduto', id: id });
+        if (!res.success) { alert('Erro: ' + res.message); return; }
+        await carregarBase();
+        renderProdutosLista();
+      } catch (err) {
+        alert('Erro de conexão ao excluir produto.');
+      }
+    }
+
+    // ==================== RELATÓRIO PDF ====================
+    function abrirRelatorio() {
+      document.getElementById('relatorioPeriodoTexto').textContent = `${formatarDataBR(periodoAtual.inicio)} até ${formatarDataBR(periodoAtual.fim)}`;
+      openModal('modalRelatorio');
+    }
+
+    async function gerarRelatorioPDF() {
+      const btn = document.getElementById('btnGerarRelatorio');
+      btn.disabled = true; btn.textContent = 'Gerando...';
+      try {
+        const dash = window.__ultimoDashboard;
+        if (!dash) { alert('Carregue o período antes de gerar o relatório.'); return; }
+
+        const periodoTexto = `${formatarDataBR(periodoAtual.inicio)} a ${formatarDataBR(periodoAtual.fim)}`;
+
+        // 1. GERAR GRÁFICOS EM CANVAS OCULTOS PARA CONVERTER EM BASE64
+        // (canvases dedicados ao relatório, independentes dos gráficos exibidos
+        // na tela, no mesmo padrão usado no relatório de Colheita e Produção)
+        const ctxBar = document.getElementById('chartFaturamentoRelatorio').getContext('2d');
+        if (window.chartRelatorioBarRef) window.chartRelatorioBarRef.destroy();
+        window.chartRelatorioBarRef = new Chart(ctxBar, {
+          type: 'line',
+          data: {
+            labels: dash.series.map(function (s) { return formatarDataBR(s.data); }),
+            datasets: [{ label: 'Faturamento (R$)', data: dash.series.map(function (s) { return s.valor; }), borderColor: '#047857', backgroundColor: 'rgba(4,120,87,0.15)', fill: true, tension: 0.3 }]
+          },
+          options: { responsive: false, animation: false, plugins: { legend: { display: false } } }
+        });
+
+        const coresVariedade = ['#047857', '#0ea5e9', '#f59e0b', '#a855f7', '#ef4444', '#6b7280'];
+        const ctxDonut = document.getElementById('chartVariedadeRelatorio').getContext('2d');
+        if (window.chartRelatorioDonutRef) window.chartRelatorioDonutRef.destroy();
+        window.chartRelatorioDonutRef = new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: { labels: dash.pizza.map(function (p) { return p.produto; }), datasets: [{ data: dash.pizza.map(function (p) { return p.kg; }), backgroundColor: coresVariedade }] },
+          options: { responsive: false, animation: false, plugins: { legend: { display: false } } }
+        });
+
+        await new Promise(function (r) { setTimeout(r, 300); });
+        const imgBarBase64 = document.getElementById('chartFaturamentoRelatorio').toDataURL('image/png');
+        const imgDonutBase64 = document.getElementById('chartVariedadeRelatorio').toDataURL('image/png');
+
+        // 2. ESTRUTURAR A ASSINATURA (mesmo padrão do relatório de Colheita e Produção)
+        const assData = infoEmpresa.responsavelAssinatura || '';
+        let assinaturaHtml = '';
+        if (assData.startsWith('data:image') || assData.startsWith('http://') || assData.startsWith('https://')) {
+          assinaturaHtml = `
+            <div style="position: relative; display: inline-block; width: 100%;">
+              <img src="${assData}"
+                   style="max-height: 95px; max-width: 250px; display: block; margin: 0 auto -54px auto; position: relative; z-index: 2; object-fit: contain;"
+                   onerror="this.style.display='none'; document.getElementById('nomeAssinaturaFallback').style.display='block';" />
+            </div>
+            <div id="nomeAssinaturaFallback" style="display: none; font-weight: bold; font-size: 13px;">Álvaro</div>
+          `;
+        } else {
+          assinaturaHtml = `<div style="font-weight: bold; margin-bottom: 5px; text-align: center; font-size: 13px;">${assData || 'Álvaro'}</div>`;
+        }
+
+        const legendaVariedade = dash.pizza.slice(0, 6).map(function (p, idx) {
+          return `<p><span style="color: ${coresVariedade[idx % coresVariedade.length]};">●</span> <strong>${p.produto}:</strong> ${p.kg.toFixed(2)} kg (${p.pctKg}%)</p>`;
+        }).join('');
+
+        // 3. MONTAR O HTML COMPLETO (mesmo layout/CSS do relatório de Colheita e Produção)
+        const agoraStr = new Date().toLocaleString('pt-BR');
+        const win = window.open('', '_blank');
+
+        let htmlContent = `
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <title>RELATÓRIO DE VENDAS - COLONIZA</title>
+            <style>
+              * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+              body { background-color: #fff; color: #1f2937; padding: 20px; font-size: 11px; }
+
+              .header-dark {
+                background-color: #062319;
+                color: #ffffff;
+                padding: 20px 25px;
+                border-radius: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+              }
+              .brand-box { display: flex; align-items: center; gap: 12px; }
+              .brand-logo { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #10b981; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #10b981; }
+              .brand-title { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; color: #fff; }
+              .brand-sub { font-size: 8px; text-transform: uppercase; color: #34d399; letter-spacing: 1px; }
+
+              .report-title-box { text-align: right; }
+              .report-main-title { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+              .report-sub-title { font-size: 11px; color: #a7f3d0; margin-top: 2px; }
+
+              .kpis-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+              .kpi-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; }
+              .kpi-label { font-size: 8px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+              .kpi-value { font-size: 16px; font-weight: 900; color: #064e3b; margin-top: 4px; }
+
+              .section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #111827; margin-bottom: 8px; letter-spacing: 0.5px; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              th { background-color: #f3f4f6; color: #4b5563; font-weight: 700; text-transform: uppercase; font-size: 9px; padding: 8px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+              td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; font-size: 10px; color: #374151; }
+              tr:last-child td { border-bottom: none; }
+              .total-row td { font-weight: 800; background-color: #f9fafb; color: #111827; border-top: 1px solid #e5e7eb; }
+
+              .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+              .chart-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; background: #fff; }
+
+              .footer-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 20px; }
+              .obs-box { font-size: 9px; color: #4b5563; line-height: 1.5; }
+              .signature-box { text-align: center; }
+              .signature-line { border-top: 1px solid #9ca3af; margin-top: 40px; padding-top: 5px; font-size: 10px; font-weight: bold; color: #1f2937; }
+
+              .bottom-bar { margin-top: 25px; padding-top: 10px; border-top: 1px solid #f3f4f6; display: flex; justify-content: space-between; font-size: 9px; color: #6b7280; }
+            </style>
+          </head>
+          <body>
+
+            <div class="header-dark">
+              <div class="brand-box">
+                <div class="brand-logo">C</div>
+                <div>
+                  <div class="brand-title">COLONIZA</div>
+                  <div class="brand-sub">Onde a excelência cria raízes</div>
+                </div>
+              </div>
+              <div class="report-title-box">
+                <div class="report-main-title">Relatório de Vendas</div>
+                <div class="report-sub-title">Resumo de Vendas do Período</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 10px; color: #166534;">
+              <div><strong>Período:</strong> ${periodoTexto}</div>
+              <div><strong>Pedidos válidos:</strong> ${dash.kpis.totalPedidos}</div>
+              <div><strong>Gerado em:</strong> ${agoraStr}</div>
+            </div>
+
+            <div class="kpis-grid">
+              <div class="kpi-card">
+                <div class="kpi-label">Faturamento Líquido</div>
+                <div class="kpi-value">${formatarMoeda(dash.kpis.faturamentoLiquido)}</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Faturamento Bruto</div>
+                <div class="kpi-value">${formatarMoeda(dash.kpis.faturamentoBruto)}</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Volume Comercializado</div>
+                <div class="kpi-value">${dash.kpis.totalVolumeKg.toLocaleString('pt-BR')} kg</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Ticket Médio</div>
+                <div class="kpi-value">${formatarMoeda(dash.kpis.ticketMedio)}</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Recorrência</div>
+                <div class="kpi-value">${dash.kpis.taxaRecorrencia}%</div>
+              </div>
+            </div>
+
+            <div class="section-title">Resumo por Variedade</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>VARIEDADE</th>
+                  <th>VOLUME (KG)</th>
+                  <th>% DO TOTAL</th>
+                  <th>FATURAMENTO (R$)</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        dash.pizza.forEach(function (p) {
+          htmlContent += `
+            <tr>
+              <td><strong>${p.produto}</strong></td>
+              <td>${p.kg.toFixed(2)}</td>
+              <td>${p.pctKg}%</td>
+              <td>${formatarMoeda(p.valor)}</td>
+            </tr>
+          `;
+        });
+
+        htmlContent += `
+                <tr class="total-row">
+                  <td>TOTAL</td>
+                  <td>${dash.kpis.totalVolumeKg.toLocaleString('pt-BR')} kg</td>
+                  <td>100%</td>
+                  <td>${formatarMoeda(dash.kpis.faturamentoBruto)}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="section-title">Top 5 Clientes do Período</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>CLIENTE</th>
+                  <th>VOLUME (KG)</th>
+                  <th>FATURAMENTO (R$)</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        dash.topClientes.forEach(function (c) {
+          htmlContent += `
+            <tr>
+              <td><strong>${c.clienteNome}</strong></td>
+              <td>${c.kg.toFixed(2)}</td>
+              <td>${formatarMoeda(c.valor)}</td>
+            </tr>
+          `;
+        });
+
+        htmlContent += `
+              </tbody>
+            </table>
+
+            <div class="section-title">Detalhamento de Vendas</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>DATA</th>
+                  <th>CLIENTE</th>
+                  <th>ORIGEM</th>
+                  <th>ITENS (KG)</th>
+                  <th>PAGAMENTO</th>
+                  <th>VALOR (R$)</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        dash.pedidos.forEach(function (p) {
+          const itensResumo = p.itens.map(function (it) { return it.produto + ' (' + it.qtd + 'kg)'; }).join(', ');
+          htmlContent += `
+            <tr>
+              <td>${formatarDataBR(p.data)}</td>
+              <td><strong>${p.clienteNome}</strong></td>
+              <td>${p.canalOrigem || '-'}</td>
+              <td>${itensResumo || '-'}</td>
+              <td>${p.formaPagamento || '-'}</td>
+              <td><strong>${formatarMoeda(p.valorTotal)}</strong></td>
+              <td><span style="background: #e6f4ea; color: #137333; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${p.status}</span></td>
+            </tr>
+          `;
+        });
+
+        htmlContent += `
+              </tbody>
+            </table>
+
+            <div class="charts-grid">
+              <div class="chart-card">
+                <div class="section-title" style="font-size: 10px;">Evolução do Faturamento</div>
+                <img src="${imgBarBase64}" style="width: 100%; max-height: 140px; object-fit: contain;" />
+              </div>
+              <div class="chart-card">
+                <div class="section-title" style="font-size: 10px;">Participação por Variedade</div>
+                <div style="display: flex; align-items: center; justify-content: space-around;">
+                  <img src="${imgDonutBase64}" style="width: 120px; height: 120px;" />
+                  <div style="font-size: 9px; line-height: 1.6;">
+                    ${legendaVariedade}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="footer-grid">
+              <div class="obs-box">
+                <div class="section-title" style="font-size: 10px;">Observações</div>
+                <ul style="padding-left: 15px;">
+                  <li>Valores líquidos já consideram descontos e cortesias aplicados no período.</li>
+                  <li>Pedidos com status "Cancelado" foram excluídos do faturamento e do volume.</li>
+                </ul>
+              </div>
+              <div class="signature-box">
+                ${assinaturaHtml}
+                <div class="signature-line">
+                  Responsável Comercial
+                </div>
+              </div>
+            </div>
+
+            <div class="bottom-bar">
+              <span>🌿 COLONIZA – Onde a excelência cria raízes.</span>
+              <span>📞 ${infoEmpresa.telefone || '(41) 99879-5314'}</span>
+              <span>✉️ ${infoEmpresa.email || 'industriacoloniza@gmail.com'}</span>
+            </div>
+
+          </body>
+          </html>
+        `;
+
+        win.document.write(htmlContent);
+        win.document.close();
+        setTimeout(function () { win.print(); }, 600);
+        closeModal('modalRelatorio');
+      } catch (err) {
+        alert('Erro ao gerar o relatório: ' + err);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Gerar PDF';
+      }
+    }
+
+    // ==================== INICIALIZAÇÃO ====================
+    (async function iniciar() {
+      await carregarBase();
+      selecionarPeriodo('mes');
+    })();
+  </script>
+</body>
+</html>
