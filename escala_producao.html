@@ -73,6 +73,7 @@
         <a href="incubacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Sala de Incubação</span></a>
         <a href="frutificacao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Sala de Frutificação</span></a>
         <a href="colheita_producao.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Colheita e Produção</span></a>
+        <a href="clientes.html" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-lg transition text-gray-300"><span>Clientes</span></a>
       </nav>
     </div>
     <div class="p-3 bg-[#0a1913] border-t border-emerald-900/40 text-[11px] flex justify-between items-center text-gray-400">
@@ -223,6 +224,31 @@
           </div>
         </div>
 
+        <div class="bg-red-50/60 p-4 rounded-xl border border-red-100 space-y-2">
+          <h4 class="font-bold text-red-900 uppercase tracking-wide flex items-center gap-1.5">🧪 Receitas Fixadas (usadas na checagem de estoque)</h4>
+          <p class="text-[10px] text-red-700">Escolha 1 receita de cada fase. Elas passam a valer para TODA a escala (todos os meses/espécies) na Explosão de Materiais (BOM) — o alerta de estoque só funciona com as 3 selecionadas.</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Receita de CL</label>
+              <select id="selectReceitaCL" class="w-full border rounded-lg p-2 bg-white font-semibold outline-none">
+                <option value="">Nenhuma selecionada</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Receita de Spawn</label>
+              <select id="selectReceitaSpawn" class="w-full border rounded-lg p-2 bg-white font-semibold outline-none">
+                <option value="">Nenhuma selecionada</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold mb-1 text-gray-700">Receita de Composto</label>
+              <select id="selectReceitaComposto" class="w-full border rounded-lg p-2 bg-white font-semibold outline-none">
+                <option value="">Nenhuma selecionada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 space-y-3">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
@@ -355,18 +381,19 @@
   <div id="modalBOM" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
       <div class="bg-red-800 text-white p-4 px-6 flex justify-between items-center">
-        <h3 class="font-bold text-sm uppercase tracking-wider">⚠️ Explosão de Materiais (BOM) — Insumos em Falta</h3>
+        <h3 class="font-bold text-sm uppercase tracking-wider">⚠️ Explosão de Materiais (BOM) — <span id="bomTituloMes">Insumos em Falta</span></h3>
         <button onclick="fecharModalBOM()" class="text-red-200 hover:text-white font-bold text-lg">✕</button>
       </div>
       <div class="p-5 overflow-y-auto text-xs">
-        <p class="text-[10px] text-gray-500 mb-3">Projeção baseada nas receitas cadastradas para cada fase (CL/Spawn/Composto) e nos eventos ainda não concluídos da escala. Não deduz nada do estoque real.</p>
+        <p class="text-[10px] text-gray-500 mb-3">Projeção com base nas receitas fixadas de CL/Spawn/Composto (Configurações da Escala) e na produção programada para o mês visível no calendário. Não deduz nada do estoque real.</p>
+        <p id="bomSemReceitasFixadas" class="hidden bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 mb-3">⚙️ Nenhuma receita fixada ainda. Abra <button type="button" onclick="fecharModalBOM(); abrirModalConfiguracoes();" class="underline font-bold">Configurações da Escala</button> e selecione as receitas de CL, Spawn e Composto para habilitar a checagem de estoque.</p>
         <table class="w-full text-left">
           <thead><tr class="text-[10px] text-gray-400 uppercase border-b">
             <th class="py-1">Insumo</th><th class="py-1">Necessário</th><th class="py-1">Disponível</th><th class="py-1">Faltante</th><th class="py-1">Prazo</th>
           </tr></thead>
           <tbody id="tabelaBOM"></tbody>
         </table>
-        <p id="semFaltantesBOM" class="hidden text-center text-gray-400 py-6">Nenhum insumo em falta para os eventos planejados. ✅</p>
+        <p id="semFaltantesBOM" class="hidden text-center text-gray-400 py-6">Nenhum insumo em falta para a produção programada deste mês. ✅</p>
       </div>
       <div class="bg-gray-100 p-4 px-6 flex justify-end border-t">
         <a href="compras.html" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-xs font-bold transition">🛒 Abrir Lista de Compras</a>
@@ -482,7 +509,12 @@
     }
 
     /* ---------- Estado global ---------- */
-    let dadosEscala = { especies: [], especiesInfo: {}, parametrosEspecie: {}, configuracoes: {}, eventos: [], tarefasManuais: [], recorrencias: [], insumos: [], bomShortfall: [], resumoEwma: {}, resumoCarga: { cargaPorDia: {}, diasSobrecarregados: [] } };
+    let dadosEscala = {
+      especies: [], especiesInfo: {}, parametrosEspecie: {}, configuracoes: {}, eventos: [],
+      tarefasManuais: [], recorrencias: [], insumos: [], receitasPorFase: { CL: [], SPAWN: [], COMPOSTO: [] },
+      receitasFixas: { receitaCLId: '', receitaSpawnId: '', receitaCompostoId: '' },
+      bomShortfallPorMes: {}, resumoEwma: {}, resumoCarga: { cargaPorDia: {}, diasSobrecarregados: [] }
+    };
     let mapaDiasDisponiveisPorMes = {};
     let ultimoMesAberto = "";
     let mesVisivelCalendario = "";
@@ -531,6 +563,7 @@
         mapaDiasDisponiveisPorMes[mesChave] = (dadosEscala.configuracoes[mesChave].diasDisponiveis || []).slice();
       });
       popularSelectEspecies();
+      popularSelectsReceitas();
       renderCalendarEvents();
       atualizarKPIs();
       renderBanners();
@@ -541,6 +574,7 @@
     function abrirModalConfiguracoes() {
       gerarCamposDiasDisponiveis();
       renderLinhasEspeciesConfig();
+      popularSelectsReceitas();
       const cfg = dadosEscala.configuracoes[document.getElementById('inputMesSelecionado').value];
       if (cfg) {
         document.getElementById('selectTipoProducao').value = cfg.tipoProducao || 'recorrente';
@@ -559,6 +593,27 @@
     /* ---------- Espécies (dropdown real, populado pelo backend) ---------- */
     function popularSelectEspecies() {
       document.getElementById('avisoSemEspecies').classList.toggle('hidden', (dadosEscala.especies || []).length > 0);
+    }
+
+    /* ---------- Receitas fixadas (CL/Spawn/Composto) ---------- */
+    function popularSelectsReceitas() {
+      const receitasPorFase = dadosEscala.receitasPorFase || { CL: [], SPAWN: [], COMPOSTO: [] };
+      const receitasFixas = dadosEscala.receitasFixas || {};
+      const mapaSelect = { CL: 'selectReceitaCL', SPAWN: 'selectReceitaSpawn', COMPOSTO: 'selectReceitaComposto' };
+      const mapaFixa = { CL: 'receitaCLId', SPAWN: 'receitaSpawnId', COMPOSTO: 'receitaCompostoId' };
+      Object.keys(mapaSelect).forEach(function (fase) {
+        const select = document.getElementById(mapaSelect[fase]);
+        const atual = receitasFixas[mapaFixa[fase]] || '';
+        select.innerHTML = '<option value="">Nenhuma selecionada</option>';
+        (receitasPorFase[fase] || []).forEach(function (r) {
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = r.nome;
+          if (String(r.id) === String(atual)) opt.selected = true;
+          select.appendChild(opt);
+        });
+        select.value = atual || '';
+      });
     }
 
     function renderLinhasEspeciesConfig() {
@@ -732,6 +787,9 @@
         capacidadeDiariaMin: parseFloat(document.getElementById('inputCapacidadeDiaria').value) || 480,
         diasDisponiveis: mapaDiasDisponiveisPorMes[mesChave] || [],
         metasEspecies: metasEspecies,
+        receitaCLId: document.getElementById('selectReceitaCL').value,
+        receitaSpawnId: document.getElementById('selectReceitaSpawn').value,
+        receitaCompostoId: document.getElementById('selectReceitaComposto').value,
         responsavel: userData.nome
       };
 
@@ -911,7 +969,8 @@
       document.getElementById('resumoSpawn').textContent = spawnKg.toFixed(1) + ' kg';
       document.getElementById('resumoBlocos').textContent = blocos + ' Blocos';
 
-      document.getElementById('resumoEstoque').textContent = (dadosEscala.bomShortfall || []).length + ' itens';
+      const bomDoMes = (dadosEscala.bomShortfallPorMes && dadosEscala.bomShortfallPorMes[mes]) || [];
+      document.getElementById('resumoEstoque').textContent = bomDoMes.length + ' itens';
 
       const manutAtivas = (dadosEscala.recorrencias || []).filter(function (r) { return r.ativa; }).length +
         (dadosEscala.tarefasManuais || []).filter(function (t) { return t.status !== 'Concluida'; }).length;
@@ -929,11 +988,26 @@
       }
     }
 
+    const NOMES_MES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    function formatarMesChaveLegivel(mesChave) {
+      if (!mesChave) return '';
+      const partes = mesChave.split('-');
+      const idx = parseInt(partes[1], 10) - 1;
+      return (NOMES_MES[idx] || partes[1]) + '/' + partes[0];
+    }
+
     function renderTabelaBOM() {
+      const mes = mesVisivelCalendario;
+      document.getElementById('bomTituloMes').textContent = 'Insumos em Falta — ' + formatarMesChaveLegivel(mes);
+
+      const receitasFixas = dadosEscala.receitasFixas || {};
+      const temAlgumaReceitaFixada = !!(receitasFixas.receitaCLId || receitasFixas.receitaSpawnId || receitasFixas.receitaCompostoId);
+      document.getElementById('bomSemReceitasFixadas').classList.toggle('hidden', temAlgumaReceitaFixada);
+
       const tbody = document.getElementById('tabelaBOM');
-      const lista = dadosEscala.bomShortfall || [];
+      const lista = (dadosEscala.bomShortfallPorMes && dadosEscala.bomShortfallPorMes[mes]) || [];
       tbody.innerHTML = "";
-      document.getElementById('semFaltantesBOM').classList.toggle('hidden', lista.length > 0);
+      document.getElementById('semFaltantesBOM').classList.toggle('hidden', !temAlgumaReceitaFixada || lista.length > 0);
       lista.forEach(function (item) {
         const tr = document.createElement('tr');
         tr.className = "border-b";
