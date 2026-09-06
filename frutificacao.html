@@ -354,7 +354,7 @@
   <div id="modalColheitaSala" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto">
       <h3 class="text-lg font-bold text-gray-800 mb-2">Registrar Colheita - <span id="nomeSalaColheita" class="text-emerald-800">---</span></h3>
-      <p class="text-xs text-gray-500 mb-4">Selecione a espécie, informe o peso (kg), o ciclo de colheita e a qualidade:</p>
+      <p class="text-xs text-gray-500 mb-4">Selecione a espécie, informe o peso (g), o ciclo de colheita e a qualidade:</p>
       
       <form onsubmit="confirmarColheitaSala(event)" class="space-y-3 text-xs">
         <input type="hidden" id="inputSalaIdColheita">
@@ -1401,8 +1401,8 @@
             ${optionsEspecies}
           </select>
           <div class="w-1/3 flex items-center bg-white border rounded px-2">
-            <input type="number" step="0.01" placeholder="0.00" required class="w-full py-1.5 outline-none quantidade-colheita font-bold text-xs">
-            <span class="text-xs font-bold text-gray-500 ml-1">kg</span>
+            <input type="number" step="1" min="0" placeholder="0" required class="w-full py-1.5 outline-none quantidade-colheita font-bold text-xs">
+            <span class="text-xs font-bold text-gray-500 ml-1">g</span>
           </div>
           <input type="text" placeholder="Lote" class="w-1/4 border rounded p-1.5 outline-none lote-item-colheita font-mono text-xs bg-white" value="${valorLote}">
           <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700 font-bold px-1">✕</button>
@@ -1468,7 +1468,11 @@
         const elMotivo = l.querySelector('.motivo-descarte-colheita');
         
         if (elEspecie && inputQtd) {
-          const valorQtd = parseFloat(inputQtd.value);
+          // Peso é informado em gramas na tela (mais prático na pesagem da colheita)
+          // e convertido para kg aqui, já que todo o restante do sistema (estoque,
+          // relatórios, venda) trabalha e exibe a quantidade em quilos.
+          const valorQtdG = parseFloat(inputQtd.value);
+          const valorQtdKg = !isNaN(valorQtdG) ? Math.round((valorQtdG / 1000) * 1000) / 1000 : NaN;
           const valorLote = inputLote ? inputLote.value.trim() : '-';
           const valorEspecie = elEspecie.value ? elEspecie.value.trim() : 'Geral';
           const valorCiclo = elCiclo ? elCiclo.value : '1º Ciclo';
@@ -1481,11 +1485,11 @@
             return;
           }
 
-          if (!isNaN(valorQtd) && valorQtd > 0) {
+          if (!isNaN(valorQtdKg) && valorQtdKg > 0) {
             itens.push({
               especie: valorEspecie,
-              quantidadeKg: valorQtd,
-              quantidade: valorQtd,
+              quantidadeKg: valorQtdKg,
+              quantidade: valorQtdKg,
               lote: valorLote,
               codigoRastreio: valorLote,
               ciclo: valorCiclo,
@@ -1499,7 +1503,7 @@
       if (!validacaoOk) return;
 
       if (itens.length === 0) {
-        alert("Informe um valor válido maior que 0 para a quantidade colhida.");
+        alert("Informe um valor válido maior que 0 (em gramas) para a quantidade colhida.");
         return;
       }
 

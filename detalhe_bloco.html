@@ -94,8 +94,8 @@
       <h3 class="text-lg font-bold text-blue-700">Registrar Colheita</h3>
       <form onsubmit="confirmarColheita(event)" class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold mb-1">Peso Colhido (kg) *</label>
-          <input type="number" step="0.01" min="0" id="pesoColheita" required placeholder="Ex: 1.5" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
+          <label class="block font-bold mb-1">Peso Colhido (g) *</label>
+          <input type="number" step="1" min="0" id="pesoColheita" required placeholder="Ex: 1500" class="w-full border rounded-lg p-2.5 bg-white font-semibold">
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -329,10 +329,16 @@
       btn.disabled = true;
       btn.textContent = "Enviando...";
 
+      // Peso é informado em gramas na tela e convertido para kg aqui, já que
+      // todo o restante do sistema (estoque, relatórios, venda) trabalha e
+      // exibe a quantidade em quilos.
+      const pesoColhidoG = parseFloat(document.getElementById('pesoColheita').value) || 0;
+      const pesoColhidoKg = Math.round((pesoColhidoG / 1000) * 1000) / 1000;
+
       const payload = {
         action: 'registrarColheita',
         especie: blocoAtual ? blocoAtual.especie : undefined,
-        quantidadeKg: document.getElementById('pesoColheita').value,
+        quantidadeKg: pesoColhidoKg,
         codigoRastreio: codigoRastreio,
         ciclo: document.getElementById('cicloColheita').value,
         qualidade: document.getElementById('qualidadeColheita').value,
