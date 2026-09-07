@@ -7,6 +7,138 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4 font-sans text-gray-800">
+
+  <!-- ==================== OVERLAY DE CARREGAMENTO GLOBAL ====================
+       Cobre a tela inteira (com blur) enquanto uma ação de ESCRITA está em
+       andamento e bloqueia qualquer novo envio da mesma ação enquanto isso,
+       evitando que um segundo clique duplique o registro na planilha. -->
+  <div id="overlayCarregamentoGlobal" class="hidden fixed inset-0 z-[9999] items-center justify-center" style="background: rgba(6, 20, 14, 0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);">
+    <div class="bg-[#0f2a1f] border border-emerald-700/40 rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center text-center mx-4" style="max-width: 280px;">
+      <div class="mb-4" style="animation: coloniza-crescer-cogumelo 1.3s ease-in-out infinite;">
+        <span style="font-size: 46px; line-height: 1;">🍄</span>
+      </div>
+      <p id="overlayCarregamentoTexto" class="text-white font-bold text-sm mb-1">Inoculando substratos...</p>
+      <p class="text-emerald-200/70 text-[11px]">Aguarde enquanto processamos a ação</p>
+    </div>
+  </div>
+  <style>
+    @keyframes coloniza-crescer-cogumelo {
+      0%, 100% { transform: scale(0.72) translateY(5px); opacity: 0.7; }
+      50% { transform: scale(1.1) translateY(-4px); opacity: 1; }
+    }
+  </style>
+  <script>
+    // Protege TODAS as ações de escrita (cadastro/edição/exclusão/produção/etc.) contra
+    // duplo clique / duplo envio: intercepta window.fetch para o backend e, se já houver
+    // uma ação de escrita em andamento, bloqueia a nova chamada sem sequer enviar à rede
+    // — evitando registro duplicado na planilha quando a resposta demora e o usuário
+    // clica de novo no mesmo botão. Fica num único ponto (aqui) em vez de em cada botão,
+    // cobrindo toda a página automaticamente, inclusive ações futuras.
+    (function () {
+      const ACOES_DE_ESCRITA_FRONTEND = new Set([
+        'atualizarColheitaItem', 'atualizarQualidadeColheita', 'excluirColheitaItem',
+        'inocularBlocosEmMassa', 'atualizarStatusBloco',
+        'salvarReceitaSpawn', 'salvarReceitaComposto',
+        'salvarNovaReceita', 'atualizarReceita', 'salvarReceitaCL',
+        'excluirReceitaSpawn', 'excluirReceitaComposto',
+        'excluirReceita', 'excluirReceitaCL',
+        'produzirEInocularCL', 'produzirEInocularSpawn', 'produzirEInocularComposto',
+        'produzirNovaCL', 'editarInsumo', 'excluirInsumo',
+        'registrarColheita', 'registrarClima', 'registrarLote',
+        'cadastrarCompra', 'editarCompra', 'excluirCompra',
+        'cadastrarInsumo', 'consumirInsumoProducao',
+        'cadastrarCultura', 'cadastrarCL', 'atualizarStatus', 'excluirItem', 'editarLoteItem',
+        'cadastrarEspecie', 'editarEspecie', 'excluirEspecie',
+        'atualizarStatusBlocos', 'moverParaFrutificacao', 'frutificarBlocos', 'descartarBloco', 'descartar', 'descartarComFoto',
+        'descartarSpawnComFoto', 'descartarCLComFoto', 'alterarStatusDetalheBloco',
+        'editarItensEmMassa', 'excluirItensEmMassa', 'editarBlocosEmMassa',
+        'salvarSala', 'atualizarSala', 'excluirSala',
+        'registrarLogAmbienteSala', 'atribuirBlocosSala', 'registrarColheitaSala',
+        'alterarDataEntradaFrutificacao', 'alterarDataInoculacao', 'adicionarCamera', 'excluirCamera',
+        'salvarConfiguracaoEscala', 'salvarParametrosEspecieEscala', 'atualizarEventoEscala',
+        'confirmarEventoEscala', 'moverEventoParaBuffer', 'excluirEventoEscala',
+        'salvarTarefaManualEscala', 'excluirTarefaManualEscala',
+        'salvarRecorrenciaEscala', 'excluirRecorrenciaEscala', 'sincronizarGoogleAgendaEscala',
+        'cadastrarCliente', 'editarCliente', 'excluirCliente', 'cadastrarPedido',
+        'salvarRecorrencia', 'pausarRecorrencia', 'ajustarRecorrenciaPontual', 'registrarPagamento',
+        'cadastrarProduto', 'editarProduto', 'excluirProduto', 'gerarPedidosRecorrenciaDia',
+        'atualizarStatusPedidoVenda', 'atualizarStatusPagamentoPedido', 'emitirNFe', 'cancelarNFe',
+        'cadastrarTabelaPreco', 'editarTabelaPreco', 'excluirTabelaPreco', 'salvarLogomarca'
+      ]);
+
+      const FRASES_CARREGAMENTO_COLONIZA = [
+        // Ações Gerais & Crescimento
+        'Expandindo o micélio...', 'Alongando hifas...', 'Inoculando o mundo...',
+        'Rompendo o primórdio...', 'Germinando esporos...', 'Fortalecendo a teia...',
+        // Manejo & Preparo de Substrato
+        'Semeando micélios...', 'Inoculando substratos...', 'Hidratando o meio...',
+        'Misturando o composto...', 'Esterilizando o meio...', 'Nutrindo o substrato...',
+        // Laboratório & Culturas
+        'Incubando culturas líquidas...', 'Multiplicando hifas...', 'Isolando genéticas...',
+        'Clonando matrizes...', 'Fortalecendo o inóculo...',
+        // Frutificação & Ambiente
+        'Induzindo a frutificação...', 'Ajustando a névoa...', 'Respirando oxigênio...',
+        'Formando os pinos...', 'Amadurecendo os corpos...'
+      ];
+      let timerFrasesColoniza = null;
+      let escritasEmAndamentoColoniza = 0;
+
+      function proximaFraseAleatoriaColoniza(fraseAtual) {
+        let escolhida;
+        do {
+          escolhida = FRASES_CARREGAMENTO_COLONIZA[Math.floor(Math.random() * FRASES_CARREGAMENTO_COLONIZA.length)];
+        } while (FRASES_CARREGAMENTO_COLONIZA.length > 1 && escolhida === fraseAtual);
+        return escolhida;
+      }
+
+      function mostrarOverlayCarregamentoColoniza() {
+        const overlay = document.getElementById('overlayCarregamentoGlobal');
+        const texto = document.getElementById('overlayCarregamentoTexto');
+        if (!overlay) return;
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+        if (texto) texto.textContent = proximaFraseAleatoriaColoniza(null);
+        clearInterval(timerFrasesColoniza);
+        timerFrasesColoniza = setInterval(function () {
+          if (texto) texto.textContent = proximaFraseAleatoriaColoniza(texto.textContent);
+        }, 1300);
+      }
+
+      function esconderOverlayCarregamentoColoniza() {
+        const overlay = document.getElementById('overlayCarregamentoGlobal');
+        if (!overlay) return;
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+        clearInterval(timerFrasesColoniza);
+        timerFrasesColoniza = null;
+      }
+
+      const fetchOriginalColoniza = window.fetch;
+      window.fetch = function (input, init) {
+        let acao = null;
+        try {
+          if (init && typeof init.body === 'string') acao = JSON.parse(init.body).action;
+        } catch (e) { /* corpo não é JSON de ação, ignora */ }
+
+        const ehEscrita = acao && ACOES_DE_ESCRITA_FRONTEND.has(acao);
+
+        if (ehEscrita) {
+          if (escritasEmAndamentoColoniza > 0) {
+            return Promise.resolve(new Response(JSON.stringify({ success: false, message: 'Ação já está em andamento, aguarde a conclusão antes de tentar novamente.' }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+          }
+          escritasEmAndamentoColoniza++;
+          mostrarOverlayCarregamentoColoniza();
+        }
+
+        return fetchOriginalColoniza.call(this, input, init).finally(function () {
+          if (ehEscrita) {
+            escritasEmAndamentoColoniza = Math.max(0, escritasEmAndamentoColoniza - 1);
+            if (escritasEmAndamentoColoniza === 0) esconderOverlayCarregamentoColoniza();
+          }
+        });
+      };
+    })();
+  </script>
   <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
     <!-- Cabeçalho -->
     <div class="bg-sky-500 text-white p-4 text-center">
