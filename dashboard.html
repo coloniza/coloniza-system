@@ -920,6 +920,22 @@ async function carregarMeusDados() {
     }
 
     fetchDashboardData();
+
+    // Permite abrir a página já direto no player da câmera ao vivo, sem passar
+    // pela lista nem precisar clicar em "Visualizar" (usado pelo botão "Ver
+    // câmera ao vivo" do alerta de colheita final no Telegram).
+    if (new URLSearchParams(window.location.search).get('abrirCamera') === '1') {
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'listarCameras' })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          camerasCache = (res.success && res.cameras) ? res.cameras : [];
+          if (camerasCache.length > 0) abrirPlayerCamera(0);
+        });
+    }
   </script>
 </body>
 </html>
